@@ -216,19 +216,10 @@ function initSB(){
   const sk=getServiceKey();
   if(sk&&!sk.includes("placeholder"))
    sbAdmin=window.supabase.createClient(url,sk,{auth:{autoRefreshToken:false,persistSession:false}});
-  sb.auth.onAuthStateChange(async(event,session)=>{
+  sb.auth.onAuthStateChange((event,session)=>{
    if(session&&(event==="SIGNED_IN"||event==="TOKEN_REFRESHED"))
     localStorage.setItem("sb_session_backup",JSON.stringify({access_token:session.access_token,refresh_token:session.refresh_token,expires_at:session.expires_at}));
    if(event==="INITIAL_SESSION"&&initialSessionResolve){initialSessionResolve(session);initialSessionResolve=null}
-   if((event==="INITIAL_SESSION"||event==="SIGNED_IN")&&session&&!state.user){
-    await loadData();
-    const p=state.users.find(u=>u.auth_id===session.user.id);
-    if(p){state.user=p;state.page="Dashboard";render()}
-    else{
-     const{data:prof}=await sb.from("profiles").select("*").eq("auth_id",session.user.id).single();
-     if(prof){state.user=prof;state.page="Dashboard";render()}
-    }
-   }
   });
  }
 }
@@ -617,14 +608,13 @@ async function init(){
  initSB();
  if(useSB){
   document.getElementById("root").innerHTML='<div style="display:grid;place-items:center;min-height:100vh;background:#0a0a0a;color:#fff;font-family:sans-serif;font-size:18px">Loading…</div>';
-  // Wait for Supabase to fire INITIAL_SESSION (restores session from localStorage)
-  const initSession=await Promise.race([
+  // Wait for Supabase to fire INITIAL_SESSION, then always try checkSession
+  // (checkSession handles backup/raw token restoration even if INITIAL_SESSION was null)
+  await Promise.race([
    new Promise(r=>{initialSessionResolve=r}),
    new Promise(r=>setTimeout(()=>r(null),3000))
   ]);
-  if(initSession){
-   await checkSession();
-  }
+  await checkSession();
  }else{
   loadLocal();
  }
