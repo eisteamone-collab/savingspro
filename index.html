@@ -202,7 +202,7 @@ const SEED={
 };
 
 /* ════════ SUPABASE ════════ */
-let sb=null,sbAdmin=null,useSB=false;
+let sb=null,sbAdmin=null,useSB=false,initialSessionResolve=null;
 function getServiceKey(){
  const stored=localStorage.getItem("supabase_service_key");
  if(stored&&stored.trim())return stored.trim();
@@ -219,6 +219,7 @@ function initSB(){
   sb.auth.onAuthStateChange(async(event,session)=>{
    if(session&&(event==="SIGNED_IN"||event==="TOKEN_REFRESHED"))
     localStorage.setItem("sb_session_backup",JSON.stringify({access_token:session.access_token,refresh_token:session.refresh_token,expires_at:session.expires_at}));
+   if(event==="INITIAL_SESSION"&&initialSessionResolve){initialSessionResolve(session);initialSessionResolve=null}
    if((event==="INITIAL_SESSION"||event==="SIGNED_IN")&&session&&!state.user){
     await loadData();
     const p=state.users.find(u=>u.auth_id===session.user.id);
@@ -614,7 +615,14 @@ async function init(){
  initSB();
  if(useSB){
   document.getElementById("root").innerHTML='<div style="display:grid;place-items:center;min-height:100vh;background:#0a0a0a;color:#fff;font-family:sans-serif;font-size:18px">Loading…</div>';
-  await checkSession();
+  // Wait for Supabase to fire INITIAL_SESSION (restores session from localStorage)
+  const initSession=await Promise.race([
+   new Promise(r=>{initialSessionResolve=r}),
+   new Promise(r=>setTimeout(()=>r(null),3000))
+  ]);
+  if(initSession){
+   await checkSession();
+  }
  }else{
   loadLocal();
  }
