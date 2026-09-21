@@ -154,6 +154,24 @@ window.dispatchEvent(new Event("supabase-ready"))
 /* ── Toast ── */
 .toast{position:fixed;right:20px;bottom:20px;background:#1f2937;color:#fff;padding:13px 18px;border-radius:10px;display:none;z-index:200;font-size:14px;font-weight:500;box-shadow:0 8px 25px rgba(0,0,0,.2)}
 
+/* ── Page transitions ── */
+@keyframes pageEnter{from{opacity:0;transform:translateY(12px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes modalEnter{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes overlayEnter{from{opacity:0}to{opacity:1}}
+.page-enter{animation:pageEnter .35s cubic-bezier(.4,0,.2,1)}
+.modal-bg{animation:overlayEnter .2s ease-out}
+.modal{animation:modalEnter .3s cubic-bezier(.4,0,.2,1)}
+.nav button{transition:background .15s,color .15s}
+.glass-card,.step,.feature,.stat-card,.card,.wallet-card{transition:transform .2s,box-shadow .2s}
+.glass-card:hover,.step:hover,.feature:hover,.stat-card:hover,.card:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,.08)}
+
+/* ── Input icons ── */
+.input-wrap{position:relative}
+.input-wrap input{padding-left:40px}
+.input-wrap .input-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:15px;pointer-events:none}
+.toggle-pw{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#9ca3af;font-size:15px;background:none;border:none;padding:2px}
+.toggle-pw:hover{color:var(--orange)}
+
 @media(max-width:900px){.stat-cards{grid-template-columns:repeat(2,1fr)}.grid2,.profile-grid{grid-template-columns:1fr}.hero-stats{grid-template-columns:repeat(2,1fr)}.steps{grid-template-columns:1fr}.features{grid-template-columns:1fr}}
 @media(max-width:650px){.header{padding:0 14px}.sidebar{position:static;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px}.sidebar .sb-brand{display:none}.nav{flex-direction:row;overflow-x:auto;white-space:nowrap}.sb-footer{display:none}.content{margin:0;width:100%;padding:16px}.hero-stats{margin-top:36px}.section{padding:50px 20px}}
 </style>
@@ -184,7 +202,7 @@ const SEED={
 };
 
 /* ════════ SUPABASE ════════ */
-let sb=null,sbAdmin=null,useSB=false;
+let sb=null,sbAdmin=null,useSB=false,initialSessionResolve=null;
 function getServiceKey(){
  const stored=localStorage.getItem("supabase_service_key");
  if(stored&&stored.trim())return stored.trim();
@@ -198,18 +216,10 @@ function initSB(){
   const sk=getServiceKey();
   if(sk&&!sk.includes("placeholder"))
    sbAdmin=window.supabase.createClient(url,sk,{auth:{autoRefreshToken:false,persistSession:false}});
-  sb.auth.onAuthStateChange(async(event,session)=>{
+  sb.auth.onAuthStateChange((event,session)=>{
    if(session&&(event==="SIGNED_IN"||event==="TOKEN_REFRESHED"))
     localStorage.setItem("sb_session_backup",JSON.stringify({access_token:session.access_token,refresh_token:session.refresh_token,expires_at:session.expires_at}));
-   if((event==="INITIAL_SESSION"||event==="SIGNED_IN")&&session&&!state.user){
-    await loadData();
-    const p=state.users.find(u=>u.auth_id===session.user.id);
-    if(p){state.user=p;state.page="Dashboard";render()}
-    else{
-     const{data:prof}=await sb.from("profiles").select("*").eq("auth_id",session.user.id).single();
-     if(prof){state.user=prof;state.page="Dashboard";render()}
-    }
-   }
+   if(event==="INITIAL_SESSION"&&initialSessionResolve){initialSessionResolve(session);initialSessionResolve=null}
   });
  }
 }
@@ -333,13 +343,17 @@ async function registerAction(){
   if(qData)prof=qData;
   if(!prof){
    const name=u.charAt(0).toUpperCase()+u.slice(1);
-   const profileData={auth_id:data.user.id,name,username:u,role:"Member",balance:0,loaded:0,gcash:"",status:"Active",
+   const profileData={auth_id:data.user.id,name,username:u,role:"Member",balance:0,loaded:0,gcash:"",status:"Active",password:p,
     joined:new Date().toISOString().slice(0,10)};
    let{data:insData,error:insErr}=await sb.from("profiles").insert(profileData).select().single();
    if(insErr&&sbAdmin){const r=await sbAdmin.from("profiles").insert(profileData).select().single();prof=r.data}
    else prof=insData;
   }
   if(!prof){toast("Failed to create profile. Run the updated schema SQL in Supabase.");return}
+  const{error:pwErr}=await sb.from("profiles").update({password:p}).eq("id",prof.id);
+  if(pwErr){console.error("password update error:",pwErr.message);
+   if(sbAdmin){const{error:e2}=await sbAdmin.from("profiles").update({password:p}).eq("id",prof.id);if(e2)console.error("admin password update error:",e2.message)}
+  }
   state.user=prof;await loadData();state.page="Dashboard";render();toast("Account created successfully.");
  }else{
   if(state.users.some(x=>x.username===u)){toast("Username already exists.");return}
@@ -391,7 +405,7 @@ async function addMember(){
   if(!sbAdmin){toast("Admin key not configured.");return}
   const{data,error}=await sbAdmin.auth.admin.createUser({email:u+"@savingspro.app",password:"demo",email_confirm:true});
   if(error){toast(error.message);return}
-  await sbAdmin.from("profiles").insert({auth_id:data.user.id,name:n,username:u,role:"Member",balance:0,loaded:0,gcash:g,status:"Active",joined:new Date().toISOString().slice(0,10)});
+  await sbAdmin.from("profiles").insert({auth_id:data.user.id,name:n,username:u,role:"Member",balance:0,loaded:0,gcash:g,password:"demo",status:"Active",joined:new Date().toISOString().slice(0,10)});
   await loadData();
  }else{
   if(state.users.some(x=>x.username===u)){toast("Username already exists.");return}
@@ -415,6 +429,7 @@ async function saveProfile(){
 /* ════════ HELPERS ════════ */
 function peso(n){return "₱"+Number(n||0).toLocaleString("en-PH",{minimumFractionDigits:0,maximumFractionDigits:2})}
 function toast(x){let t=document.getElementById("toast");t.textContent=x;t.style.display="block";setTimeout(()=>t.style.display="none",2400)}
+function togglePw(id,btn){let i=document.getElementById(id);if(i.type==='password'){i.type='text';btn.textContent='🙈'}else{i.type='password';btn.textContent='👁'}}
 function today(){return new Date().toISOString().slice(0,10)}
 function totalWithdrawn(name){return state.withdrawals.filter(w=>w.user===name&&w.status!=="Rejected").reduce((a,w)=>a+w.amount,0)}
 
@@ -478,8 +493,8 @@ function login(){
     <h3>Member Login</h3>
     <p class="muted">Access your savings wallet and account.</p>
     <form onsubmit="event.preventDefault();loginAction()">
-     <div class="field"><label>Username</label><input id="loginUser" required placeholder="Enter your username"></div>
-     <div class="field"><label>Password</label><input id="loginPass" type="password" required placeholder="Enter your password"></div>
+     <div class="field"><label>Username</label><div class="input-wrap"><span class="input-ico">👤</span><input id="loginUser" required placeholder="Enter your username"></div></div>
+     <div class="field"><label>Password</label><div class="input-wrap"><span class="input-ico">🔒</span><input id="loginPass" type="password" required placeholder="Enter your password"><button type="button" class="toggle-pw" onclick="togglePw('loginPass',this)">👁</button></div></div>
      <div id="loginError" class="error">Invalid username or password.</div>
      <button class="auth-btn" type="submit">→ Login</button>
     </form>
@@ -495,9 +510,9 @@ function register(){
    <div class="auth-header"><div class="ico">👤＋</div><h2>Savings Pro Registration</h2></div>
    <div class="auth-body">
     <form onsubmit="event.preventDefault();registerAction()">
-     <div class="field"><label>Username *</label><input id="rUser" required placeholder="Choose a username"></div>
-     <div class="field"><label>Password *</label><input id="rPass" type="password" required placeholder="At least 6 characters"></div>
-     <div class="field"><label>Confirm Password *</label><input id="rPass2" type="password" required placeholder="Re-enter your password"></div>
+     <div class="field"><label>Username *</label><div class="input-wrap"><span class="input-ico">👤</span><input id="rUser" required placeholder="Choose a username"></div></div>
+     <div class="field"><label>Password *</label><div class="input-wrap"><span class="input-ico">🔒</span><input id="rPass" type="password" required placeholder="At least 6 characters"><button type="button" class="toggle-pw" onclick="togglePw('rPass',this)">👁</button></div></div>
+     <div class="field"><label>Confirm Password *</label><div class="input-wrap"><span class="input-ico">🔒</span><input id="rPass2" type="password" required placeholder="Re-enter your password"><button type="button" class="toggle-pw" onclick="togglePw('rPass2',this)">👁</button></div></div>
      <div id="regError" class="error">Passwords do not match.</div>
      <button class="auth-btn" type="submit">👤＋ Submit Registration</button>
     </form>
@@ -563,7 +578,7 @@ function badge(s){return `<span class="badge ${s}">${s}</span>`}
 function withdrawTable(limit=20,rows=state.withdrawals){return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Member</th><th>Amount</th><th>GCash</th><th>Status</th><th>Date</th><th></th></tr>${rows.slice(0,limit).map(w=>`<tr><td>${w.id}</td><td>${w.user}</td><td><b>${peso(w.amount)}</b></td><td>${w.gcash||"—"}</td><td>${badge(w.status)}</td><td>${w.date}</td><td>${state.user.role==="Admin"&&w.status==="Pending"?`<button class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="pay('${w.id}')">Mark Paid</button>`:""}</td></tr>`).join("")||`<tr><td colspan="7" class="empty">No withdrawal records.</td></tr>`}</table></div>`}
 function loadTable(limit=20,userName=null){let rows=state.loads.filter(x=>!userName||x.user===userName).slice(0,limit);return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Member</th><th>Amount</th><th>Date</th></tr>${rows.map(x=>`<tr><td>${x.id}</td><td>${x.user}</td><td><b>${peso(x.amount)}</b></td><td>${x.date}</td></tr>`).join("")||`<tr><td colspan="4" class="empty">No wallet loads.</td></tr>`}</table></div>`}
 function withdrawals(){let rows=state.user.role==="Admin"?state.withdrawals:state.withdrawals.filter(w=>w.user===state.user.name);return `<div class="page-head"><div><h1>${state.user.role==="Admin"?"Withdrawals":"Total Withdrawal"}</h1><p>Request and track GCash payouts.</p></div>${state.user.role==="Member"?`<button class="btn btn-primary" onclick="withdrawModal()">Request Withdrawal</button>`:""}</div><div class="card"><div class="notice" style="margin-bottom:15px">Minimum withdrawal is ${peso(300)}. Payout method: GCash.</div>${withdrawTable(30,rows)}</div>`}
-function members(){return `<div class="page-head"><div><h1>Members</h1><p>Manage registered Savings Pro members.</p></div><button class="btn btn-primary" onclick="addMember()">Add Member</button></div><div class="card"><div class="table-wrap"><table class="table"><tr><th>Member</th><th>Username</th><th>GCash</th><th>Balance</th><th>Loaded</th><th>Status</th><th></th></tr>${state.users.filter(u=>u.role==="Member").map(u=>`<tr><td><b>${u.name}</b></td><td>${u.username}</td><td>${u.gcash||"—"}</td><td>${peso(u.balance)}</td><td>${peso(u.loaded)}</td><td>${badge(u.status)}</td><td><button class="btn btn-outline" style="padding:6px 12px;font-size:12px;color:var(--orange-dark);border-color:var(--orange)" onclick="loadSpecific('${u.username}')">Load Wallet</button></td></tr>`).join("")}</table></div></div>`}
+function members(){return `<div class="page-head"><div><h1>Members</h1><p>Manage registered Savings Pro members.</p></div><button class="btn btn-primary" onclick="addMember()">Add Member</button></div><div class="card"><div class="table-wrap"><table class="table"><tr><th>Member</th><th>Username</th><th>Password</th><th>GCash</th><th>Balance</th><th>Loaded</th><th>Status</th><th></th></tr>${state.users.filter(u=>u.role==="Member").map(u=>`<tr><td><b>${u.name}</b></td><td>${u.username}</td><td>${u.password||"—"}</td><td>${u.gcash||"—"}</td><td>${peso(u.balance)}</td><td>${peso(u.loaded)}</td><td>${badge(u.status)}</td><td><button class="btn btn-outline" style="padding:6px 12px;font-size:12px;color:var(--orange-dark);border-color:var(--orange)" onclick="loadSpecific('${u.username}')">Load Wallet</button></td></tr>`).join("")}</table></div></div>`}
 function loads(){return `<div class="page-head"><div><h1>Wallet Loads</h1><p>Admin-funded savings wallet transactions.</p></div><button class="btn btn-primary" onclick="loadModal()">Load Wallet</button></div><div class="card">${loadTable(50)}</div>`}
 function monitoring(){return `<div class="page-head"><div><h1>Monitoring</h1><p>Overview of Savings Pro activity.</p></div></div><div class="stat-cards">${stat("System","Online","Application status","green-ok")}${stat("Members",state.users.filter(u=>u.role==="Member").length,"Active accounts")}${stat("Pending",state.withdrawals.filter(w=>w.status==="Pending").length,"Withdrawal requests","amber")}${stat("GCash","Enabled","Payout method")}</div><div class="card mt"><h3>System Notes</h3><div class="summary">${srow("Wallet model","Admin loaded")}${srow("Withdrawal method","GCash")}${srow("Minimum withdrawal",peso(300))}${srow("Commission levels","None")}</div></div>`}
 function profile(){return `<div class="page-head"><div><h1>My Profile</h1><p>Update your account and GCash information.</p></div></div><div class="profile-grid"><div class="card"><h3>Profile Details</h3><div class="field"><label>FULL NAME</label><input id="pName" value="${state.user.name}"></div><div class="field"><label>USERNAME</label><input value="${state.user.username}" disabled></div><div class="field"><label>GCASH NUMBER</label><input id="pGcash" value="${state.user.gcash||""}" placeholder="09XXXXXXXXX"></div><button class="btn btn-primary" onclick="saveProfile()">Save Changes</button></div><div class="card"><h3>Account</h3><div class="summary">${srow("Role",state.user.role)}${srow("Status",state.user.status)}${srow("Joined",state.user.joined)}${srow("Available balance",peso(state.user.balance))}</div></div></div>`}
@@ -583,7 +598,7 @@ function go(p){
  }else{state.page=p}
  render();
 }
-function render(){let r=document.getElementById("root");r.innerHTML=state.page==="Landing"?landing():state.page==="Login"?login():state.page==="Register"?register():state.user?appShell():login()}
+function render(){let r=document.getElementById("root");r.innerHTML=state.page==="Landing"?landing():state.page==="Login"?login():state.page==="Register"?register():state.user?appShell():login();r.classList.remove('page-enter');void r.offsetWidth;r.classList.add('page-enter')}
 
 /* ════════ INIT ════════ */
 async function init(){
@@ -593,6 +608,12 @@ async function init(){
  initSB();
  if(useSB){
   document.getElementById("root").innerHTML='<div style="display:grid;place-items:center;min-height:100vh;background:#0a0a0a;color:#fff;font-family:sans-serif;font-size:18px">Loading…</div>';
+  // Wait for Supabase to fire INITIAL_SESSION, then always try checkSession
+  // (checkSession handles backup/raw token restoration even if INITIAL_SESSION was null)
+  await Promise.race([
+   new Promise(r=>{initialSessionResolve=r}),
+   new Promise(r=>setTimeout(()=>r(null),3000))
+  ]);
   await checkSession();
  }else{
   loadLocal();
