@@ -165,7 +165,7 @@ window.dispatchEvent(new Event("supabase-ready"))
 /* ── Page transitions ── */
 @keyframes pageEnter{from{opacity:0;transform:translateY(12px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes modalEnter{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
-@keyframes overlayEnter{from{opacity:0}to{opacity:1)}
+@keyframes overlayEnter{from{opacity:0}to{opacity:1}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeLeft{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:translateX(0)}}
 .reveal{opacity:0}
@@ -223,7 +223,7 @@ function getServiceKey(){
  return(window.SUPABASE_SERVICE_KEY||"").trim();
 }
 function initSB(){
- const url=(window.SUPABASE_URL||"").trim(),key=(window.SUPABASE_ANON_KEY||"").trim();
+ const url=(window.SUPABASE_URL||"https://okvpjjnowtusjnnlnfgq.supabase.co").trim(),key=(window.SUPABASE_ANON_KEY||"sb_publishable_vYzxNIVStG6MeGfToNeRJQ_6Ufbrr51").trim();
  if(url&&key&&!url.includes("placeholder")&&!url.includes("example")&&window.supabase){
   sb=window.supabase.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,storage:localStorage,detectSessionInUrl:true}});
   useSB=true;
