@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Savings Pro</title>
+<script type="module">
+import{createClient}from"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"
+window.supabase={createClient}
+window.dispatchEvent(new Event("supabase-ready"))
+</script>
 <style>
 :root{--orange:#f97316;--orange-light:#fb923c;--orange-dark:#ea580c;--amber:#fbbf24;--ink:#0f0f0f;--dark:#1a1a1a;--dark-2:#222;--card:#fff;--line:#e5e7eb;--muted:#6b7280;--green-ok:#16a34a;--red:#ef4444;--radius:14px}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#1f2937}button,input,select{font:inherit}button{cursor:pointer;border:0}a{color:var(--orange);text-decoration:none}
@@ -70,7 +75,6 @@
 .field label{font-size:13px;font-weight:600;display:block;margin-bottom:6px;color:#374151}
 .field input,.field select{width:100%;border:1px solid #d1d5db;border-radius:10px;padding:12px 14px;outline:0;background:#fff;color:#1f2937}
 .field input:focus,.field select:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.12)}
-.field-err{border-color:var(--red)!important}
 .error{display:none;color:var(--red);font-size:13px;margin:6px 0}
 .auth-btn{width:100%;background:linear-gradient(135deg,#fca311,#ec6415);color:#fff;font-weight:700;padding:13px;border-radius:10px;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px}
 .auth-btn:hover{opacity:.92}
@@ -155,9 +159,12 @@
 </style>
 </head>
 <body><div id="root"></div><div id="toast" class="toast"></div>
+<script src="config.js"></script>
 <script>
-const state={
- page:"Landing", user:null,
+/* ════════ STATE ════════ */
+const state={page:"Landing",user:null,users:[],withdrawals:[],loads:[]};
+
+const SEED={
  users:[
   {id:1,name:"Tan",username:"Tan",password:"heyhey",role:"Admin",balance:0,loaded:0,gcash:"",status:"Active",joined:"2026-01-10"},
   {id:2,name:"Juan Dela Cruz",username:"juan",password:"demo",role:"Member",balance:4250,loaded:5000,gcash:"09171234567",status:"Active",joined:"2026-02-03"},
@@ -175,15 +182,158 @@ const state={
   {id:"LD-1003",user:"Pedro Reyes",amount:1500,date:"2026-08-18"}
  ]
 };
+
+/* ════════ SUPABASE ════════ */
+let sb=null,sbAdmin=null,useSB=false;
+function initSB(){
+ const url=(window.SUPABASE_URL||"").trim(),key=(window.SUPABASE_ANON_KEY||"").trim();
+ if(url&&key&&!url.includes("placeholder")&&!url.includes("example")&&window.supabase){
+  sb=window.supabase.createClient(url,key);
+  useSB=true;
+  const sk=(window.SUPABASE_SERVICE_KEY||"").trim();
+  if(sk&&!sk.includes("placeholder"))
+   sbAdmin=window.supabase.createClient(url,sk,{auth:{autoRefreshToken:false,persistSession:false}});
+ }
+}
+
+/* ════════ DATA LAYER ════════ */
+async function loadData(){
+ if(!useSB)return;
+ const[{data:users},{data:wds},{data:lds}]=await Promise.all([
+  sb.from("profiles").select("*"),
+  sb.from("withdrawals").select("*").order("date",{ascending:false}),
+  sb.from("loads").select("*").order("date",{ascending:false})
+ ]);
+ state.users=users||[];
+ state.withdrawals=(wds||[]).map(w=>({...w,user:w.user_name}));
+ state.loads=(lds||[]).map(l=>({...l,user:l.user_name}));
+}
+function loadLocal(){
+ try{const x=JSON.parse(localStorage.getItem("savings_pro_demo"));
+  if(x){Object.assign(state,x);return}
+ }catch{}
+ Object.assign(state,JSON.parse(JSON.stringify(SEED)));saveLocal();
+}
+function saveLocal(){localStorage.setItem("savings_pro_demo",JSON.stringify({users:state.users,withdrawals:state.withdrawals,loads:state.loads}))}
+
+/* ════════ AUTH ════════ */
+async function checkSession(){
+ if(!useSB)return;
+ const{data:{session}}=await sb.auth.getSession();
+ if(!session)return;
+ await loadData();
+ const p=state.users.find(u=>u.auth_id===session.user.id);
+ if(p){state.user=p;state.page="Dashboard"}
+ else await sb.auth.signOut();
+}
+async function loginAction(){
+ let u=document.getElementById("loginUser").value.trim(),p=document.getElementById("loginPass").value;
+ if(useSB){
+  const{data,error}=await sb.auth.signInWithPassword({email:u+"@savingspro.app",password:p});
+  if(error){document.getElementById("loginError").style.display="block";return}
+  await loadData();
+  const prof=state.users.find(x=>x.auth_id===data.user.id);
+  if(!prof){toast("Profile not found.");return}
+  state.user=prof;state.page="Dashboard";render();toast("Welcome to Savings Pro.");
+ }else{
+  let f=state.users.find(x=>x.username===u&&x.password===p);
+  if(!f){document.getElementById("loginError").style.display="block";return}
+  state.user=f;state.page="Dashboard";render();toast("Welcome to Savings Pro.");
+ }
+}
+async function registerAction(){
+ let u=document.getElementById("rUser").value.trim(),p=document.getElementById("rPass").value,p2=document.getElementById("rPass2").value;
+ if(p!==p2){document.getElementById("regError").style.display="block";return}
+ if(useSB){
+  const{data,error}=await sb.auth.signUp({email:u+"@savingspro.app",password:p});
+  if(error){toast(error.message);return}
+  const name=u.charAt(0).toUpperCase()+u.slice(1);
+  const{data:prof}=await sb.from("profiles").insert({
+   auth_id:data.user.id,name,username:u,role:"Member",balance:0,loaded:0,gcash:"",status:"Active",
+   joined:new Date().toISOString().slice(0,10)
+  }).select().single();
+  state.user=prof;await loadData();state.page="Dashboard";render();toast("Account created successfully.");
+ }else{
+  if(state.users.some(x=>x.username===u)){toast("Username already exists.");return}
+  let name=u.charAt(0).toUpperCase()+u.slice(1);
+  let m={id:Math.max(...state.users.map(x=>x.id))+1,name,username:u,password:p,role:"Member",balance:0,loaded:0,gcash:"",status:"Active",joined:new Date().toISOString().slice(0,10)};
+  state.users.push(m);state.user=m;state.page="Dashboard";saveLocal();render();toast("Account created successfully.");
+ }
+}
+function logout(){if(useSB)sb.auth.signOut();state.user=null;state.page="Landing";render()}
+
+/* ════════ ACTIONS ════════ */
+async function submitLoad(){
+ let un=document.getElementById("loadUser").value,a=Number(document.getElementById("loadAmount").value);
+ if(!a||a<=0){toast("Enter a valid amount.");return}
+ let u=state.users.find(x=>x.username===un);if(!u)return;
+ if(useSB){
+  await sb.from("profiles").update({balance:u.balance+a,loaded:u.loaded+a}).eq("id",u.id);
+  await sb.from("loads").insert({id:"LD-"+(1001+state.loads.length),user_id:u.id,user_name:u.name,amount:a,date:new Date().toISOString().slice(0,10)});
+  await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
+ }else{
+  u.balance+=a;u.loaded+=a;state.loads.unshift({id:"LD-"+(1001+state.loads.length),user:u.name,amount:a,date:new Date().toISOString().slice(0,10)});saveLocal();
+ }
+ closeModal();render();toast(peso(a)+" loaded to "+u.name+".");
+}
+async function submitWithdrawal(){
+ let a=Number(document.getElementById("wdAmount").value);
+ if(a<300||a>state.user.balance){toast("Enter a valid withdrawal amount.");return}
+ let u=state.users.find(x=>x.id===state.user.id);if(!u)return;
+ if(useSB){
+  await sb.from("profiles").update({balance:u.balance-a}).eq("id",u.id);
+  await sb.from("withdrawals").insert({id:"WD-"+(1001+state.withdrawals.length),user_id:u.id,user_name:u.name,amount:a,gcash:u.gcash,status:"Pending",date:new Date().toISOString().slice(0,10)});
+  await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
+ }else{
+  u.balance-=a;state.withdrawals.unshift({id:"WD-"+(1001+state.withdrawals.length),user:u.name,amount:a,gcash:u.gcash,status:"Pending",date:new Date().toISOString().slice(0,10)});saveLocal();
+ }
+ closeModal();render();toast("Withdrawal request submitted.");
+}
+async function pay(id){
+ let w=state.withdrawals.find(x=>x.id===id);if(!w)return;
+ if(useSB){await sb.from("withdrawals").update({status:"Paid"}).eq("id",id);await loadData()}
+ else{w.status="Paid";saveLocal()}
+ render();toast("Withdrawal marked as paid.");
+}
+async function addMember(){
+ let n=prompt("Full name:");if(!n)return;
+ let u=prompt("Username:",n.toLowerCase().replace(/\s+/g,""));if(!u)return;
+ let g=prompt("GCash number:","09");if(!g)return;
+ if(useSB){
+  if(!sbAdmin){toast("Admin key not configured.");return}
+  const{data,error}=await sbAdmin.auth.admin.createUser({email:u+"@savingspro.app",password:"demo",email_confirm:true});
+  if(error){toast(error.message);return}
+  await sbAdmin.from("profiles").insert({auth_id:data.user.id,name:n,username:u,role:"Member",balance:0,loaded:0,gcash:g,status:"Active",joined:new Date().toISOString().slice(0,10)});
+  await loadData();
+ }else{
+  if(state.users.some(x=>x.username===u)){toast("Username already exists.");return}
+  state.users.push({id:Math.max(...state.users.map(x=>x.id))+1,name:n,username:u,password:"demo",role:"Member",balance:0,loaded:0,gcash:g,status:"Active",joined:new Date().toISOString().slice(0,10)});saveLocal();
+ }
+ render();toast("Member created.");
+}
+async function saveProfile(){
+ let u=state.users.find(x=>x.id===state.user.id);if(!u)return;
+ let name=document.getElementById("pName").value.trim()||u.name;
+ let gcash=document.getElementById("pGcash").value.trim();
+ if(useSB){
+  await sb.from("profiles").update({name,gcash}).eq("id",u.id);
+  await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
+ }else{
+  u.name=name;u.gcash=gcash;state.user=u;saveLocal();
+ }
+ render();toast("Profile updated.");
+}
+
+/* ════════ HELPERS ════════ */
 function peso(n){return "₱"+Number(n||0).toLocaleString("en-PH",{minimumFractionDigits:0,maximumFractionDigits:2})}
-function save(){localStorage.setItem("savings_pro_demo",JSON.stringify({users:state.users,withdrawals:state.withdrawals,loads:state.loads}))}
-function load(){try{const x=JSON.parse(localStorage.getItem("savings_pro_demo"));if(x)Object.assign(state,x)}catch{}}
 function toast(x){let t=document.getElementById("toast");t.textContent=x;t.style.display="block";setTimeout(()=>t.style.display="none",2400)}
+function today(){return new Date().toISOString().slice(0,10)}
+function totalWithdrawn(name){return state.withdrawals.filter(w=>w.user===name&&w.status!=="Rejected").reduce((a,w)=>a+w.amount,0)}
+
+/* ════════ RENDERING ════════ */
 function header(auth){
  return `<header class="header"><div class="brand" onclick="go('Landing')"><span class="logo"></span>Savings Pro</div>${auth?`<div class="header-links"><button class="btn btn-ghost" onclick="logout()">Logout</button></div>`:`<div class="header-links"><button class="btn btn-ghost" onclick="go('Login')">Log In</button><button class="btn btn-primary" onclick="go('Register')">Sign Up →</button></div>`}</header>`;
 }
-
-/* ── Landing ── */
 function landing(){
  return `${header()}<div class="landing">
 <section class="hero">
@@ -232,8 +382,6 @@ function landing(){
 <footer class="footer">© 2026 Savings Pro. All rights reserved.</footer>
 </div>`;
 }
-
-/* ── Login ── */
 function login(){
  return `${header()}<div class="auth-bg"><div>
   <div class="auth-card">
@@ -252,8 +400,6 @@ function login(){
   </div>
  </div></div>`;
 }
-
-/* ── Register ── */
 function register(){
  return `${header()}<div class="auth-bg"><div>
   <div class="auth-back" onclick="go('Login')">← Back to Login</div>
@@ -273,24 +419,19 @@ function register(){
   </div>
  </div></div>`;
 }
-
-/* ── App shell ── */
 function sideNav(){
- let items = state.user.role==="Admin"
-  ? ["Dashboard","Members","Wallet Loads","Withdrawals","Monitoring","Profile"]
-  : ["Dashboard","Total Withdrawal","My Profile"];
- let icons = {Dashboard:"▦",Members:"♙","Wallet Loads":"＋",Withdrawals:"↗",Monitoring:"◉","Total Withdrawal":"↗","My Profile":"○",Profile:"○"};
+ let items=state.user.role==="Admin"?["Dashboard","Members","Wallet Loads","Withdrawals","Monitoring","Profile"]:["Dashboard","Total Withdrawal","My Profile"];
+ let icons={Dashboard:"▦",Members:"♙","Wallet Loads":"＋",Withdrawals:"↗",Monitoring:"◉","Total Withdrawal":"↗","My Profile":"○",Profile:"○"};
  return `<aside class="sidebar">
   <div class="sb-brand"><span class="logo"></span><div><b>Savings Pro</b><br><small>Savings Wallet</small></div></div>
   <nav class="nav">${items.map(x=>`<button class="${state.page===x?'active':''}" onclick="go('${x}')"><span class="ico">${icons[x]||"•"}</span> ${x}</button>`).join("")}</nav>
   <div class="sb-footer">
-   <div class="sb-user"><div class="av">${(state.user.name||'U')[0]}</div><div><b>${state.user.name}</b><small>${state.user.role}</small></div></div>
+   <div class="sb-user"><div class="av">${(state.user.name||"U")[0]}</div><div><b>${state.user.name}</b><small>${state.user.role}</small></div></div>
    <div class="sb-logout" onclick="logout()">⏻ Logout</div>
   </div>
  </aside>`;
 }
 function appShell(){return `<div class="app">${header(true)}<div class="app-body">${sideNav()}<main class="content"><div class="content-inner">${page()}</div></main></div></div>`}
-
 function page(){
  switch(state.page){
   case"Dashboard":return dashboard();
@@ -304,8 +445,6 @@ function page(){
   default:return dashboard();
  }
 }
-
-/* ── Dashboard ── */
 function dashboard(){
  if(state.user.role==="Admin")return adminDashboard();
  return `<div class="page-head"><div><h1>My Savings</h1><p>Welcome back, ${state.user.name}.</p></div><button class="btn btn-primary" onclick="withdrawModal()">Request Withdrawal</button></div>
@@ -330,40 +469,48 @@ function adminDashboard(){
 }
 function stat(l,v,s,cls="",accent=false){return `<div class="stat-card ${cls} ${accent?'accent':''}"><div class="lbl">${l}</div><div class="val">${v}</div><div class="sub">${s}</div></div>`}
 function srow(a,b){return `<div class="summary-row"><span class="lbl">${a}</span><b>${b}</b></div>`}
-function totalWithdrawn(name){return state.withdrawals.filter(w=>w.user===name&&w.status!=="Rejected").reduce((a,w)=>a+w.amount,0)}
-
-/* ── Tables ── */
 function activityTable(name){let rows=state.withdrawals.filter(w=>w.user===name);return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Amount</th><th>Status</th><th>Date</th></tr>${rows.map(w=>`<tr><td>${w.id}</td><td>${peso(w.amount)}</td><td>${badge(w.status)}</td><td>${w.date}</td></tr>`).join("")||`<tr><td colspan="4" class="empty">No activity yet.</td></tr>`}</table></div>`}
 function badge(s){return `<span class="badge ${s}">${s}</span>`}
-function withdrawTable(limit=20,rows=state.withdrawals){return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Member</th><th>Amount</th><th>GCash</th><th>Status</th><th>Date</th><th></th></tr>${rows.slice(0,limit).map(w=>`<tr><td>${w.id}</td><td>${w.user}</td><td><b>${peso(w.amount)}</b></td><td>${w.gcash}</td><td>${badge(w.status)}</td><td>${w.date}</td><td>${state.user.role==="Admin"&&w.status==="Pending"?`<button class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="pay('${w.id}')">Mark Paid</button>`:""}</td></tr>`).join("")||`<tr><td colspan="7" class="empty">No withdrawal records.</td></tr>`}</table></div>`}
+function withdrawTable(limit=20,rows=state.withdrawals){return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Member</th><th>Amount</th><th>GCash</th><th>Status</th><th>Date</th><th></th></tr>${rows.slice(0,limit).map(w=>`<tr><td>${w.id}</td><td>${w.user}</td><td><b>${peso(w.amount)}</b></td><td>${w.gcash||"—"}</td><td>${badge(w.status)}</td><td>${w.date}</td><td>${state.user.role==="Admin"&&w.status==="Pending"?`<button class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="pay('${w.id}')">Mark Paid</button>`:""}</td></tr>`).join("")||`<tr><td colspan="7" class="empty">No withdrawal records.</td></tr>`}</table></div>`}
 function loadTable(limit=20,userName=null){let rows=state.loads.filter(x=>!userName||x.user===userName).slice(0,limit);return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Member</th><th>Amount</th><th>Date</th></tr>${rows.map(x=>`<tr><td>${x.id}</td><td>${x.user}</td><td><b>${peso(x.amount)}</b></td><td>${x.date}</td></tr>`).join("")||`<tr><td colspan="4" class="empty">No wallet loads.</td></tr>`}</table></div>`}
-
-/* ── Pages ── */
 function withdrawals(){let rows=state.user.role==="Admin"?state.withdrawals:state.withdrawals.filter(w=>w.user===state.user.name);return `<div class="page-head"><div><h1>${state.user.role==="Admin"?"Withdrawals":"Total Withdrawal"}</h1><p>Request and track GCash payouts.</p></div>${state.user.role==="Member"?`<button class="btn btn-primary" onclick="withdrawModal()">Request Withdrawal</button>`:""}</div><div class="card"><div class="notice" style="margin-bottom:15px">Minimum withdrawal is ${peso(300)}. Payout method: GCash.</div>${withdrawTable(30,rows)}</div>`}
 function members(){return `<div class="page-head"><div><h1>Members</h1><p>Manage registered Savings Pro members.</p></div><button class="btn btn-primary" onclick="addMember()">Add Member</button></div><div class="card"><div class="table-wrap"><table class="table"><tr><th>Member</th><th>Username</th><th>GCash</th><th>Balance</th><th>Loaded</th><th>Status</th><th></th></tr>${state.users.filter(u=>u.role==="Member").map(u=>`<tr><td><b>${u.name}</b></td><td>${u.username}</td><td>${u.gcash||"—"}</td><td>${peso(u.balance)}</td><td>${peso(u.loaded)}</td><td>${badge(u.status)}</td><td><button class="btn btn-outline" style="padding:6px 12px;font-size:12px;color:var(--orange-dark);border-color:var(--orange)" onclick="loadSpecific('${u.username}')">Load Wallet</button></td></tr>`).join("")}</table></div></div>`}
 function loads(){return `<div class="page-head"><div><h1>Wallet Loads</h1><p>Admin-funded savings wallet transactions.</p></div><button class="btn btn-primary" onclick="loadModal()">Load Wallet</button></div><div class="card">${loadTable(50)}</div>`}
 function monitoring(){return `<div class="page-head"><div><h1>Monitoring</h1><p>Overview of Savings Pro activity.</p></div></div><div class="stat-cards">${stat("System","Online","Application status","green-ok")}${stat("Members",state.users.filter(u=>u.role==="Member").length,"Active accounts")}${stat("Pending",state.withdrawals.filter(w=>w.status==="Pending").length,"Withdrawal requests","amber")}${stat("GCash","Enabled","Payout method")}</div><div class="card mt"><h3>System Notes</h3><div class="summary">${srow("Wallet model","Admin loaded")}${srow("Withdrawal method","GCash")}${srow("Minimum withdrawal",peso(300))}${srow("Commission levels","None")}</div></div>`}
-function profile(){return `<div class="page-head"><div><h1>${state.user.role==="Admin"?"My Profile":"My Profile"}</h1><p>Update your account and GCash information.</p></div></div><div class="profile-grid"><div class="card"><h3>Profile Details</h3><div class="field"><label>FULL NAME</label><input id="pName" value="${state.user.name}"></div><div class="field"><label>USERNAME</label><input value="${state.user.username}" disabled></div><div class="field"><label>GCASH NUMBER</label><input id="pGcash" value="${state.user.gcash||""}" placeholder="09XXXXXXXXX"></div><button class="btn btn-primary" onclick="saveProfile()">Save Changes</button></div><div class="card"><h3>Account</h3><div class="summary">${srow("Role",state.user.role)}${srow("Status",state.user.status)}${srow("Joined",state.user.joined)}${srow("Available balance",peso(state.user.balance))}</div></div></div>`}
+function profile(){return `<div class="page-head"><div><h1>My Profile</h1><p>Update your account and GCash information.</p></div></div><div class="profile-grid"><div class="card"><h3>Profile Details</h3><div class="field"><label>FULL NAME</label><input id="pName" value="${state.user.name}"></div><div class="field"><label>USERNAME</label><input value="${state.user.username}" disabled></div><div class="field"><label>GCASH NUMBER</label><input id="pGcash" value="${state.user.gcash||""}" placeholder="09XXXXXXXXX"></div><button class="btn btn-primary" onclick="saveProfile()">Save Changes</button></div><div class="card"><h3>Account</h3><div class="summary">${srow("Role",state.user.role)}${srow("Status",state.user.status)}${srow("Joined",state.user.joined)}${srow("Available balance",peso(state.user.balance))}</div></div></div>`}
 
-/* ── Modals ── */
+/* ════════ MODALS ════════ */
 function modal(content){return `<div class="modal-bg" id="modal"><div class="modal">${content}</div></div>`}
 function loadModal(user){let m=user||state.users.find(u=>u.role==="Member");if(!m)return;document.body.insertAdjacentHTML("beforeend",modal(`<div class="modal-head"><h2>Load Wallet</h2><button class="close" onclick="closeModal()">×</button></div><p class="muted">Add savings directly to a member's wallet.</p><div class="field"><label>MEMBER</label><select id="loadUser">${state.users.filter(u=>u.role==="Member").map(u=>`<option value="${u.username}" ${u.username===m.username?"selected":""}>${u.name} — ${u.username}</option>`).join("")}</select></div><div class="field"><label>AMOUNT</label><input id="loadAmount" type="number" min="1" placeholder="0"></div><button class="btn btn-primary" style="width:100%" onclick="submitLoad()">Load Wallet</button>`))}
 function withdrawModal(){document.body.insertAdjacentHTML("beforeend",modal(`<div class="modal-head"><h2>Request Withdrawal</h2><button class="close" onclick="closeModal()">×</button></div><p class="muted">Withdraw to your registered GCash number.</p><div class="notice">Available balance: <b>${peso(state.user.balance)}</b><br>Minimum withdrawal: <b>${peso(300)}</b></div><div class="field" style="margin-top:14px"><label>AMOUNT</label><input id="wdAmount" type="number" min="300" max="${state.user.balance}" placeholder="300"></div><button class="btn btn-primary" style="width:100%" onclick="submitWithdrawal()">Submit Request</button>`))}
 function closeModal(){document.getElementById("modal")?.remove()}
-
-/* ── Actions ── */
-function submitLoad(){let u=state.users.find(x=>x.username===document.getElementById("loadUser").value),a=Number(document.getElementById("loadAmount").value);if(!u||!a||a<=0){toast("Enter a valid amount.");return}u.balance+=a;u.loaded+=a;state.loads.unshift({id:"LD-"+(1001+state.loads.length),user:u.name,amount:a,date:new Date().toISOString().slice(0,10)});save();closeModal();render();toast(`${peso(a)} loaded to ${u.name}.`)}
-function submitWithdrawal(){let a=Number(document.getElementById("wdAmount").value);if(a<300||a>state.user.balance){toast("Enter a valid withdrawal amount.");return}let u=state.users.find(x=>x.id===state.user.id);u.balance-=a;state.user=u;state.withdrawals.unshift({id:"WD-"+(1001+state.withdrawals.length),user:u.name,amount:a,gcash:u.gcash,status:"Pending",date:new Date().toISOString().slice(0,10)});save();closeModal();render();toast("Withdrawal request submitted.")}
-function pay(id){let w=state.withdrawals.find(x=>x.id===id);if(w){w.status="Paid";save();render();toast("Withdrawal marked as paid.")}}
-function addMember(){let n=prompt("Full name:");if(!n)return;let u=prompt("Username:",n.toLowerCase().replace(/\s+/g,""));if(!u)return;let g=prompt("GCash number:","09");if(!g)return;if(state.users.some(x=>x.username===u)){toast("Username already exists.");return}state.users.push({id:Math.max(...state.users.map(x=>x.id))+1,name:n,username:u,password:"demo",role:"Member",balance:0,loaded:0,gcash:g,status:"Active",joined:new Date().toISOString().slice(0,10)});save();render();toast("Member created.")}
 function loadSpecific(u){loadModal(state.users.find(x=>x.username===u))}
-function saveProfile(){let u=state.users.find(x=>x.id===state.user.id);u.name=document.getElementById("pName").value.trim()||u.name;u.gcash=document.getElementById("pGcash").value.trim();state.user=u;save();render();toast("Profile updated.")}
-function loginAction(){let u=document.getElementById("loginUser").value.trim(),p=document.getElementById("loginPass").value,found=state.users.find(x=>x.username===u&&x.password===p);if(!found){document.getElementById("loginError").style.display="block";return}state.user=found;state.page="Dashboard";render();toast("Welcome to Savings Pro.")}
-function registerAction(){let u=document.getElementById("rUser").value.trim(),p=document.getElementById("rPass").value,p2=document.getElementById("rPass2").value;if(p!==p2){document.getElementById("regError").style.display="block";return}if(state.users.some(x=>x.username===u)){toast("Username already exists.");return}let name=u.charAt(0).toUpperCase()+u.slice(1);let m={id:Math.max(...state.users.map(x=>x.id))+1,name:name,username:u,password:p,role:"Member",balance:0,loaded:0,gcash:"",status:"Active",joined:new Date().toISOString().slice(0,10)};state.users.push(m);state.user=m;state.page="Dashboard";save();render();toast("Account created successfully.")}
-function logout(){state.user=null;state.page="Landing";render()}
-function go(p){if(p==="Landing"||p==="Login"||p==="Register"){state.user=null;state.page=p}else{state.page=p}render()}
+
+/* ════════ NAVIGATION ════════ */
+function go(p){
+ if(p==="Landing"||p==="Login"||p==="Register"){
+  if(useSB&&state.user)sb.auth.signOut();
+  state.user=null;state.page=p;
+ }else{state.page=p}
+ render();
+}
 function render(){let r=document.getElementById("root");r.innerHTML=state.page==="Landing"?landing():state.page==="Login"?login():state.page==="Register"?register():state.user?appShell():login()}
-load();render();
+
+/* ════════ INIT ════════ */
+async function init(){
+ if(!window.supabase){
+  await new Promise(r=>window.addEventListener("supabase-ready",r,{once:true}));
+ }
+ initSB();
+ if(useSB){
+  document.getElementById("root").innerHTML='<div style="display:grid;place-items:center;min-height:100vh;background:#0a0a0a;color:#fff;font-family:sans-serif;font-size:18px">Loading…</div>';
+  await checkSession();
+ }else{
+  loadLocal();
+ }
+ render();
+}
+init();
 </script>
 </body>
 </html>
