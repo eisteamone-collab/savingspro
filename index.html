@@ -321,8 +321,8 @@ async function registerAction(){
   const{data,error}=await sb.auth.signUp({email:u+"@savingspro.app",password:p});
   if(error){toast(error.message);return}
   let session=data.session;
-  if(!session&&sbAdmin){
-   try{await sbAdmin.auth.admin.updateUserById(data.user.id,{email_confirm:true})}catch{}
+  if(!session){
+   if(sbAdmin){try{await sbAdmin.auth.admin.updateUserById(data.user.id,{email_confirm:true})}catch{}}
    const{data:si}=await sb.auth.signInWithPassword({email:u+"@savingspro.app",password:p});
    if(si.session)session=si.session;
   }
