@@ -292,8 +292,8 @@ async function checkSession(){
  const p=state.users.find(u=>u.auth_id===session.user.id);
  if(p){state.user=p;state.page="Dashboard";console.log("[checkSession] profile found via state.users")}
  else{
-  const{data:prof,error:pe}=await sb.from("profiles").select("*").eq("auth_id",session.user.id).single();
-  if(pe)console.log("[checkSession] profile query error:",pe.message);
+  let{data:prof,error:pe}=await sb.from("profiles").select("*").eq("auth_id",session.user.id).single();
+  if(pe&&sbAdmin){const r=await sbAdmin.from("profiles").select("*").eq("auth_id",session.user.id).single();prof=r.data}
   if(prof){state.user=prof;state.page="Dashboard";console.log("[checkSession] profile found via query")}
   else{console.log("[checkSession] no profile found!")}
  }
@@ -327,11 +327,19 @@ async function registerAction(){
    if(si.session)session=si.session;
   }
   if(session)localStorage.setItem("sb_session_backup",JSON.stringify({access_token:session.access_token,refresh_token:session.refresh_token,expires_at:session.expires_at}));
-  const name=u.charAt(0).toUpperCase()+u.slice(1);
-  const{data:prof}=await sb.from("profiles").insert({
-   auth_id:data.user.id,name,username:u,role:"Member",balance:0,loaded:0,gcash:"",status:"Active",
-   joined:new Date().toISOString().slice(0,10)
-  }).select().single();
+  await new Promise(r=>setTimeout(r,500));
+  let prof=null;
+  let{data:qData,error:qErr}=await sb.from("profiles").select("*").eq("auth_id",data.user.id).single();
+  if(qData)prof=qData;
+  if(!prof){
+   const name=u.charAt(0).toUpperCase()+u.slice(1);
+   const profileData={auth_id:data.user.id,name,username:u,role:"Member",balance:0,loaded:0,gcash:"",status:"Active",
+    joined:new Date().toISOString().slice(0,10)};
+   let{data:insData,error:insErr}=await sb.from("profiles").insert(profileData).select().single();
+   if(insErr&&sbAdmin){const r=await sbAdmin.from("profiles").insert(profileData).select().single();prof=r.data}
+   else prof=insData;
+  }
+  if(!prof){toast("Failed to create profile. Run the updated schema SQL in Supabase.");return}
   state.user=prof;await loadData();state.page="Dashboard";render();toast("Account created successfully.");
  }else{
   if(state.users.some(x=>x.username===u)){toast("Username already exists.");return}

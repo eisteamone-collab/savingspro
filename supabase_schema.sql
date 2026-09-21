@@ -56,6 +56,28 @@ create policy "update withdrawal" on public.withdrawals for update to authentica
 create policy "read loads" on public.loads for select to authenticated using (true);
 create policy "insert load" on public.loads for insert to authenticated with check (true);
 
+-- ── Auto-create profile on signup (bypasses RLS) ──
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.profiles (auth_id, name, username, role, balance, loaded, gcash, status, joined)
+  values (
+    new.id,
+    split_part(new.email, '@', 1),
+    split_part(new.email, '@', 1),
+    'Member',
+    0, 0, '', 'Active',
+    current_date
+  );
+  return new;
+end;
+$$ language security definer;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+
 -- ── Create Admin User ──
 -- Option A: Register via the app (username: Tan), then run:
 --   update public.profiles set role = 'Admin' where username = 'Tan';
