@@ -279,6 +279,7 @@ async function loginAction(){
  if(useSB){
   const{data,error}=await sb.auth.signInWithPassword({email:u+"@savingspro.app",password:p});
   if(error){document.getElementById("loginError").style.display="block";return}
+  if(data.session)localStorage.setItem("sb_session_backup",JSON.stringify({access_token:data.session.access_token,refresh_token:data.session.refresh_token,expires_at:data.session.expires_at}));
   await loadData();
   const prof=state.users.find(x=>x.auth_id===data.user.id);
   if(!prof){toast("Profile not found.");return}
@@ -295,6 +296,7 @@ async function registerAction(){
  if(useSB){
   const{data,error}=await sb.auth.signUp({email:u+"@savingspro.app",password:p});
   if(error){toast(error.message);return}
+  if(data.session)localStorage.setItem("sb_session_backup",JSON.stringify({access_token:data.session.access_token,refresh_token:data.session.refresh_token,expires_at:data.session.expires_at}));
   const name=u.charAt(0).toUpperCase()+u.slice(1);
   const{data:prof}=await sb.from("profiles").insert({
    auth_id:data.user.id,name,username:u,role:"Member",balance:0,loaded:0,gcash:"",status:"Active",
@@ -539,7 +541,6 @@ function loadSpecific(u){loadModal(state.users.find(x=>x.username===u))}
 /* ════════ NAVIGATION ════════ */
 function go(p){
  if(p==="Landing"||p==="Login"||p==="Register"){
-  if(useSB&&state.user)sb.auth.signOut();
   state.user=null;state.page=p;
  }else{state.page=p}
  render();
