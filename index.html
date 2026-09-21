@@ -193,13 +193,17 @@ function getServiceKey(){
 function initSB(){
  const url=(window.SUPABASE_URL||"").trim(),key=(window.SUPABASE_ANON_KEY||"").trim();
  if(url&&key&&!url.includes("placeholder")&&!url.includes("example")&&window.supabase){
-  sb=window.supabase.createClient(url,key);
+  sb=window.supabase.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,storage:localStorage,detectSessionInUrl:true}});
   useSB=true;
   const sk=getServiceKey();
   if(sk&&!sk.includes("placeholder"))
    sbAdmin=window.supabase.createClient(url,sk,{auth:{autoRefreshToken:false,persistSession:false}});
   sb.auth.onAuthStateChange(async(event,session)=>{
-   if(event==="INITIAL_SESSION"&&session&&!state.user){
+   if(session&&(event==="SIGNED_IN"||event==="TOKEN_REFRESHED"))
+    localStorage.setItem("sb_session_backup",JSON.stringify({access_token:session.access_token,refresh_token:session.refresh_token,expires_at:session.expires_at}));
+   if(event==="SIGNED_OUT")
+    localStorage.removeItem("sb_session_backup");
+   if((event==="INITIAL_SESSION"||event==="SIGNED_IN")&&session&&!state.user){
     await loadData();
     const p=state.users.find(u=>u.auth_id===session.user.id);
     if(p){state.user=p;state.page="Dashboard";render()}
@@ -248,8 +252,20 @@ function saveLocal(){localStorage.setItem("savings_pro_demo",JSON.stringify({use
 /* ════════ AUTH ════════ */
 async function checkSession(){
  if(!useSB)return;
- const{data:{session},error:sErr}=await sb.auth.getSession();
- if(sErr||!session)return;
+ let{data:{session},error:sErr}=await sb.auth.getSession();
+ if((sErr||!session)){
+  const backup=localStorage.getItem("sb_session_backup");
+  if(backup){
+   try{
+    const parsed=JSON.parse(backup);
+    if(parsed.access_token&&parsed.refresh_token){
+     const{data,error}=await sb.auth.setSession({access_token:parsed.access_token,refresh_token:parsed.refresh_token});
+     if(!error&&data.session)session=data.session;
+    }
+   }catch{}
+  }
+ }
+ if(!session)return;
  await loadData();
  const p=state.users.find(u=>u.auth_id===session.user.id);
  if(p){state.user=p;state.page="Dashboard"}
@@ -292,7 +308,7 @@ async function registerAction(){
   state.users.push(m);state.user=m;state.page="Dashboard";saveLocal();render();toast("Account created successfully.");
  }
 }
-function logout(){if(useSB)sb.auth.signOut();state.user=null;state.page="Landing";render()}
+function logout(){if(useSB)sb.auth.signOut();localStorage.removeItem("sb_session_backup");state.user=null;state.page="Landing";render()}
 
 /* ════════ ACTIONS ════════ */
 async function submitLoad(){
