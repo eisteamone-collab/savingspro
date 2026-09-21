@@ -201,8 +201,6 @@ function initSB(){
   sb.auth.onAuthStateChange(async(event,session)=>{
    if(session&&(event==="SIGNED_IN"||event==="TOKEN_REFRESHED"))
     localStorage.setItem("sb_session_backup",JSON.stringify({access_token:session.access_token,refresh_token:session.refresh_token,expires_at:session.expires_at}));
-   if(event==="SIGNED_OUT")
-    localStorage.removeItem("sb_session_backup");
    if((event==="INITIAL_SESSION"||event==="SIGNED_IN")&&session&&!state.user){
     await loadData();
     const p=state.users.find(u=>u.auth_id===session.user.id);
@@ -252,18 +250,20 @@ function saveLocal(){localStorage.setItem("savings_pro_demo",JSON.stringify({use
 /* ════════ AUTH ════════ */
 async function checkSession(){
  if(!useSB)return;
- let{data:{session},error:sErr}=await sb.auth.getSession();
- if((sErr||!session)){
-  const backup=localStorage.getItem("sb_session_backup");
-  if(backup){
-   try{
-    const parsed=JSON.parse(backup);
-    if(parsed.access_token&&parsed.refresh_token){
-     const{data,error}=await sb.auth.setSession({access_token:parsed.access_token,refresh_token:parsed.refresh_token});
-     if(!error&&data.session)session=data.session;
-    }
-   }catch{}
-  }
+ let session=null;
+ const backup=localStorage.getItem("sb_session_backup");
+ if(backup){
+  try{
+   const parsed=JSON.parse(backup);
+   if(parsed.access_token&&parsed.refresh_token){
+    const{data,error}=await sb.auth.setSession({access_token:parsed.access_token,refresh_token:parsed.refresh_token});
+    if(!error&&data.session)session=data.session;
+   }
+  }catch{}
+ }
+ if(!session){
+  let{data:sData,error:sErr}=await sb.auth.getSession();
+  if(!sErr&&sData.session)session=sData.session;
  }
  if(!session)return;
  await loadData();
