@@ -44,17 +44,17 @@ alter table public.loads       enable row level security;
 
 -- Profiles: authenticated users can read all, update own
 create policy "read profiles"  on public.profiles  for select to authenticated using (true);
-create policy "insert profile" on public.profiles  for insert to authenticated using (true);
+create policy "insert profile" on public.profiles  for insert to authenticated with check (true);
 create policy "update profile" on public.profiles  for update to authenticated using (true);
 
 -- Withdrawals: authenticated users can read/insert/update
 create policy "read withdrawals"  on public.withdrawals for select to authenticated using (true);
-create policy "insert withdrawal" on public.withdrawals for insert to authenticated using (true);
+create policy "insert withdrawal" on public.withdrawals for insert to authenticated with check (true);
 create policy "update withdrawal" on public.withdrawals for update to authenticated using (true);
 
 -- Loads: authenticated users can read/insert
 create policy "read loads" on public.loads for select to authenticated using (true);
-create policy "insert load" on public.loads for insert to authenticated using (true);
+create policy "insert load" on public.loads for insert to authenticated with check (true);
 
 -- ── Create Admin User ──
 -- Option A: Register via the app (username: Tan), then run:
