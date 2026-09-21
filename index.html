@@ -251,27 +251,51 @@ function saveLocal(){localStorage.setItem("savings_pro_demo",JSON.stringify({use
 async function checkSession(){
  if(!useSB)return;
  let session=null;
+ // Try backup first
  const backup=localStorage.getItem("sb_session_backup");
  if(backup){
   try{
    const parsed=JSON.parse(backup);
    if(parsed.access_token&&parsed.refresh_token){
+    console.log("[checkSession] trying backup setSession...");
     const{data,error}=await sb.auth.setSession({access_token:parsed.access_token,refresh_token:parsed.refresh_token});
-    if(!error&&data.session)session=data.session;
+    if(error)console.log("[checkSession] backup setSession error:",error.message);
+    if(!error&&data.session){session=data.session;console.log("[checkSession] backup restored OK")}
    }
-  }catch{}
+  }catch(e){console.log("[checkSession] backup parse error:",e.message)}
  }
+ // Try getSession
  if(!session){
+  console.log("[checkSession] trying getSession...");
   let{data:sData,error:sErr}=await sb.auth.getSession();
-  if(!sErr&&sData.session)session=sData.session;
+  if(sErr)console.log("[checkSession] getSession error:",sErr.message);
+  if(!sErr&&sData.session){session=sData.session;console.log("[checkSession] getSession OK")}
  }
- if(!session)return;
+ // Try raw Supabase localStorage token
+ if(!session){
+  const sbKey=Object.keys(localStorage).find(k=>k.startsWith("sb-")&&k.endsWith("-auth-token"));
+  if(sbKey){
+   try{
+    const raw=JSON.parse(localStorage.getItem(sbKey));
+    if(raw&&raw.access_token&&raw.refresh_token){
+     console.log("[checkSession] trying raw token setSession...");
+     const{data,error}=await sb.auth.setSession({access_token:raw.access_token,refresh_token:raw.refresh_token});
+     if(error)console.log("[checkSession] raw token error:",error.message);
+     if(!error&&data.session){session=data.session;console.log("[checkSession] raw token restored OK")}
+    }
+   }catch(e){console.log("[checkSession] raw token parse error:",e.message)}
+  }
+ }
+ if(!session){console.log("[checkSession] no session found, staying on landing");return}
+ console.log("[checkSession] session found for user:",session.user.id);
  await loadData();
  const p=state.users.find(u=>u.auth_id===session.user.id);
- if(p){state.user=p;state.page="Dashboard"}
+ if(p){state.user=p;state.page="Dashboard";console.log("[checkSession] profile found via state.users")}
  else{
-  const{data:prof}=await sb.from("profiles").select("*").eq("auth_id",session.user.id).single();
-  if(prof){state.user=prof;state.page="Dashboard"}
+  const{data:prof,error:pe}=await sb.from("profiles").select("*").eq("auth_id",session.user.id).single();
+  if(pe)console.log("[checkSession] profile query error:",pe.message);
+  if(prof){state.user=prof;state.page="Dashboard";console.log("[checkSession] profile found via query")}
+  else{console.log("[checkSession] no profile found!")}
  }
 }
 async function loginAction(){
