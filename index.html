@@ -159,6 +159,25 @@ window.dispatchEvent(new Event("supabase-ready"))
 .modal .close:hover{background:#e5e7eb}
 .modal .muted{color:var(--muted);font-size:14px;margin:0 0 18px}
 
+/* ── Load Wallet Modal ── */
+.lw-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.lw-head-left{display:flex;align-items:center;gap:10px}
+.lw-head .wallet-ico{width:36px;height:36px;border-radius:10px;background:#ecfdf5;display:grid;place-items:center;font-size:18px;color:#059669}
+.lw-head h2{margin:0;font-size:18px;font-weight:700;color:#333}
+.lw-balance-box{border:1px solid var(--line);border-radius:10px;background:#f9fafb;padding:14px 16px;margin-bottom:18px}
+.lw-balance-box .lbl{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:4px}
+.lw-balance-box .val{font-size:22px;font-weight:800;color:#069478}
+.lw-field{margin-bottom:16px}
+.lw-field label{font-size:13px;font-weight:700;color:#333;display:block;margin-bottom:6px}
+.lw-field select,.lw-field input{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 14px;outline:0;background:#fff;color:#333;font-size:14px}
+.lw-field select:focus,.lw-field input:focus{border-color:#76c8b9;box-shadow:0 0 0 3px rgba(118,200,185,.15)}
+.lw-field select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+.lw-footer{display:flex;gap:10px;margin-top:4px}
+.lw-cancel{flex:1;border:1px solid var(--line);background:#fff;color:var(--muted);font-weight:600;padding:12px;border-radius:10px;font-size:14px;cursor:pointer}
+.lw-cancel:hover{background:#f9fafb}
+.lw-submit{flex:1;background:#76c8b9;color:#fff;font-weight:700;padding:12px;border-radius:10px;font-size:14px;cursor:pointer;border:0}
+.lw-submit:hover{background:#5fb3a4}
+
 /* ── Toast ── */
 .toast{position:fixed;right:20px;bottom:20px;background:#1f2937;color:#fff;padding:13px 18px;border-radius:10px;display:none;z-index:200;font-size:14px;font-weight:500;box-shadow:0 8px 25px rgba(0,0,0,.2)}
 
@@ -417,17 +436,19 @@ function logout(){if(useSB)sb.auth.signOut();localStorage.removeItem("sb_session
 
 /* ════════ ACTIONS ════════ */
 async function submitLoad(){
- let un=document.getElementById("loadUser").value,a=Number(document.getElementById("loadAmount").value);
+ let un=document.getElementById("loadUser").value,a=Number(document.getElementById("loadAmount").value),action=document.getElementById("loadAction")?document.getElementById("loadAction").value:"add";
  if(!a||a<=0){toast("Enter a valid amount.");return}
  let u=state.users.find(x=>x.username===un);if(!u)return;
+ if(action==="deduct"&&a>u.balance){toast("Amount exceeds current balance.");return}
+ let delta=action==="deduct"?-a:a;
  if(useSB){
-  await sb.from("profiles").update({balance:u.balance+a,loaded:u.loaded+a}).eq("id",u.id);
-  await sb.from("loads").insert({id:"LD-"+(1001+state.loads.length),user_id:u.id,user_name:u.name,amount:a,date:new Date().toISOString().slice(0,10)});
+  await sb.from("profiles").update({balance:u.balance+delta,loaded:action==="add"?u.loaded+a:u.loaded}).eq("id",u.id);
+  await sb.from("loads").insert({id:"LD-"+(1001+state.loads.length),user_id:u.id,user_name:u.name,amount:delta,date:new Date().toISOString().slice(0,10)});
   await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
  }else{
-  u.balance+=a;u.loaded+=a;state.loads.unshift({id:"LD-"+(1001+state.loads.length),user:u.name,amount:a,date:new Date().toISOString().slice(0,10)});saveLocal();
+  u.balance+=delta;if(action==="add")u.loaded+=a;state.loads.unshift({id:"LD-"+(1001+state.loads.length),user:u.name,amount:delta,date:new Date().toISOString().slice(0,10)});saveLocal();
  }
- closeModal();render();toast(peso(a)+" loaded to "+u.name+".");
+ closeModal();render();toast(peso(a)+(action==="deduct"?" deducted from ":" loaded to ")+u.name+".");
 }
 async function submitWithdrawal(){
  let a=Number(document.getElementById("wdAmount").value);
@@ -682,7 +703,7 @@ function settings(){const sk=getServiceKey();const hasKey=sk&&!sk.includes("plac
 
 /* ════════ MODALS ════════ */
 function modal(content){return `<div class="modal-bg" id="modal"><div class="modal">${content}</div></div>`}
-function loadModal(user){let m=user||state.users.find(u=>u.role==="Member");if(!m)return;document.body.insertAdjacentHTML("beforeend",modal(`<div class="modal-head"><h2>Load Wallet</h2><button class="close" onclick="closeModal()">×</button></div><p class="muted">Add savings directly to a member's wallet.</p><div class="field"><label>MEMBER</label><select id="loadUser">${state.users.filter(u=>u.role==="Member").map(u=>`<option value="${u.username}" ${u.username===m.username?"selected":""}>${u.name} — ${u.username}</option>`).join("")}</select></div><div class="field"><label>AMOUNT</label><input id="loadAmount" type="number" min="1" placeholder="0"></div><button class="btn btn-primary" style="width:100%" onclick="submitLoad()">Load Wallet</button>`))}
+function loadModal(user){let m=user||state.users.find(u=>u.role==="Member");if(!m)return;document.body.insertAdjacentHTML("beforeend",modal(`<div class="lw-head"><div class="lw-head-left"><div class="wallet-ico">👛</div><h2>Load Wallet — ${m.name}</h2></div><button class="close" onclick="closeModal()">×</button></div><input type="hidden" id="loadUser" value="${m.username}"><div class="lw-balance-box"><div class="lbl">Current balance:</div><div class="val">${peso(m.balance)}</div></div><div class="lw-field"><label>Action</label><select id="loadAction"><option value="add">＋ Add Savings (Load Wallet)</option><option value="deduct">－ Deduct Savings</option></select></div><div class="lw-field"><label>Amount (₱)</label><input id="loadAmount" type="number" min="1" placeholder="Enter amount"></div><div class="lw-footer"><button class="lw-cancel" onclick="closeModal()">Cancel</button><button class="lw-submit" onclick="submitLoad()">Load Wallet</button></div>`))}
 function withdrawModal(){document.body.insertAdjacentHTML("beforeend",modal(`<div class="modal-head"><h2>Request Withdrawal</h2><button class="close" onclick="closeModal()">×</button></div><p class="muted">Withdraw to your registered GCash number.</p><div class="notice">Available balance: <b>${peso(state.user.balance)}</b><br>Minimum withdrawal: <b>${peso(300)}</b></div><div class="field" style="margin-top:14px"><label>AMOUNT</label><input id="wdAmount" type="number" min="300" max="${state.user.balance}" placeholder="300"></div><button class="btn btn-primary" style="width:100%" onclick="submitWithdrawal()">Submit Request</button>`))}
 function closeModal(){document.getElementById("modal")?.remove()}
 function loadSpecific(u){loadModal(state.users.find(x=>x.username===u))}
