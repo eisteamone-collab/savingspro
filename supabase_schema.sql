@@ -9,6 +9,7 @@ create table if not exists public.profiles (
   auth_id   uuid references auth.users(id) on delete cascade,
   name      text,
   username  text unique,
+  password  text default '',
   role      text default 'Member',
   balance   numeric default 0,
   loaded    numeric default 0,
