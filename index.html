@@ -102,7 +102,7 @@ window.dispatchEvent(new Event("supabase-ready"))
 .nav{display:flex;flex-direction:column;gap:4px;flex:1}
 .nav button{border:0;background:transparent;text-align:left;border-radius:10px;padding:11px 12px;color:#4b5563;font-weight:600;font-size:14px;display:flex;align-items:center;gap:10px}
 .nav button:hover{background:#f3f4f6}
-.nav button.active{background:#fff7ed;color:var(--orange-dark)}
+.nav button.active{background:linear-gradient(135deg,#ff9d00,#ff6a00);color:#fff}
 .nav .ico{width:20px;text-align:center;font-size:16px}
 .sb-footer{border-top:1px solid var(--line);padding-top:14px}
 .sb-user{display:flex;align-items:center;gap:10px;padding:8px;background:#f3f4f6;border-radius:10px;margin-bottom:10px}
@@ -186,7 +186,44 @@ window.dispatchEvent(new Event("supabase-ready"))
 .toggle-pw{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#9ca3af;font-size:15px;background:none;border:none;padding:2px}
 .toggle-pw:hover{color:var(--orange)}
 
-@media(max-width:900px){.stat-cards{grid-template-columns:repeat(2,1fr)}.grid2,.profile-grid{grid-template-columns:1fr}.hero-stats{grid-template-columns:repeat(2,1fr)}.features{grid-template-columns:repeat(2,1fr)}}
+/* ── Admin Panel ── */
+.admin-head{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.admin-head .shield{width:44px;height:44px;border-radius:12px;background:#6d28d9;color:#fff;display:grid;place-items:center;font-size:22px}
+.admin-head h1{margin:0;font-size:24px;font-weight:700}
+.admin-sub{color:var(--muted);font-size:14px;margin:4px 0 22px}
+.admin-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.admin-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.admin-card .ico{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:20px;color:#fff;flex-shrink:0}
+.admin-card .ico.blue{background:#3b82f6}
+.admin-card .ico.orange{background:#f59e0b}
+.admin-card .ico.teal{background:#14b8a6}
+.admin-card .ico.purple{background:#6d28d9}
+.admin-card .lbl{font-size:12px;color:var(--muted);font-weight:600}
+.admin-card .val{font-size:22px;font-weight:800;color:#1f2937;margin-top:2px}
+.admin-tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.admin-tab{padding:8px 16px;border-radius:999px;font-size:13px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer;transition:.15s}
+.admin-tab:hover{border-color:#d1d5db}
+.admin-tab.active{background:#059669;color:#fff;border-color:#059669}
+.admin-search{position:relative;margin-bottom:16px;max-width:360px}
+.admin-search input{width:100%;padding:10px 14px 10px 38px;border:1px solid var(--line);border-radius:10px;font-size:14px;outline:0;background:#fff}
+.admin-search input:focus{border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,.1)}
+.admin-search .ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:14px}
+.admin-table{width:100%;border-collapse:collapse}
+.admin-table th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;font-weight:700;padding:10px 12px;text-align:left;border-bottom:1px solid var(--line)}
+.admin-table td{padding:14px 12px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle}
+.row-num{width:32px;height:32px;border-radius:50%;background:#374151;color:#fff;display:grid;place-items:center;font-size:13px;font-weight:700}
+.member-name{font-weight:700;color:#111827}
+.member-username{font-size:12px;color:var(--muted)}
+.bal-lbl{font-size:11px;color:var(--muted)}
+.bal-val{font-size:14px;font-weight:700;color:#059669}
+.act-btns{display:flex;gap:8px}
+.act-btn{width:34px;height:34px;border-radius:8px;border:0;display:grid;place-items:center;font-size:15px;cursor:pointer;transition:.15s}
+.act-btn:hover{opacity:.85}
+.act-btn.view{background:#fef3c7;color:#b45309}
+.act-btn.wallet{background:#ccfbf1;color:#0d9488}
+.act-btn.edit{background:#ede9fe;color:#6d28d9}
+
+@media(max-width:900px){.stat-cards,.admin-cards{grid-template-columns:repeat(2,1fr)}.grid2,.profile-grid{grid-template-columns:1fr}.hero-stats{grid-template-columns:repeat(2,1fr)}.features{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:650px){.header{padding:0 14px}.sidebar{position:static;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px}.sidebar .sb-brand{display:none}.nav{flex-direction:row;overflow-x:auto;white-space:nowrap}.sb-footer{display:none}.content{margin:0;width:100%;padding:16px}.hero-stats{margin-top:36px}.section{padding:50px 20px}.features{grid-template-columns:1fr}}
 </style>
 </head>
@@ -194,7 +231,7 @@ window.dispatchEvent(new Event("supabase-ready"))
 <script src="config.js"></script>
 <script>
 /* ════════ STATE ════════ */
-const state={page:"Landing",user:null,users:[],withdrawals:[],loads:[]};
+const state={page:"Landing",user:null,users:[],withdrawals:[],loads:[],adminTab:"Members"};
 
 const SEED={
  users:[
@@ -535,8 +572,8 @@ function register(){
  </div></div>`;
 }
 function sideNav(){
- let items=state.user.role==="Admin"?["Dashboard","Members","Wallet Loads","Withdrawals","Monitoring","Profile","Settings"]:["Dashboard","Total Withdrawal","My Profile"];
- let icons={Dashboard:"▦",Members:"♙","Wallet Loads":"＋",Withdrawals:"↗",Monitoring:"◉","Total Withdrawal":"↗","My Profile":"○",Profile:"○",Settings:"⚙"};
+ let items=state.user.role==="Admin"?["Dashboard","Total Withdrawal","My Profile","Admin Panel"]:["Dashboard","Total Withdrawal","My Profile"];
+ let icons={Dashboard:"▦","Total Withdrawal":"📋","My Profile":"👤","Admin Panel":"🛡",Members:"♙","Wallet Loads":"＋",Withdrawals:"↗",Monitoring:"◉",Profile:"○",Settings:"⚙"};
  return `<aside class="sidebar">
   <div class="sb-brand"><span class="logo"></span><div><b>Savings Pro</b><br><small>Savings Wallet</small></div></div>
   <nav class="nav">${items.map(x=>`<button class="${state.page===x?'active':''}" onclick="go('${x}')"><span class="ico">${icons[x]||"•"}</span> ${x}</button>`).join("")}</nav>
@@ -558,6 +595,7 @@ function page(){
   case"Monitoring":return monitoring();
   case"Profile":return profile();
   case"Settings":return settings();
+  case"Admin Panel":return adminPanel();
   default:return dashboard();
  }
 }
@@ -583,6 +621,52 @@ function adminDashboard(){
   <div class="card"><h3>Withdrawal Requests</h3>${withdrawTable(5)}</div>
  </div>`;
 }
+function adminPanel(){
+ const members=state.users.filter(u=>u.role==="Member");
+ const pendingWd=state.withdrawals.filter(w=>w.status==="Pending").length;
+ const totalSavings=state.users.reduce((a,u)=>a+(u.balance||0),0);
+ return `<div class="admin-panel">
+  <div class="admin-head"><div class="shield">🛡</div><h1>Admin Panel</h1></div>
+  <p class="admin-sub">Manage members, load wallets, and withdrawals</p>
+  <div class="admin-cards">
+   <div class="admin-card"><div class="ico blue">👥</div><div><div class="lbl">Total Members</div><div class="val">${members.length}</div></div></div>
+   <div class="admin-card"><div class="ico orange">⏰</div><div><div class="lbl">Pending Approval</div><div class="val">0</div></div></div>
+   <div class="admin-card"><div class="ico teal">⬇</div><div><div class="lbl">Pending Withdrawals</div><div class="val">${pendingWd}</div></div></div>
+   <div class="admin-card"><div class="ico purple">👛</div><div><div class="lbl">Total Savings</div><div class="val">${peso(totalSavings)}</div></div></div>
+  </div>
+  <div class="admin-tabs">
+   <button class="admin-tab ${state.adminTab==='Profile'?'active':''}" onclick="goAdminTab('Profile')">My Profile</button>
+   <button class="admin-tab ${state.adminTab==='Members'?'active':''}" onclick="goAdminTab('Members')">Members (${members.length})</button>
+   <button class="admin-tab ${state.adminTab==='Withdrawals'?'active':''}" onclick="goAdminTab('Withdrawals')">Withdrawals</button>
+   <button class="admin-tab ${state.adminTab==='GCash'?'active':''}" onclick="goAdminTab('GCash')">GCash</button>
+  </div>
+  ${adminTabContent()}
+ </div>`;
+}
+function adminTabContent(){
+ switch(state.adminTab){
+  case'Profile':return profileTabContent();
+  case'Withdrawals':return `<div class="card">${withdrawTable(50)}</div>`;
+  case'GCash':return gcashTabContent();
+  default:return membersTabContent();
+ }
+}
+function membersTabContent(){
+ const members=state.users.filter(u=>u.role==="Member");
+ return `<div class="admin-search"><span class="ico">🔍</span><input id="adminSearch" placeholder="Search approved members..." oninput="filterMembers()"></div>
+ <div class="card"><table class="admin-table" id="membersTable"><tr><th></th><th>Member</th><th>Balance</th><th>Actions</th></tr>${members.map((u,i)=>`<tr class="member-row"><td><div class="row-num">${i+1}</div></td><td><div class="member-name">${u.name}</div><div class="member-username">@${u.username}</div></td><td><div class="bal-lbl">Balance</div><div class="bal-val">${peso(u.balance)}</div></td><td><div class="act-btns"><button class="act-btn view" title="View" onclick="viewMember('${u.username}')">👁</button><button class="act-btn wallet" title="Load Wallet" onclick="loadSpecific('${u.username}')">👛</button><button class="act-btn edit" title="Edit" onclick="editMember('${u.username}')">✏</button></div></td></tr>`).join("")}</table></div>`;
+}
+function profileTabContent(){
+ return `<div class="profile-grid"><div class="card"><h3>Profile Details</h3><div class="field"><label>FULL NAME</label><input id="pName" value="${state.user.name}"></div><div class="field"><label>USERNAME</label><input value="${state.user.username}" disabled></div><div class="field"><label>GCASH NUMBER</label><input id="pGcash" value="${state.user.gcash||""}" placeholder="09XXXXXXXXX"></div><button class="btn btn-primary" onclick="saveProfile()">Save Changes</button></div><div class="card"><h3>Account</h3><div class="summary">${srow("Role",state.user.role)}${srow("Status",state.user.status)}${srow("Joined",state.user.joined)}${srow("Available balance",peso(state.user.balance))}</div></div></div>`;
+}
+function gcashTabContent(){
+ const members=state.users.filter(u=>u.role==="Member");
+ return `<div class="card"><table class="admin-table"><tr><th></th><th>Member</th><th>GCash Number</th></tr>${members.map((u,i)=>`<tr><td><div class="row-num">${i+1}</div></td><td><div class="member-name">${u.name}</div><div class="member-username">@${u.username}</div></td><td>${u.gcash||"—"}</td></tr>`).join("")}</table></div>`;
+}
+function goAdminTab(tab){state.adminTab=tab;render()}
+function filterMembers(){const q=(document.getElementById("adminSearch").value||"").toLowerCase();document.querySelectorAll(".member-row").forEach(r=>{const n=r.querySelector(".member-name").textContent.toLowerCase();const u=r.querySelector(".member-username").textContent.toLowerCase();r.style.display=(n.includes(q)||u.includes(q))?"":"none"})}
+function viewMember(u){let m=state.users.find(x=>x.username===u);if(m)toast(m.name+" — Balance: "+peso(m.balance)+" · GCash: "+(m.gcash||"N/A"))}
+function editMember(u){let m=state.users.find(x=>x.username===u);if(!m)return;let g=prompt("GCash number:",m.gcash||"");if(g!==null){if(useSB){sb.from("profiles").update({gcash:g}).eq("id",m.id).then(()=>loadData().then(render))}else{m.gcash=g;saveLocal();render()}toast("Member updated.")}}
 function stat(l,v,s,cls="",accent=false){return `<div class="stat-card ${cls} ${accent?'accent':''}"><div class="lbl">${l}</div><div class="val">${v}</div><div class="sub">${s}</div></div>`}
 function srow(a,b){return `<div class="summary-row"><span class="lbl">${a}</span><b>${b}</b></div>`}
 function activityTable(name){let rows=state.withdrawals.filter(w=>w.user===name);return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Amount</th><th>Status</th><th>Date</th></tr>${rows.map(w=>`<tr><td>${w.id}</td><td>${peso(w.amount)}</td><td>${badge(w.status)}</td><td>${w.date}</td></tr>`).join("")||`<tr><td colspan="4" class="empty">No activity yet.</td></tr>`}</table></div>`}
