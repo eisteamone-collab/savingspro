@@ -185,15 +185,30 @@ const SEED={
 
 /* ════════ SUPABASE ════════ */
 let sb=null,sbAdmin=null,useSB=false;
+function getServiceKey(){
+ const stored=localStorage.getItem("supabase_service_key");
+ if(stored&&stored.trim())return stored.trim();
+ return(window.SUPABASE_SERVICE_KEY||"").trim();
+}
 function initSB(){
  const url=(window.SUPABASE_URL||"").trim(),key=(window.SUPABASE_ANON_KEY||"").trim();
  if(url&&key&&!url.includes("placeholder")&&!url.includes("example")&&window.supabase){
   sb=window.supabase.createClient(url,key);
   useSB=true;
-  const sk=(window.SUPABASE_SERVICE_KEY||"").trim();
+  const sk=getServiceKey();
   if(sk&&!sk.includes("placeholder"))
    sbAdmin=window.supabase.createClient(url,sk,{auth:{autoRefreshToken:false,persistSession:false}});
  }
+}
+function saveServiceKey(){
+ const val=document.getElementById("serviceKeyInput").value.trim();
+ if(!val){toast("Please enter a service key.");return}
+ localStorage.setItem("supabase_service_key",val);
+ const url=(window.SUPABASE_URL||"").trim();
+ if(url&&window.supabase){
+  sbAdmin=window.supabase.createClient(url,val,{auth:{autoRefreshToken:false,persistSession:false}});
+ }
+ toast("Service key saved.");
 }
 
 /* ════════ DATA LAYER ════════ */
@@ -420,8 +435,8 @@ function register(){
  </div></div>`;
 }
 function sideNav(){
- let items=state.user.role==="Admin"?["Dashboard","Members","Wallet Loads","Withdrawals","Monitoring","Profile"]:["Dashboard","Total Withdrawal","My Profile"];
- let icons={Dashboard:"▦",Members:"♙","Wallet Loads":"＋",Withdrawals:"↗",Monitoring:"◉","Total Withdrawal":"↗","My Profile":"○",Profile:"○"};
+ let items=state.user.role==="Admin"?["Dashboard","Members","Wallet Loads","Withdrawals","Monitoring","Profile","Settings"]:["Dashboard","Total Withdrawal","My Profile"];
+ let icons={Dashboard:"▦",Members:"♙","Wallet Loads":"＋",Withdrawals:"↗",Monitoring:"◉","Total Withdrawal":"↗","My Profile":"○",Profile:"○",Settings:"⚙"};
  return `<aside class="sidebar">
   <div class="sb-brand"><span class="logo"></span><div><b>Savings Pro</b><br><small>Savings Wallet</small></div></div>
   <nav class="nav">${items.map(x=>`<button class="${state.page===x?'active':''}" onclick="go('${x}')"><span class="ico">${icons[x]||"•"}</span> ${x}</button>`).join("")}</nav>
@@ -442,6 +457,7 @@ function page(){
   case"Wallet Loads":return loads();
   case"Monitoring":return monitoring();
   case"Profile":return profile();
+  case"Settings":return settings();
   default:return dashboard();
  }
 }
@@ -478,6 +494,7 @@ function members(){return `<div class="page-head"><div><h1>Members</h1><p>Manage
 function loads(){return `<div class="page-head"><div><h1>Wallet Loads</h1><p>Admin-funded savings wallet transactions.</p></div><button class="btn btn-primary" onclick="loadModal()">Load Wallet</button></div><div class="card">${loadTable(50)}</div>`}
 function monitoring(){return `<div class="page-head"><div><h1>Monitoring</h1><p>Overview of Savings Pro activity.</p></div></div><div class="stat-cards">${stat("System","Online","Application status","green-ok")}${stat("Members",state.users.filter(u=>u.role==="Member").length,"Active accounts")}${stat("Pending",state.withdrawals.filter(w=>w.status==="Pending").length,"Withdrawal requests","amber")}${stat("GCash","Enabled","Payout method")}</div><div class="card mt"><h3>System Notes</h3><div class="summary">${srow("Wallet model","Admin loaded")}${srow("Withdrawal method","GCash")}${srow("Minimum withdrawal",peso(300))}${srow("Commission levels","None")}</div></div>`}
 function profile(){return `<div class="page-head"><div><h1>My Profile</h1><p>Update your account and GCash information.</p></div></div><div class="profile-grid"><div class="card"><h3>Profile Details</h3><div class="field"><label>FULL NAME</label><input id="pName" value="${state.user.name}"></div><div class="field"><label>USERNAME</label><input value="${state.user.username}" disabled></div><div class="field"><label>GCASH NUMBER</label><input id="pGcash" value="${state.user.gcash||""}" placeholder="09XXXXXXXXX"></div><button class="btn btn-primary" onclick="saveProfile()">Save Changes</button></div><div class="card"><h3>Account</h3><div class="summary">${srow("Role",state.user.role)}${srow("Status",state.user.status)}${srow("Joined",state.user.joined)}${srow("Available balance",peso(state.user.balance))}</div></div></div>`}
+function settings(){const sk=getServiceKey();const hasKey=sk&&!sk.includes("placeholder");return `<div class="page-head"><div><h1>Settings</h1><p>Configure Supabase service key for admin operations.</p></div></div><div class="card" style="max-width:640px"><h3>Supabase Service Key</h3><div class="notice" style="margin-bottom:16px">The service role key is required for admin operations like creating new members. Find it in your Supabase Dashboard → Settings → API → <b>service_role</b> secret key. It is stored locally in your browser only.</div><div class="field"><label>SERVICE ROLE KEY</label><input id="serviceKeyInput" type="password" value="${hasKey?sk:""}" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..." style="font-family:monospace;font-size:12px"></div><div style="display:flex;gap:10px;align-items:center"><button class="btn btn-primary" onclick="saveServiceKey()">Save Key</button>${hasKey?'<span style="color:var(--green-ok);font-size:13px;font-weight:600">✓ Key configured</span>':'<span style="color:var(--muted);font-size:13px">No key set — add member feature disabled</span>'}</div></div>`}
 
 /* ════════ MODALS ════════ */
 function modal(content){return `<div class="modal-bg" id="modal"><div class="modal">${content}</div></div>`}
