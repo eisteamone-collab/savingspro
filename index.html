@@ -177,6 +177,8 @@ window.dispatchEvent(new Event("supabase-ready"))
 .lw-cancel:hover{background:#f9fafb}
 .lw-submit{flex:1;background:#76c8b9;color:#fff;font-weight:700;padding:12px;border-radius:10px;font-size:14px;cursor:pointer;border:0}
 .lw-submit:hover{background:#5fb3a4}
+.rc-submit{flex:1;background:#7c3aed;color:#fff;font-weight:700;padding:12px;border-radius:10px;font-size:14px;cursor:pointer;border:0}
+.rc-submit:hover{background:#6d28d9}
 
 /* ── Toast ── */
 .toast{position:fixed;right:20px;bottom:20px;background:#1f2937;color:#fff;padding:13px 18px;border-radius:10px;display:none;z-index:200;font-size:14px;font-weight:500;box-shadow:0 8px 25px rgba(0,0,0,.2)}
@@ -687,7 +689,9 @@ function gcashTabContent(){
 function goAdminTab(tab){state.adminTab=tab;render()}
 function filterMembers(){const q=(document.getElementById("adminSearch").value||"").toLowerCase();document.querySelectorAll(".member-row").forEach(r=>{const n=r.querySelector(".member-name").textContent.toLowerCase();const u=r.querySelector(".member-username").textContent.toLowerCase();r.style.display=(n.includes(q)||u.includes(q))?"":"none"})}
 function viewMember(u){let m=state.users.find(x=>x.username===u);if(m)toast(m.name+" — Balance: "+peso(m.balance)+" · GCash: "+(m.gcash||"N/A"))}
-function editMember(u){let m=state.users.find(x=>x.username===u);if(!m)return;let g=prompt("GCash number:",m.gcash||"");if(g!==null){if(useSB){sb.from("profiles").update({gcash:g}).eq("id",m.id).then(()=>loadData().then(render))}else{m.gcash=g;saveLocal();render()}toast("Member updated.")}}
+function editMember(u){resetCredentialsModal(u)}
+function resetCredentialsModal(u){let m=state.users.find(x=>x.username===u);if(!m)return;document.body.insertAdjacentHTML("beforeend",modal(`<div class="modal-head"><h2>Reset Credentials — ${m.name}</h2><button class="close" onclick="closeModal()">×</button></div><div class="field"><label>Display Name</label><input id="rcName" value="${m.name}"></div><div class="field"><label>Username</label><input id="rcUsername" value="${m.username}" disabled></div><div class="field"><label>New Password</label><input id="rcPassword" type="password" placeholder="Enter new password (leave blank to keep current)"></div><div class="lw-footer"><button class="lw-cancel" onclick="closeModal()">Cancel</button><button class="rc-submit" onclick="submitResetCredentials('${u}')">Save Changes</button></div>`))}
+async function submitResetCredentials(u){let m=state.users.find(x=>x.username===u);if(!m)return;let name=document.getElementById("rcName").value.trim()||m.name;let pw=document.getElementById("rcPassword").value;if(useSB){let updates={name};if(pw)updates.password=pw;await sb.from("profiles").update(updates).eq("id",m.id);if(pw&&sbAdmin){try{await sbAdmin.auth.admin.updateUserById(m.auth_id,{password:pw})}catch(e){console.error("auth password update error:",e.message)}}await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;}else{m.name=name;if(pw)m.password=pw;saveLocal();}closeModal();render();toast("Credentials updated for "+name+".");}
 function stat(l,v,s,cls="",accent=false){return `<div class="stat-card ${cls} ${accent?'accent':''}"><div class="lbl">${l}</div><div class="val">${v}</div><div class="sub">${s}</div></div>`}
 function srow(a,b){return `<div class="summary-row"><span class="lbl">${a}</span><b>${b}</b></div>`}
 function activityTable(name){let rows=state.withdrawals.filter(w=>w.user===name);return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Amount</th><th>Status</th><th>Date</th></tr>${rows.map(w=>`<tr><td>${w.id}</td><td>${peso(w.amount)}</td><td>${badge(w.status)}</td><td>${w.date}</td></tr>`).join("")||`<tr><td colspan="4" class="empty">No activity yet.</td></tr>`}</table></div>`}
