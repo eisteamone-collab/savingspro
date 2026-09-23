@@ -241,18 +241,20 @@ window.dispatchEvent(new Event("supabase-ready"))
 .admin-head h1{margin:0;font-size:24px;font-weight:700}
 .admin-sub{color:var(--muted);font-size:14px;margin:4px 0 22px}
 .admin-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
-.admin-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.admin-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;align-items:center;justify-content:space-between;gap:14px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
 .admin-card .ico{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:20px;color:#fff;flex-shrink:0}
 .admin-card .ico.blue{background:#3b82f6}
 .admin-card .ico.orange{background:#f59e0b}
-.admin-card .ico.teal{background:#14b8a6}
-.admin-card .ico.purple{background:#6d28d9}
+.admin-card .ico.teal{background:#10b981}
+.admin-card .ico.pink{background:#ec4899}
 .admin-card .lbl{font-size:12px;color:var(--muted);font-weight:600}
 .admin-card .val{font-size:22px;font-weight:800;color:#1f2937;margin-top:2px}
 .admin-tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
 .admin-tab{padding:8px 16px;border-radius:999px;font-size:13px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer;transition:.15s}
 .admin-tab:hover{border-color:#d1d5db}
-.admin-tab.active{background:#059669;color:#fff;border-color:#059669}
+.admin-tab.active{background:#fff;color:var(--orange);border-color:var(--orange)}
+.admin-tab .tab-check{display:none;margin-right:6px}
+.admin-tab.active .tab-check{display:inline}
 .admin-search{position:relative;margin-bottom:16px;max-width:360px}
 .admin-search input{width:100%;padding:10px 14px 10px 38px;border:1px solid var(--line);border-radius:10px;font-size:14px;outline:0;background:#fff}
 .admin-search input:focus{border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,.1)}
@@ -272,6 +274,19 @@ window.dispatchEvent(new Event("supabase-ready"))
 .act-btn.wallet{background:#ccfbf1;color:#0d9488}
 .act-btn.edit{background:#ede9fe;color:#6d28d9}
 
+/* ── Admin Profile Tab ── */
+.member-selector{margin-bottom:20px}
+.member-selector label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;display:block;margin-bottom:6px}
+.member-selector select{width:100%;max-width:320px;border:1px solid var(--line);border-radius:10px;padding:11px 14px;outline:0;background:#fff;color:#1f2937;font-size:14px;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+.member-selector select:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.12)}
+.prof-section-title{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.prof-form{max-width:560px}
+.prof-form .field{margin-bottom:16px}
+.prof-form .field label{font-size:12px;font-weight:600;color:#374151}
+.prof-form .field input{width:100%;border:1px solid #d1d5db;border-radius:10px;padding:11px 14px;outline:0;background:#fff;color:#1f2937;font-size:14px}
+.prof-form .field input:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.12)}
+.prof-form .field input:disabled{background:#f9fafb;color:var(--muted)}
+
 @media(max-width:900px){.stat-cards,.admin-cards{grid-template-columns:repeat(2,1fr)}.grid2,.profile-grid{grid-template-columns:1fr}.hero-stats{grid-template-columns:repeat(2,1fr)}.features{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:650px){.header{padding:0 14px}.sidebar{position:static;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px}.sidebar .sb-brand{display:none}.nav{flex-direction:row;overflow-x:auto;white-space:nowrap}.sb-footer{display:none}.content{margin:0;width:100%;padding:16px}.hero-stats{margin-top:36px}.section{padding:50px 20px}.features{grid-template-columns:1fr}}
 
@@ -281,14 +296,14 @@ window.dispatchEvent(new Event("supabase-ready"))
 <script src="config.js"></script>
 <script>
 /* ════════ STATE ════════ */
-const state={page:"Landing",user:null,users:[],withdrawals:[],loads:[],adminTab:"Members"};
+const state={page:"Landing",user:null,users:[],withdrawals:[],loads:[],adminTab:"Profile",adminSelectedMember:null};
 
 const SEED={
  users:[
-  {id:1,name:"Tan",username:"Tan",password:"heyhey",role:"Admin",balance:0,loaded:0,gcash:"",status:"Active",joined:"2026-01-10"},
-  {id:2,name:"Juan Dela Cruz",username:"juan",password:"demo",role:"Member",balance:4250,loaded:5000,gcash:"09171234567",status:"Active",joined:"2026-02-03"},
-  {id:3,name:"Maria Santos",username:"maria",password:"demo",role:"Member",balance:1850,loaded:2500,gcash:"09181234567",status:"Active",joined:"2026-02-14"},
-  {id:4,name:"Pedro Reyes",username:"pedro",password:"demo",role:"Member",balance:900,loaded:1500,gcash:"09201234567",status:"Active",joined:"2026-03-01"}
+  {id:1,name:"Tan",username:"Tan",password:"heyhey",role:"Admin",balance:0,loaded:0,gcash:"",age:"",email:"",backup_mobile:"",status:"Active",joined:"2026-01-10"},
+  {id:2,name:"Juan Dela Cruz",username:"juan",password:"demo",role:"Member",balance:4250,loaded:5000,gcash:"09171234567",age:"28",email:"juan@gmail.com",backup_mobile:"09181234567",status:"Active",joined:"2026-02-03"},
+  {id:3,name:"Maria Santos",username:"maria",password:"demo",role:"Member",balance:1850,loaded:2500,gcash:"09181234567",age:"24",email:"maria@gmail.com",backup_mobile:"09201234567",status:"Active",joined:"2026-02-14"},
+  {id:4,name:"Pedro Reyes",username:"pedro",password:"demo",role:"Member",balance:900,loaded:1500,gcash:"09201234567",age:"31",email:"pedro@gmail.com",backup_mobile:"09171234567",status:"Active",joined:"2026-03-01"}
  ],
  withdrawals:[
   {id:"WD-1001",user:"Juan Dela Cruz",amount:750,charge:38,gcash:"09171234567",status:"Pending",date:"2026-08-12"},
@@ -636,7 +651,7 @@ function sideNav(){
  let icons={Dashboard:"▦","Total Withdrawal":"📋","My Profile":"👤","Admin Panel":"🛡",Earnings:"₱",Members:"♙","Wallet Loads":"＋",Withdrawals:"↗",Monitoring:"◉",Profile:"○",Settings:"⚙"};
  return `<aside class="sidebar">
   <div class="sb-brand"><span class="logo"></span><div><b>Savings Pro</b><br><small>Savings Wallet</small></div></div>
-  <nav class="nav">${items.map(x=>`<button class="${state.page===x?'active':''}" onclick="go('${x}')"><span class="ico">${icons[x]||"•"}</span> ${x}</button>`).join("")}</nav>
+  <nav class="nav">${items.map(x=>`<button class="${state.page===x?'active':''}" onclick="go('${x}')"><span class="ico">${icons[x]||"•"}</span> ${x}${state.page===x?' <span style="margin-left:auto;font-size:12px">›</span>':''}</button>`).join("")}</nav>
   <div class="sb-footer">
    <div class="sb-user"><div class="av">${(state.user.name||"U")[0]}</div><div><b>${state.user.name}</b><small>${state.user.role}</small></div></div>
    <div class="sb-logout" onclick="logout()">⏻ Logout</div>
@@ -704,16 +719,16 @@ function adminPanel(){
   <div class="admin-head"><div class="shield">🛡</div><h1>Admin Panel</h1></div>
   <p class="admin-sub">Manage members, load wallets, and withdrawals</p>
   <div class="admin-cards">
-   <div class="admin-card"><div class="ico blue">👥</div><div><div class="lbl">Total Members</div><div class="val">${members.length}</div></div></div>
-   <div class="admin-card"><div class="ico orange">⏰</div><div><div class="lbl">Pending Approval</div><div class="val">0</div></div></div>
-   <div class="admin-card"><div class="ico teal">⬇</div><div><div class="lbl">Pending Withdrawals</div><div class="val">${pendingWd}</div></div></div>
-   <div class="admin-card"><div class="ico purple">👛</div><div><div class="lbl">Total Savings</div><div class="val">${peso(totalSavings)}</div></div></div>
+   <div class="admin-card"><div><div class="lbl">Total Members</div><div class="val">${members.length}</div></div><div class="ico blue">👥</div></div>
+   <div class="admin-card"><div><div class="lbl">Pending Approval</div><div class="val">0</div></div><div class="ico orange">⏰</div></div>
+   <div class="admin-card"><div><div class="lbl">Pending Withdrawals</div><div class="val">${pendingWd}</div></div><div class="ico teal">⬇</div></div>
+   <div class="admin-card"><div><div class="lbl">Total Savings</div><div class="val">${peso(totalSavings)}</div></div><div class="ico pink">👛</div></div>
   </div>
   <div class="admin-tabs">
-   <button class="admin-tab ${state.adminTab==='Profile'?'active':''}" onclick="goAdminTab('Profile')">My Profile</button>
-   <button class="admin-tab ${state.adminTab==='Members'?'active':''}" onclick="goAdminTab('Members')">Members (${members.length})</button>
-   <button class="admin-tab ${state.adminTab==='Withdrawals'?'active':''}" onclick="goAdminTab('Withdrawals')">Withdrawals</button>
-   <button class="admin-tab ${state.adminTab==='GCash'?'active':''}" onclick="goAdminTab('GCash')">GCash</button>
+   <button class="admin-tab ${state.adminTab==='Profile'?'active':''}" onclick="goAdminTab('Profile')"><span class="tab-check">✓</span> My Profile</button>
+   <button class="admin-tab ${state.adminTab==='Members'?'active':''}" onclick="goAdminTab('Members')"><span class="tab-check">✓</span> Members (${members.length})</button>
+   <button class="admin-tab ${state.adminTab==='Withdrawals'?'active':''}" onclick="goAdminTab('Withdrawals')"><span class="tab-check">✓</span> Withdrawals</button>
+   <button class="admin-tab ${state.adminTab==='GCash'?'active':''}" onclick="goAdminTab('GCash')"><span class="tab-check">✓</span> GCash</button>
   </div>
   ${adminTabContent()}
  </div>`;
@@ -732,7 +747,39 @@ function membersTabContent(){
  <div class="card"><table class="admin-table" id="membersTable"><tr><th></th><th>Member</th><th>Balance</th><th>Actions</th></tr>${members.map((u,i)=>`<tr class="member-row"><td><div class="row-num">${i+1}</div></td><td><div class="member-name">${u.name}</div><div class="member-username">@${u.username}</div></td><td><div class="bal-lbl">Balance</div><div class="bal-val">${peso(u.balance)}</div></td><td><div class="act-btns"><button class="act-btn view" title="View" onclick="viewMember('${u.username}')">👁</button><button class="act-btn wallet" title="Load Wallet" onclick="loadSpecific('${u.username}')">👛</button><button class="act-btn edit" title="Edit" onclick="editMember('${u.username}')">✏</button></div></td></tr>`).join("")}</table></div>`;
 }
 function profileTabContent(){
- return `<div class="profile-grid"><div class="card"><h3>Profile Details</h3><div class="field"><label>FULL NAME</label><input id="pName" value="${state.user.name}"></div><div class="field"><label>USERNAME</label><input value="${state.user.username}" disabled></div><div class="field"><label>GCASH NUMBER</label><input id="pGcash" value="${state.user.gcash||""}" placeholder="09XXXXXXXXX"></div><button class="btn btn-primary" onclick="saveProfile()">Save Changes</button></div><div class="card"><h3>Account</h3><div class="summary">${srow("Role",state.user.role)}${srow("Status",state.user.status)}${srow("Joined",state.user.joined)}${srow("Available balance",peso(state.user.balance))}</div></div></div>`;
+ const allMembers=state.users;
+ const sel=state.adminSelectedMember||state.user;
+ const m=state.users.find(x=>x.id===sel.id)||state.user;
+ return `<div class="member-selector"><label>SELECT MEMBER</label><select onchange="selectAdminMember(this.value)">${allMembers.map(u=>`<option value="${u.id}" ${u.id===m.id?'selected':''}>${u.name} (@${u.username})</option>`).join("")}</select></div>
+ <div class="card">
+  <h3 style="margin:0 0 4px;font-size:20px">My Profile</h3>
+  <p style="color:var(--muted);font-size:14px;margin:0 0 20px">Update your personal information</p>
+  <div class="prof-section-title">Personal Information</div>
+  <div class="prof-form">
+   <div class="field"><label>Full Name</label><input id="apName" value="${m.name||""}"></div>
+   <div class="field"><label>Age</label><input id="apAge" type="number" value="${m.age||""}" placeholder="Age"></div>
+   <div class="field"><label>Email Address</label><input id="apEmail" type="email" value="${m.email||""}" placeholder="Enter your email"></div>
+   <div class="field"><label>Mobile Number</label><input id="apMobile" value="${m.gcash||""}" placeholder="e.g. 09XX XXX XXXX"></div>
+   <div class="field"><label>Backup Mobile Number</label><input id="apBackupMobile" value="${m.backup_mobile||""}" placeholder="e.g. 09XX XXX XXXX"></div>
+   <button class="btn btn-primary" onclick="saveAdminProfile(${m.id})">Save Changes</button>
+  </div>
+ </div>`;
+}
+function selectAdminMember(id){state.adminSelectedMember=state.users.find(x=>x.id===Number(id))||state.user;render()}
+async function saveAdminProfile(id){
+ let u=state.users.find(x=>x.id===id);if(!u)return;
+ let name=document.getElementById("apName").value.trim()||u.name;
+ let age=document.getElementById("apAge").value.trim();
+ let email=document.getElementById("apEmail").value.trim();
+ let mobile=document.getElementById("apMobile").value.trim();
+ let backup_mobile=document.getElementById("apBackupMobile").value.trim();
+ if(useSB){
+  await sb.from("profiles").update({name,age,email,gcash:mobile,backup_mobile}).eq("id",u.id);
+  await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
+ }else{
+  u.name=name;u.age=age;u.email=email;u.gcash=mobile;u.backup_mobile=backup_mobile;saveLocal();
+ }
+ render();toast("Profile updated for "+name+".");
 }
 function gcashTabContent(){
  const members=state.users.filter(u=>u.role==="Member");

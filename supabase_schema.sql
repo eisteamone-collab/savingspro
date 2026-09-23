@@ -14,9 +14,17 @@ create table if not exists public.profiles (
   balance   numeric default 0,
   loaded    numeric default 0,
   gcash     text default '',
+  age       text default '',
+  email     text default '',
+  backup_mobile text default '',
   status    text default 'Active',
   joined    date default current_date
 );
+
+-- Add new columns if table already exists (run once)
+-- alter table public.profiles add column if not exists age text default '';
+-- alter table public.profiles add column if not exists email text default '';
+-- alter table public.profiles add column if not exists backup_mobile text default '';
 
 -- Withdrawals table
 create table if not exists public.withdrawals (
