@@ -10,95 +10,107 @@ window.supabase={createClient}
 window.dispatchEvent(new Event("supabase-ready"))
 </script>
 <style>
-:root{--orange:#f97316;--orange-light:#fb923c;--orange-dark:#ea580c;--amber:#fbbf24;--ink:#0f0f0f;--dark:#1a1a1a;--dark-2:#222;--card:#fff;--line:#e5e7eb;--muted:#6b7280;--green-ok:#16a34a;--red:#ef4444;--radius:14px}
-*{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#1f2937}button,input,select{font:inherit}button{cursor:pointer;border:0}a{color:var(--orange);text-decoration:none}
+:root{--orange:#f97316;--orange-light:#fb923c;--orange-dark:#ea580c;--orange-darker:#c2410c;--amber:#fbbf24;--ink:#0f0f0f;--dark:#1a1a1a;--dark-2:#222;--card:#fff;--line:#e5e7eb;--muted:#6b7280;--green-ok:#16a34a;--red:#ef4444;--radius:14px;--shadow-sm:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);--shadow-md:0 4px 16px rgba(0,0,0,.06),0 1px 4px rgba(0,0,0,.04);--shadow-lg:0 12px 40px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.04)}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#1f2937;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}button,input,select{font:inherit}button{cursor:pointer;border:0}a{color:var(--orange);text-decoration:none}
 
 /* ── Header ── */
-.header{height:64px;background:rgba(10,10,10,.92);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:space-between;padding:0 max(20px,calc((100vw - 1200px)/2));position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(255,255,255,.08)}
+.header{height:64px;background:rgba(10,10,10,.88);backdrop-filter:blur(16px);display:flex;align-items:center;justify-content:space-between;padding:0 max(20px,calc((100vw - 1200px)/2));position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(255,255,255,.06);box-shadow:0 1px 12px rgba(0,0,0,.15)}
 .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;color:#fff;cursor:pointer}
 .logo{width:34px;height:34px;border-radius:50%;background-image:url("https://media.base44.com/images/public/6a60265126ce76965dce5ea0/2798d58a3_A8.png");background-size:cover;background-position:center;box-shadow:0 2px 8px rgba(0,0,0,.3);flex-shrink:0}
 .header-links{display:flex;gap:10px;align-items:center}
 .btn{border:0;border-radius:10px;padding:10px 18px;font-weight:600;font-size:14px;transition:.15s}
-.btn-primary{background:var(--orange);color:#fff}.btn-primary:hover{background:var(--orange-dark)}
+.btn-primary{background:linear-gradient(135deg,#fb923c,#ea580c);color:#fff;box-shadow:0 4px 12px rgba(234,88,12,.25)}.btn-primary:hover{background:linear-gradient(135deg,#f97316,#c2410c);box-shadow:0 6px 18px rgba(234,88,12,.35)}
 .btn-ghost{background:transparent;color:#fff}.btn-ghost:hover{color:var(--orange-light)}
-.btn-outline{background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff}.btn-outline:hover{border-color:var(--orange);color:var(--orange-light)}
-.btn-light{background:#fff;color:var(--orange-dark);font-weight:700}.btn-light:hover{background:#f9fafb}
+.btn-outline{background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff}.btn-outline:hover{border-color:var(--orange);color:var(--orange-light);background:rgba(249,115,22,.08)}
+.btn-light{background:#fff;color:var(--orange-dark);font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.1)}.btn-light:hover{background:#f9fafb;transform:translateY(-1px)}
 
 /* ── Landing ── */
-.landing{background:linear-gradient(to right bottom,rgba(17,24,39,.82),rgba(120,53,15,.82)),url("https://media.base44.com/images/public/6a60265126ce76965dce5ea0/fb6c4f153_shutterstock_648288439.jpg");background-size:cover;background-position:center;background-attachment:fixed;min-height:100vh}
-.hero{text-align:center;padding:80px 20px 60px;display:flex;flex-direction:column;align-items:center}
-.hero-logo{width:140px;height:140px;border-radius:50%;background-image:url("https://media.base44.com/images/public/6a60265126ce76965dce5ea0/2798d58a3_A8.png");background-size:cover;background-position:center;margin-bottom:24px;box-shadow:0 8px 30px rgba(249,115,22,.25);border:2px solid rgba(255,255,255,.1)}
-.badge{display:inline-block;border:1px solid rgba(251,191,36,.4);color:var(--amber);font-size:11px;letter-spacing:2.5px;font-weight:700;padding:6px 16px;border-radius:6px;margin-bottom:22px}
-.hero h1{font-size:clamp(36px,5.5vw,60px);font-weight:800;color:#fff;margin:0 0 18px;line-height:1.1;max-width:780px}
-.hero h1 .hl{color:var(--orange)}
-.hero p{font-size:17px;line-height:1.7;color:rgba(255,255,255,.7);max-width:640px;margin:0 auto 30px}
+.landing{background:linear-gradient(135deg,rgba(15,23,42,.55),rgba(67,20,7,.50),rgba(15,23,42,.55)),url("https://media.base44.com/images/public/6a60265126ce76965dce5ea0/fb6c4f153_shutterstock_648288439.jpg");background-size:cover;background-position:center;background-attachment:fixed;min-height:100vh;position:relative}
+.landing::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(249,115,22,.12),transparent 60%);pointer-events:none}
+.hero{text-align:center;padding:80px 20px 60px;display:flex;flex-direction:column;align-items:center;position:relative;z-index:1}
+.hero-logo{width:140px;height:140px;border-radius:50%;background-image:url("https://media.base44.com/images/public/6a60265126ce76965dce5ea0/2798d58a3_A8.png");background-size:cover;background-position:center;margin-bottom:24px;box-shadow:0 8px 40px rgba(249,115,22,.35),0 0 0 4px rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.15)}
+.badge{display:inline-block;border:1px solid rgba(251,191,36,.4);color:var(--amber);font-size:11px;letter-spacing:2.5px;font-weight:700;padding:6px 16px;border-radius:6px;margin-bottom:22px;background:rgba(251,191,36,.08)}
+.hero h1{font-size:clamp(36px,5.5vw,60px);font-weight:800;color:#fff;margin:0 0 18px;line-height:1.1;max-width:780px;text-shadow:0 2px 20px rgba(0,0,0,.3)}
+.hero h1 .hl{color:var(--orange);text-shadow:0 0 30px rgba(249,115,22,.4)}
+.hero p{font-size:17px;line-height:1.7;color:rgba(255,255,255,.75);max-width:640px;margin:0 auto 30px}
 .hero-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
 .hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:56px;max-width:820px;width:100%}
-.glass-card{background:rgba(255,255,255,.07);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);padding:24px;text-align:center}
-.glass-card strong{display:block;font-size:28px;font-weight:800;color:#fff;margin-bottom:4px}
-.glass-card.amber strong{color:var(--amber)}
-.glass-card span{font-size:13px;color:rgba(255,255,255,.6)}
+.glass-card{background:linear-gradient(135deg,rgba(255,255,255,.1),rgba(255,255,255,.04));backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius);padding:24px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.glass-card strong{display:block;font-size:28px;font-weight:800;background:linear-gradient(135deg,#fbbf24,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px}
+.glass-card span{font-size:13px;color:rgba(255,255,255,.65)}
 
-.section{padding:70px 20px;max-width:1100px;margin:auto}
+.section{padding:70px 20px;max-width:1100px;margin:auto;position:relative;z-index:1}
 .section.center{text-align:center}
-.section h2{font-size:32px;font-weight:700;margin:0 0 10px;color:#1f2937}
-.section .sub{color:var(--muted);font-size:16px;margin:0 auto 36px;max-width:560px}
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-.step{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:28px;text-align:center}
-.step-num{width:44px;height:44px;border-radius:50%;background:var(--orange);color:#fff;display:grid;place-items:center;font-weight:700;font-size:18px;margin:0 auto 16px}
-.step h3{margin:0 0 8px;font-size:17px}
-.step p{margin:0;color:var(--muted);font-size:14px;line-height:1.6}
-.features{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
-.feature{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:28px}
-.feature .ico{width:44px;height:44px;border-radius:12px;background:#fff7ed;display:grid;place-items:center;font-size:20px;color:var(--orange);margin-bottom:14px}
-.feature h3{margin:0 0 8px;font-size:17px}
-.feature p{margin:0;color:var(--muted);font-size:14px;line-height:1.6}
-.cta{background:linear-gradient(135deg,var(--orange),var(--orange-dark));color:#fff;text-align:center;padding:64px 20px}
-.cta h2{font-size:34px;font-weight:700;margin:0 0 10px}
-.cta p{font-size:16px;opacity:.9;margin:0 auto 26px;max-width:480px}
-.cta-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.section h2{font-size:32px;font-weight:700;margin:0 0 10px;color:#fff}
+.section .sub{color:rgba(255,255,255,.6);font-size:16px;margin:0 auto 36px;max-width:560px}
+.steps{display:flex;flex-direction:column;gap:16px;max-width:800px;margin:0 auto}
+.step{background:linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.12);border-radius:var(--radius);padding:24px;display:flex;align-items:center;gap:18px;backdrop-filter:blur(12px);box-shadow:0 8px 24px rgba(0,0,0,.15)}
+.step-num{width:52px;height:52px;min-width:52px;border-radius:14px;color:#fff;display:grid;place-items:center;font-weight:700;font-size:20px;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.step-num.g1{background:linear-gradient(135deg,#fbbf24,#ea580c)}
+.step-num.g2{background:linear-gradient(135deg,#34d399,#0d9488)}
+.step-num.g3{background:linear-gradient(135deg,#60a5fa,#4f46e5)}
+.step h3{margin:0 0 4px;font-size:17px;color:#fff}
+.step p{margin:0;color:rgba(255,255,255,.65);font-size:14px;line-height:1.6}
+.features{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.feature{background:linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.12);border-radius:var(--radius);padding:24px;backdrop-filter:blur(12px);transition:background .2s,transform .2s,box-shadow .2s;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.feature:hover{background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.05));transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.2)}
+.feature .ico{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;font-size:20px;color:#fff;margin-bottom:14px;box-shadow:0 4px 16px rgba(0,0,0,.3);transition:transform .2s}
+.feature:hover .ico{transform:scale(1.1)}
+.feature .ico.g1{background:linear-gradient(135deg,#fbbf24,#ea580c)}
+.feature .ico.g2{background:linear-gradient(135deg,#34d399,#0d9488)}
+.feature .ico.g3{background:linear-gradient(135deg,#60a5fa,#4f46e5)}
+.feature .ico.g4{background:linear-gradient(135deg,#c084fc,#ec4899)}
+.feature h3{margin:0 0 8px;font-size:16px;color:#fff}
+.feature p{margin:0;color:rgba(255,255,255,.65);font-size:13px;line-height:1.6}
+.cta{background:linear-gradient(135deg,#f59e0b,#ea580c,#c2410c);color:#fff;text-align:center;padding:64px 20px;position:relative;overflow:hidden}
+.cta::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(255,255,255,.1),transparent 70%)}
+.cta h2{font-size:34px;font-weight:700;margin:0 0 10px;position:relative}
+.cta p{font-size:16px;opacity:.9;margin:0 auto 26px;max-width:480px;position:relative}
+.cta-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative}
 .cta .btn-outline{border-color:rgba(255,255,255,.4)}
 .footer{padding:24px;text-align:center;color:var(--muted);font-size:13px;background:#0a0a0a;color:rgba(255,255,255,.4)}
 
-/* ── Auth pages ── */
-.auth-bg{min-height:calc(100vh - 64px);display:grid;place-items:center;padding:30px 20px;background:linear-gradient(135deg,#fafafa,#fff)}
+/* ── Auth pages (light theme matching reference) ── */
+.auth-bg{min-height:calc(100vh - 64px);display:grid;place-items:center;padding:30px 20px;background:linear-gradient(135deg,#fff7ed,#fff,#fefce8);position:relative}
+.auth-bg::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(249,115,22,.06),transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(251,191,36,.05),transparent 50%);pointer-events:none}
 .auth-back{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:14px;font-weight:500;margin-bottom:14px;cursor:pointer}
 .auth-back:hover{color:var(--orange)}
-.auth-card{width:min(420px,100%);background:#fff;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.1);overflow:hidden}
-.auth-header{background:linear-gradient(135deg,#fca311,#ec6415);padding:28px 24px;text-align:center;color:#fff}
-.auth-header .ico{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.2);display:grid;place-items:center;margin:0 auto 12px;font-size:22px}
-.auth-header h2{margin:0;font-size:20px;font-weight:700}
+.auth-card{width:min(420px,100%);background:#fff;border-radius:20px;box-shadow:0 24px 64px rgba(0,0,0,.1),0 0 0 1px rgba(0,0,0,.03);overflow:hidden;position:relative;z-index:1}
+.auth-header{background:linear-gradient(135deg,#fb923c,#ea580c,#c2410c);padding:32px 24px;text-align:center;color:#fff;position:relative;overflow:hidden}
+.auth-header::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center top,rgba(255,255,255,.15),transparent 70%)}
+.auth-header .ico{width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.25);display:grid;place-items:center;margin:0 auto 12px;font-size:24px;backdrop-filter:blur(8px);position:relative}
+.auth-header h2{margin:0;font-size:20px;font-weight:700;position:relative}
 .auth-body{padding:28px 24px}
 .auth-body h3{margin:0 0 6px;font-size:20px;font-weight:700;text-align:center;color:#1f2937}
 .auth-body .muted{text-align:center;color:var(--muted);font-size:14px;margin:0 0 22px}
 .field{margin-bottom:16px}
 .field label{font-size:13px;font-weight:600;display:block;margin-bottom:6px;color:#374151}
-.field input,.field select{width:100%;border:1px solid #d1d5db;border-radius:10px;padding:12px 14px;outline:0;background:#fff;color:#1f2937}
-.field input:focus,.field select:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.12)}
+.field input,.field select{width:100%;border:1px solid #d1d5db;border-radius:10px;padding:12px 14px;outline:0;background:#f9fafb;color:#1f2937;transition:border-color .15s,box-shadow .15s,background .15s}
+.field input:focus,.field select:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.12);background:#fff}
 .error{display:none;color:var(--red);font-size:13px;margin:6px 0}
-.auth-btn{width:100%;background:linear-gradient(135deg,#fca311,#ec6415);color:#fff;font-weight:700;padding:13px;border-radius:10px;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px}
-.auth-btn:hover{opacity:.92}
+.auth-btn{width:100%;background:linear-gradient(135deg,#fb923c,#ea580c);color:#fff;font-weight:700;padding:13px;border-radius:10px;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(234,88,12,.3);transition:transform .15s,box-shadow .15s}
+.auth-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(234,88,12,.4)}
 .auth-link{text-align:center;font-size:14px;color:var(--muted);margin-top:18px}
 .auth-link a{font-weight:600}
-.terms-btn{width:100%;margin-top:12px;background:#fde68a;color:#92400e;font-weight:600;padding:11px;border-radius:10px;font-size:14px}
-.terms-btn:hover{background:#fcd34d}
+.terms-btn{width:100%;margin-top:12px;background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e;font-weight:600;padding:11px;border-radius:10px;font-size:14px;border:1px solid #fcd34d;transition:transform .15s,box-shadow .15s}
+.terms-btn:hover{background:linear-gradient(135deg,#fde68a,#fcd34d);transform:translateY(-1px);box-shadow:0 4px 12px rgba(252,211,77,.3)}
 
-/* ── App shell ── */
-.app{min-height:100vh;background:#fafafa}
+/* ── App shell (light theme matching reference) ── */
+.app{min-height:100vh;background:linear-gradient(135deg,#f9fafb,#ffffff 40%,#fffbeb)}
 .app-body{display:flex;min-height:calc(100vh - 64px)}
-.sidebar{width:250px;background:#fff;border-right:1px solid var(--line);padding:20px 14px;position:fixed;top:64px;bottom:0;display:flex;flex-direction:column}
+.sidebar{width:250px;background:#fff;border-right:1px solid var(--line);padding:20px 14px;position:fixed;top:64px;bottom:0;display:flex;flex-direction:column;box-shadow:2px 0 12px rgba(0,0,0,.03)}
 .sidebar .sb-brand{display:flex;align-items:center;gap:10px;padding:0 8px 20px;border-bottom:1px solid var(--line);margin-bottom:14px}
 .sidebar .sb-brand .logo{width:32px;height:32px}
 .sidebar .sb-brand b{color:#1f2937;font-size:15px;display:block}
 .sidebar .sb-brand small{color:var(--muted);font-size:11px}
 .nav{display:flex;flex-direction:column;gap:4px;flex:1}
-.nav button{border:0;background:transparent;text-align:left;border-radius:10px;padding:11px 12px;color:#4b5563;font-weight:600;font-size:14px;display:flex;align-items:center;gap:10px}
+.nav button{border:0;background:transparent;text-align:left;border-radius:10px;padding:11px 12px;color:#4b5563;font-weight:600;font-size:14px;display:flex;align-items:center;gap:10px;transition:background .15s,color .15s}
 .nav button:hover{background:#f3f4f6}
-.nav button.active{background:#fff7ed;color:var(--orange-dark)}
+.nav button.active{background:linear-gradient(135deg,#fb923c,#ea580c);color:#fff;box-shadow:0 4px 12px rgba(234,88,12,.25)}
 .nav .ico{width:20px;text-align:center;font-size:16px}
 .sb-footer{border-top:1px solid var(--line);padding-top:14px}
-.sb-user{display:flex;align-items:center;gap:10px;padding:8px;background:#f3f4f6;border-radius:10px;margin-bottom:10px}
-.sb-user .av{width:32px;height:32px;border-radius:50%;background:#6b7280;color:#fff;display:grid;place-items:center;font-size:13px;font-weight:700}
+.sb-user{display:flex;align-items:center;gap:10px;padding:8px;background:linear-gradient(135deg,#f9fafb,#f3f4f6);border-radius:10px;margin-bottom:10px}
+.sb-user .av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#fb923c,#ea580c);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:700;box-shadow:0 2px 8px rgba(234,88,12,.2)}
 .sb-user b{font-size:13px;display:block}
 .sb-user small{font-size:11px;color:var(--muted)}
 .sb-logout{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:14px;font-weight:600;padding:8px;cursor:pointer;border-radius:8px}
@@ -109,22 +121,24 @@ window.dispatchEvent(new Event("supabase-ready"))
 .page-head h1{margin:0;font-size:26px;font-weight:700}
 .page-head p{margin:5px 0 0;color:var(--muted);font-size:14px}
 
-/* ── Cards & tables ── */
+/* ── Cards & tables (light theme) ── */
 .stat-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.stat-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.stat-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm)}
 .stat-card .lbl{font-size:12px;color:var(--muted);font-weight:600}
 .stat-card .val{font-size:26px;font-weight:800;margin:8px 0 4px;color:#1f2937}
 .stat-card .sub{font-size:11px;color:var(--muted)}
 .stat-card.accent .val{color:var(--orange)}
-.stat-card.amber .val{color:var(--amber)}
-.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+.stat-card.amber .val{color:#d97706}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow-sm)}
 .card h3{margin:0 0 14px;font-size:16px;font-weight:700}
 .grid2{display:grid;grid-template-columns:1.4fr .6fr;gap:16px}
 .mt{margin-top:16px}
-.wallet-card{background:linear-gradient(135deg,var(--orange),var(--orange-dark));color:#fff;border-radius:var(--radius);padding:26px;min-height:170px;display:flex;flex-direction:column;justify-content:space-between}
-.wallet-card .lbl{font-size:13px;opacity:.85;font-weight:600}
-.wallet-card .val{font-size:38px;font-weight:800;margin:8px 0}
-.wallet-card .tag{font-size:12px;opacity:.8}
+.wallet-card{background:linear-gradient(135deg,#fb923c,#ea580c,#c2410c);color:#fff;border-radius:var(--radius);padding:26px;min-height:170px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 8px 28px rgba(234,88,12,.25);position:relative;overflow:hidden}
+.wallet-card::before{content:"";position:absolute;top:-50%;right:-30%;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.08)}
+.wallet-card::after{content:"";position:absolute;bottom:-40%;left:-20%;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.05)}
+.wallet-card .lbl{font-size:13px;opacity:.9;font-weight:600;position:relative}
+.wallet-card .val{font-size:38px;font-weight:800;margin:8px 0;position:relative;text-shadow:0 2px 8px rgba(0,0,0,.15)}
+.wallet-card .tag{font-size:12px;opacity:.85;position:relative}
 .summary{display:grid;gap:13px}
 .summary-row{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:11px}
 .summary-row:last-child{border:0;padding-bottom:0}
@@ -135,6 +149,8 @@ window.dispatchEvent(new Event("supabase-ready"))
 .table{width:100%;border-collapse:collapse}
 .table th,.table td{padding:12px 10px;border-bottom:1px solid var(--line);font-size:13px;text-align:left;white-space:nowrap}
 .table th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;font-weight:700}
+.table tbody tr{transition:background .12s}
+.table tbody tr:hover{background:#f9fafb}
 .badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700}
 .badge.Paid,.badge.Active{background:#dcfce7;color:#16a34a}
 .badge.Pending{background:#fef3c7;color:#d97706}
@@ -142,28 +158,84 @@ window.dispatchEvent(new Event("supabase-ready"))
 .empty{text-align:center;padding:36px;color:var(--muted);font-size:14px}
 .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 
-/* ── Modal ── */
+/* ── Modal (light theme) ── */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:grid;place-items:center;padding:20px;z-index:100}
-.modal{background:#fff;border-radius:16px;width:min(480px,100%);padding:26px;box-shadow:0 25px 60px rgba(0,0,0,.2)}
+.modal{background:#fff;border-radius:18px;width:min(480px,100%);padding:26px;box-shadow:0 25px 70px rgba(0,0,0,.18),0 0 0 1px rgba(0,0,0,.04)}
 .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .modal-head h2{margin:0;font-size:20px;font-weight:700}
 .modal .close{border:0;border-radius:50%;width:34px;height:34px;background:#f3f4f6;font-size:18px;color:#6b7280;cursor:pointer}
 .modal .close:hover{background:#e5e7eb}
 .modal .muted{color:var(--muted);font-size:14px;margin:0 0 18px}
 
+/* ── Load Wallet Modal ── */
+.lw-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.lw-head-left{display:flex;align-items:center;gap:10px}
+.lw-head .wallet-ico{width:36px;height:36px;border-radius:10px;background:#ecfdf5;display:grid;place-items:center;font-size:18px;color:#059669}
+.lw-head h2{margin:0;font-size:18px;font-weight:700;color:#333}
+.lw-balance-box{border:1px solid var(--line);border-radius:10px;background:#f9fafb;padding:14px 16px;margin-bottom:18px}
+.lw-balance-box .lbl{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:4px}
+.lw-balance-box .val{font-size:22px;font-weight:800;color:#069478}
+.lw-field{margin-bottom:16px}
+.lw-field label{font-size:13px;font-weight:700;color:#333;display:block;margin-bottom:6px}
+.lw-field select,.lw-field input{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 14px;outline:0;background:#fff;color:#333;font-size:14px}
+.lw-field select:focus,.lw-field input:focus{border-color:#76c8b9;box-shadow:0 0 0 3px rgba(118,200,185,.15)}
+.lw-field select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+.lw-footer{display:flex;gap:10px;margin-top:4px}
+.lw-cancel{flex:1;border:1px solid var(--line);background:#fff;color:var(--muted);font-weight:600;padding:12px;border-radius:10px;font-size:14px;cursor:pointer}
+.lw-cancel:hover{background:#f9fafb}
+.lw-submit{flex:1;background:#76c8b9;color:#fff;font-weight:700;padding:12px;border-radius:10px;font-size:14px;cursor:pointer;border:0}
+.lw-submit:hover{background:#5fb3a4}
+.rc-submit{flex:1;background:#7c3aed;color:#fff;font-weight:700;padding:12px;border-radius:10px;font-size:14px;cursor:pointer;border:0}
+.rc-submit:hover{background:#6d28d9}
+
 /* ── Toast ── */
-.toast{position:fixed;right:20px;bottom:20px;background:#1f2937;color:#fff;padding:13px 18px;border-radius:10px;display:none;z-index:200;font-size:14px;font-weight:500;box-shadow:0 8px 25px rgba(0,0,0,.2)}
+.toast{position:fixed;right:20px;bottom:20px;background:linear-gradient(135deg,#1f2937,#111827);color:#fff;padding:13px 18px;border-radius:12px;display:none;z-index:200;font-size:14px;font-weight:500;box-shadow:0 12px 32px rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.08)}
 
 /* ── Page transitions ── */
 @keyframes pageEnter{from{opacity:0;transform:translateY(12px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes modalEnter{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes overlayEnter{from{opacity:0}to{opacity:1}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeLeft{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:translateX(0)}}
+.reveal{opacity:0}
+.reveal.in{animation:fadeUp .6s cubic-bezier(.4,0,.2,1) forwards}
+.reveal-slide{opacity:0}
+.reveal-slide.in{animation:fadeLeft .5s cubic-bezier(.4,0,.2,1) forwards}
 .page-enter{animation:pageEnter .35s cubic-bezier(.4,0,.2,1)}
 .modal-bg{animation:overlayEnter .2s ease-out}
 .modal{animation:modalEnter .3s cubic-bezier(.4,0,.2,1)}
 .nav button{transition:background .15s,color .15s}
-.glass-card,.step,.feature,.stat-card,.card,.wallet-card{transition:transform .2s,box-shadow .2s}
-.glass-card:hover,.step:hover,.feature:hover,.stat-card:hover,.card:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,.08)}
+.glass-card,.step,.feature,.stat-card,.card,.wallet-card,.admin-card{transition:transform .25s cubic-bezier(.4,0,.2,1),box-shadow .25s cubic-bezier(.4,0,.2,1),background .25s cubic-bezier(.4,0,.2,1)}
+.glass-card:hover,.step:hover,.feature:hover,.stat-card:hover,.card:hover,.admin-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+
+/* ── Entrance animations (staggered fade-up like reference site) ── */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.page-head{animation:fadeInUp .35s cubic-bezier(.4,0,.2,1) both}
+.stat-cards .stat-card{animation:fadeInUp .4s cubic-bezier(.4,0,.2,1) both}
+.stat-cards .stat-card:nth-child(1){animation-delay:.06s}
+.stat-cards .stat-card:nth-child(2){animation-delay:.12s}
+.stat-cards .stat-card:nth-child(3){animation-delay:.18s}
+.stat-cards .stat-card:nth-child(4){animation-delay:.24s}
+.grid2>*{animation:fadeInUp .4s cubic-bezier(.4,0,.2,1) both}
+.grid2>*:nth-child(1){animation-delay:.05s}
+.grid2>*:nth-child(2){animation-delay:.12s}
+.savings-card{animation:fadeInUp .4s cubic-bezier(.4,0,.2,1) both;animation-delay:.05s}
+.card.mt,.content-inner>.card{animation:fadeInUp .35s cubic-bezier(.4,0,.2,1) both;animation-delay:.15s}
+.profile-grid>*{animation:fadeInUp .4s cubic-bezier(.4,0,.2,1) both}
+.profile-grid>*:nth-child(2){animation-delay:.1s}
+.admin-panel>*{animation:fadeInUp .35s cubic-bezier(.4,0,.2,1) both}
+.admin-panel>*:nth-child(1){animation-delay:0s}
+.admin-panel>*:nth-child(2){animation-delay:.05s}
+.admin-panel>*:nth-child(3){animation-delay:.1s}
+.admin-panel>*:nth-child(4){animation-delay:.15s}
+.admin-panel>*:nth-child(5){animation-delay:.2s}
+.admin-panel>*:nth-child(6){animation-delay:.25s}
+.btn{transition:all .2s cubic-bezier(.4,0,.2,1)}
+.btn:hover{transform:translateY(-1px)}
+.act-btn{transition:all .2s cubic-bezier(.4,0,.2,1)}
+.act-btn:hover{opacity:.85;transform:scale(1.1)}
+.admin-tab{transition:all .2s cubic-bezier(.4,0,.2,1)}
+.auth-card{animation:fadeInUp .4s cubic-bezier(.4,0,.2,1) both}
 
 /* ── Input icons ── */
 .input-wrap{position:relative}
@@ -172,27 +244,193 @@ window.dispatchEvent(new Event("supabase-ready"))
 .toggle-pw{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#9ca3af;font-size:15px;background:none;border:none;padding:2px}
 .toggle-pw:hover{color:var(--orange)}
 
-@media(max-width:900px){.stat-cards{grid-template-columns:repeat(2,1fr)}.grid2,.profile-grid{grid-template-columns:1fr}.hero-stats{grid-template-columns:repeat(2,1fr)}.steps{grid-template-columns:1fr}.features{grid-template-columns:1fr}}
-@media(max-width:650px){.header{padding:0 14px}.sidebar{position:static;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px}.sidebar .sb-brand{display:none}.nav{flex-direction:row;overflow-x:auto;white-space:nowrap}.sb-footer{display:none}.content{margin:0;width:100%;padding:16px}.hero-stats{margin-top:36px}.section{padding:50px 20px}}
+/* ── Admin Panel (light theme) ── */
+.admin-head{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.admin-head .shield{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;display:grid;place-items:center;font-size:22px;box-shadow:0 4px 12px rgba(109,40,217,.25)}
+.admin-head h1{margin:0;font-size:24px;font-weight:700}
+.admin-sub{color:var(--muted);font-size:14px;margin:4px 0 22px}
+.admin-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.admin-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;align-items:center;justify-content:space-between;gap:14px;box-shadow:var(--shadow-sm)}
+.admin-card .ico{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:20px;color:#fff;flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.admin-card .ico.blue{background:linear-gradient(135deg,#60a5fa,#3b82f6)}
+.admin-card .ico.orange{background:linear-gradient(135deg,#fbbf24,#f59e0b)}
+.admin-card .ico.teal{background:linear-gradient(135deg,#34d399,#10b981)}
+.admin-card .ico.pink{background:linear-gradient(135deg,#f472b6,#ec4899)}
+.admin-card .lbl{font-size:12px;color:var(--muted);font-weight:600}
+.admin-card .val{font-size:22px;font-weight:800;color:#1f2937;margin-top:2px}
+.admin-tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.admin-tab{padding:8px 16px;border-radius:999px;font-size:13px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer;transition:.15s}
+.admin-tab:hover{border-color:#d1d5db}
+.admin-tab.active{background:#3B82F6;color:#fff;border-color:#3B82F6;box-shadow:0 2px 8px rgba(59,130,246,.25)}
+.admin-tab .tab-check{display:none;margin-right:6px}
+.admin-tab.active .tab-check{display:inline}
+.admin-search{position:relative;margin-bottom:16px;max-width:360px}
+.admin-search input{width:100%;padding:10px 14px 10px 38px;border:1px solid var(--line);border-radius:10px;font-size:14px;outline:0;background:#fff}
+.admin-search input:focus{border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,.1)}
+.admin-search .ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:14px}
+.admin-table{width:100%;border-collapse:collapse}
+.admin-table th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;font-weight:700;padding:10px 12px;text-align:left;border-bottom:1px solid var(--line)}
+.admin-table td{padding:14px 12px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle}
+.row-num{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#4b5563,#374151);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.12)}
+.member-name{font-weight:700;color:#111827}
+.member-username{font-size:12px;color:var(--muted)}
+.bal-lbl{font-size:11px;color:var(--muted)}
+.bal-val{font-size:14px;font-weight:700;color:#059669}
+.act-btns{display:flex;gap:8px}
+.act-btn{width:34px;height:34px;border-radius:8px;border:0;display:grid;place-items:center;font-size:15px;cursor:pointer;transition:.15s}
+.act-btn:hover{opacity:.85}
+.act-btn.view{background:#fef3c7;color:#b45309}
+.act-btn.wallet{background:#ccfbf1;color:#0d9488}
+.act-btn.edit{background:#ede9fe;color:#6d28d9}
+
+/* ── Admin Profile Tab ── */
+.member-selector{margin-bottom:20px}
+.member-selector label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;display:block;margin-bottom:6px}
+.member-selector select{width:100%;max-width:320px;border:1px solid var(--line);border-radius:10px;padding:11px 14px;outline:0;background:#fff;color:#1f2937;font-size:14px;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+.member-selector select:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.12)}
+.prof-section-title{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.prof-form{max-width:560px}
+.prof-form .field{margin-bottom:16px}
+.prof-form .field label{font-size:12px;font-weight:600;color:#374151}
+.prof-form .field input{width:100%;border:1px solid #d1d5db;border-radius:10px;padding:11px 14px;outline:0;background:#fff;color:#1f2937;font-size:14px}
+.prof-form .field input:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.12)}
+.prof-form .field input:disabled{background:#f9fafb;color:var(--muted)}
+
+/* ── Member Dashboard ── */
+.savings-card{background:linear-gradient(135deg,#10b981,#059669,#047857);color:#fff;border-radius:var(--radius);padding:28px;box-shadow:0 8px 28px rgba(16,185,129,.25);position:relative;overflow:hidden}
+.savings-card::before{content:"";position:absolute;top:-40%;right:-20%;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.08)}
+.savings-card::after{content:"";position:absolute;bottom:-30%;left:-15%;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.05)}
+.savings-card .sc-top{display:flex;align-items:center;gap:12px;margin-bottom:6px;position:relative}
+.savings-card .sc-ico{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.2);display:grid;place-items:center;font-size:22px;backdrop-filter:blur(8px)}
+.savings-card .sc-lbl{font-size:14px;font-weight:600;opacity:.9}
+.savings-card .sc-val{font-size:42px;font-weight:800;margin:4px 0 6px;position:relative;text-shadow:0 2px 8px rgba(0,0,0,.15)}
+.savings-card .sc-sub{font-size:13px;opacity:.8;position:relative;margin-bottom:16px}
+.savings-card .sc-notif{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:12px 14px;font-size:13px;margin-bottom:16px;position:relative;display:flex;align-items:center;gap:8px;line-height:1.5}
+.savings-card .sc-notif a{color:#fff;font-weight:700;text-decoration:underline}
+.savings-card .sc-withdraw{background:#fff;color:#059669;font-weight:700;padding:12px 24px;border-radius:10px;font-size:15px;box-shadow:0 4px 12px rgba(0,0,0,.1);transition:transform .15s,box-shadow .15s;position:relative;cursor:pointer;border:0}
+.savings-card .sc-withdraw:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.15)}
+.tx-empty{text-align:center;padding:48px 20px}
+.tx-empty .tx-ico{width:64px;height:64px;border-radius:50%;background:#f0fdf4;display:grid;place-items:center;font-size:28px;color:#10b981;margin:0 auto 14px}
+.tx-empty .tx-title{font-size:16px;font-weight:700;color:#374151;margin-bottom:4px}
+.tx-empty .tx-sub{font-size:14px;color:var(--muted)}
+.terms-link{background:linear-gradient(135deg,#fde68a,#facc15);color:#78350f;font-weight:600;padding:9px 16px;border-radius:10px;font-size:13px;border:1px solid #fbbf24;transition:transform .15s,box-shadow .15s;cursor:pointer}
+.terms-link:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(250,204,21,.3)}
+
+/* ── Profile form (reference design) ── */
+.prof-row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.gcash-input-row{display:flex;gap:8px}
+.gcash-input-row input{flex:1}
+.gcash-copy{border:1px solid #d1d5db;background:#f9fafb;border-radius:10px;padding:0 14px;cursor:pointer;font-size:16px;color:#6b7280;transition:.15s;flex-shrink:0}
+.gcash-copy:hover{background:#f3f4f6;color:#374151}
+.pw-field{position:relative}
+.pw-field input{width:100%;padding-right:40px}
+.pw-field .toggle-pw{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#9ca3af;font-size:15px;background:none;border:none;padding:2px}
+.pw-field .toggle-pw:hover{color:var(--orange)}
+.btn-cred{width:100%;border:1px solid #3b82f6;background:transparent;color:#3b82f6;font-weight:600;padding:11px;border-radius:10px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s;margin-top:4px}
+.btn-cred:hover{background:#eff6ff}
+.btn-save-profile{width:100%;background:linear-gradient(135deg,#fb923c,#ea580c);color:#fff;font-weight:700;padding:13px;border-radius:10px;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(234,88,12,.3);transition:transform .15s,box-shadow .15s;margin-top:20px}
+.btn-save-profile:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(234,88,12,.4)}
+
+/* ── Total Withdrawal tab ── */
+.tw-head-ico{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#4D73FF,#684DF0);color:#fff;display:grid;place-items:center;font-size:22px;box-shadow:0 4px 14px rgba(77,115,255,.3);flex-shrink:0}
+.tw-summary-card{background:linear-gradient(135deg,#4D73FF,#684DF0);border-radius:18px;padding:28px;color:#fff;position:relative;overflow:hidden;box-shadow:0 8px 28px rgba(77,115,255,.25);margin-top:20px}
+.tw-summary-card::before{content:"";position:absolute;top:-40%;right:-15%;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.08)}
+.tw-summary-card::after{content:"";position:absolute;bottom:-30%;left:-10%;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.05)}
+.tw-summary-ico{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.2);display:grid;place-items:center;font-size:20px;margin-bottom:14px;position:relative;backdrop-filter:blur(8px)}
+.tw-summary-lbl{font-size:14px;font-weight:600;opacity:.9;position:relative}
+.tw-summary-val{font-size:40px;font-weight:800;margin:4px 0;position:relative;text-shadow:0 2px 8px rgba(0,0,0,.15)}
+.tw-summary-cap{font-size:13px;opacity:.75;position:relative}
+.tw-history-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.tw-history-head h3{margin:0;font-size:16px;font-weight:700}
+.tw-filter{position:relative;display:flex;align-items:center}
+.tw-filter .tw-filter-ico{position:absolute;left:12px;color:#9ca3af;pointer-events:none;z-index:1}
+.tw-filter select{appearance:none;-webkit-appearance:none;border:1px solid var(--line);border-radius:10px;padding:9px 36px 9px 36px;font-size:13px;font-weight:600;color:#4b5563;background:#fff;cursor:pointer;outline:0;transition:border-color .15s,box-shadow .15s}
+.tw-filter select:focus{border-color:#4D73FF;box-shadow:0 0 0 3px rgba(77,115,255,.12)}
+.tw-filter .tw-chevron{position:absolute;right:12px;color:#9ca3af;pointer-events:none;font-size:11px}
+.tw-empty{text-align:center;padding:48px 20px}
+.tw-empty .tw-empty-ico{width:64px;height:64px;border-radius:50%;background:#f3f4f6;display:grid;place-items:center;font-size:28px;color:#9ca3af;margin:0 auto 14px}
+.tw-empty .tw-empty-title{font-size:16px;font-weight:700;color:#374151;margin-bottom:4px}
+.tw-empty .tw-empty-sub{font-size:14px;color:var(--muted)}
+
+/* ── Admin GCash Tab ── */
+.gcash-panel{background:#F0F4FF;border:1px solid #dbe4ff;border-radius:14px;padding:24px;margin-bottom:16px}
+.gcash-panel-head{font-size:16px;font-weight:700;color:#1f2937;margin:0 0 4px}
+.gcash-panel-desc{font-size:13px;color:#6b7280;margin:0 0 18px}
+.gcash-panel .field{margin-bottom:14px}
+.gcash-panel .field label{font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;display:block}
+.gcash-panel .field input{width:100%;border:1px solid #d1d5db;border-radius:10px;padding:11px 14px;outline:0;background:#fff;color:#1f2937;font-size:14px;transition:border-color .15s,box-shadow .15s}
+.gcash-panel .field input:focus{border-color:#4F46E5;box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+.btn-save-gcash{background:#4F46E5;color:#fff;font-weight:600;padding:12px 24px;border-radius:10px;font-size:14px;display:inline-flex;align-items:center;gap:8px;border:0;cursor:pointer;box-shadow:0 4px 12px rgba(79,70,229,.25);transition:transform .15s,box-shadow .15s}
+.btn-save-gcash:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(79,70,229,.35)}
+.gcash-receipts-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.gcash-receipts-head h3{margin:0;font-size:16px;font-weight:700}
+.gcash-receipts-badge{background:#9ca3af;color:#fff;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px}
+.gcash-receipts-desc{font-size:13px;color:#6b7280;margin:0 0 18px}
+.gcash-receipts-empty{text-align:center;padding:48px 20px;color:#9ca3af;font-size:15px}
+
+/* ── GCash Payment Bubble & Modal ── */
+.sb-gcash-bubble{position:relative;display:flex;align-items:center;justify-content:center;gap:7px;margin:0 0 10px;margin-left:auto;width:fit-content;padding:10px 18px;border-radius:999px;color:#fff;font-size:15px;font-weight:800;letter-spacing:.3px;cursor:pointer;overflow:hidden;background:linear-gradient(145deg,#3b7bff 0%,#1f54e0 55%,#163bbf 100%);box-shadow:inset 0 1px 1px rgba(255,255,255,.45),inset 0 -2px 4px rgba(0,0,0,.25),0 5px 14px rgba(31,84,224,.4),0 1px 3px rgba(0,0,0,.2);transition:transform .18s ease,box-shadow .18s ease;animation:gcashFloat 3.2s ease-in-out infinite}
+.sb-gcash-bubble::before{content:"";position:absolute;top:1px;left:8%;right:8%;height:42%;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(255,255,255,.05));filter:blur(.5px);pointer-events:none}
+.sb-gcash-bubble::after{content:"";position:absolute;top:14%;left:18%;width:22%;height:18%;border-radius:50%;background:rgba(255,255,255,.55);filter:blur(1px);pointer-events:none}
+.sb-gcash-bubble .gcash-ico{position:relative;z-index:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+.sb-gcash-bubble:hover{transform:translateY(-2px) scale(1.03);box-shadow:inset 0 1px 1px rgba(255,255,255,.5),inset 0 -2px 4px rgba(0,0,0,.25),0 9px 22px rgba(31,84,224,.55),0 2px 4px rgba(0,0,0,.25)}
+@keyframes gcashFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@media(prefers-reduced-motion:reduce){.sb-gcash-bubble{animation:none}}
+.gcash-pay-modal{background:#2e5bff;border-radius:18px;width:min(380px,100%);padding:24px;color:#fff;box-shadow:0 25px 70px rgba(0,0,0,.28);position:relative;animation:modalEnter .3s cubic-bezier(.4,0,.2,1)}
+.gp-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:18px}
+.gp-head .gp-ico{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:18px;flex-shrink:0}
+.gp-head .gp-titles{flex:1;min-width:0}
+.gp-head .gp-title{font-size:16px;font-weight:700;margin:0 0 2px}
+.gp-head .gp-sub{font-size:12px;opacity:.85;margin:0;line-height:1.4}
+.gp-close{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.18);border:0;color:#fff;font-size:16px;cursor:pointer;flex-shrink:0;display:grid;place-items:center}
+.gp-close:hover{background:rgba(255,255,255,.3)}
+.gp-logo{width:84px;height:84px;border-radius:16px;background:#000;display:grid;place-items:center;margin:0 auto 6px}
+.gp-logo .gp-logo-img{width:54px;height:54px;border-radius:50%;background-image:url("https://media.base44.com/images/public/6a60265126ce76965dce5ea0/2798d58a3_A8.png");background-size:cover;background-position:center}
+.gp-brand{text-align:center;font-size:13px;font-weight:700;letter-spacing:1.5px;margin:0 0 22px;opacity:.95}
+.gp-num-lbl{font-size:12px;opacity:.85;text-align:center;margin-bottom:4px}
+.gp-num{font-size:26px;font-weight:800;text-align:center;letter-spacing:1px;margin-bottom:6px}
+.gp-name{text-align:center;font-size:18px;font-weight:700;opacity:.95;margin-bottom:18px}
+.gp-copy{width:100%;background:#fff;color:#2e5bff;font-weight:700;padding:12px;border-radius:999px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;border:0;cursor:pointer;margin-bottom:10px;transition:transform .15s}
+.gp-copy:hover{transform:translateY(-1px)}
+.gp-instr{text-align:center;font-size:12px;opacity:.9;margin:0 0 16px;line-height:1.5}
+.gp-upload{width:100%;background:#3a59d8;color:#fff;font-weight:700;padding:13px;border-radius:999px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;border:0;cursor:pointer;transition:transform .15s,background .15s}
+.gp-upload:hover{transform:translateY(-1px);background:#344fc9}
+
+/* ── Receipts grid & lightbox ── */
+.gcash-receipts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}
+.gcash-receipt-item{cursor:pointer;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;transition:transform .15s,box-shadow .15s}
+.gcash-receipt-item:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.1)}
+.gcash-receipt-item img{width:100%;height:120px;object-fit:cover;display:block}
+.gcash-receipt-meta{padding:8px 10px}
+.gcash-receipt-meta b{font-size:13px;display:block;color:#1f2937}
+.gcash-receipt-meta small{font-size:11px;color:var(--muted)}
+.receipt-lightbox{background:#fff;border-radius:16px;max-width:520px;width:100%;padding:16px;box-shadow:0 25px 70px rgba(0,0,0,.3);animation:modalEnter .3s cubic-bezier(.4,0,.2,1)}
+.receipt-lb-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.receipt-lb-head b{font-size:15px}
+.receipt-lightbox img{width:100%;border-radius:10px;display:block}
+
+@media(max-width:900px){.stat-cards,.admin-cards{grid-template-columns:repeat(2,1fr)}.grid2,.profile-grid{grid-template-columns:1fr}.hero-stats{grid-template-columns:repeat(2,1fr)}.features{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:650px){.app-body{flex-direction:column}.header{padding:0 14px}.sidebar{position:static;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px}.sidebar .sb-brand{display:none}.nav{flex-direction:row;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}.sb-footer{display:none}.content{margin:0;width:100%;padding:14px;overflow-x:hidden}.hero-stats{margin-top:36px}.section{padding:50px 18px}.features{grid-template-columns:1fr}.card{padding:16px}.page-head{flex-direction:column;gap:8px}.page-head h1{font-size:22px}.admin-table{display:block;overflow-x:auto;width:100%;-webkit-overflow-scrolling:touch}.stat-card{min-width:0}.stat-card .val{font-size:20px;overflow-wrap:anywhere}.wallet-card{padding:20px;min-height:150px}.savings-card{padding:20px}.savings-card .sc-val{font-size:32px;overflow-wrap:anywhere}.modal,.receipt-lightbox{width:100%;max-width:100%;padding:18px}.gcash-pay-modal{width:100%}.gp-num{font-size:22px}.admin-search{max-width:100%}.member-selector select{max-width:100%}.prof-form{max-width:100%}.gcash-receipts-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}}
+
 </style>
 </head>
 <body><div id="root"></div><div id="toast" class="toast"></div>
 <script src="config.js"></script>
 <script>
 /* ════════ STATE ════════ */
-const state={page:"Landing",user:null,users:[],withdrawals:[],loads:[]};
+const state={page:"Landing",user:null,users:[],withdrawals:[],loads:[],receipts:[],adminTab:"Profile",adminSelectedMember:null};
 
 const SEED={
  users:[
-  {id:1,name:"Tan",username:"Tan",password:"heyhey",role:"Admin",balance:0,loaded:0,gcash:"",status:"Active",joined:"2026-01-10"},
-  {id:2,name:"Juan Dela Cruz",username:"juan",password:"demo",role:"Member",balance:4250,loaded:5000,gcash:"09171234567",status:"Active",joined:"2026-02-03"},
-  {id:3,name:"Maria Santos",username:"maria",password:"demo",role:"Member",balance:1850,loaded:2500,gcash:"09181234567",status:"Active",joined:"2026-02-14"},
-  {id:4,name:"Pedro Reyes",username:"pedro",password:"demo",role:"Member",balance:900,loaded:1500,gcash:"09201234567",status:"Active",joined:"2026-03-01"}
+  {id:1,name:"Tan",username:"Tan",password:"heyhey",role:"Admin",balance:0,loaded:0,gcash:"",gcash_name:"",mobile:"",facebook:"",address:"",age:"",email:"",backup_mobile:"",status:"Active",joined:"2026-01-10"},
+  {id:2,name:"Juan Dela Cruz",username:"juan",password:"demo",role:"Member",balance:4250,loaded:5000,gcash:"09171234567",gcash_name:"Juan Dela Cruz",mobile:"09171234567",facebook:"Juan Dela Cruz",address:"Quezon City, Metro Manila",age:"28",email:"juan@gmail.com",backup_mobile:"09181234567",status:"Active",joined:"2026-02-03"},
+  {id:3,name:"Maria Santos",username:"maria",password:"demo",role:"Member",balance:1850,loaded:2500,gcash:"09181234567",gcash_name:"Maria Santos",mobile:"09181234567",facebook:"Maria Santos",address:"Makati City, Metro Manila",age:"24",email:"maria@gmail.com",backup_mobile:"09201234567",status:"Active",joined:"2026-02-14"},
+  {id:4,name:"Pedro Reyes",username:"pedro",password:"demo",role:"Member",balance:900,loaded:1500,gcash:"09201234567",gcash_name:"Pedro Reyes",mobile:"09201234567",facebook:"Pedro Reyes",address:"Pasig City, Metro Manila",age:"31",email:"pedro@gmail.com",backup_mobile:"09171234567",status:"Active",joined:"2026-03-01"}
  ],
  withdrawals:[
-  {id:"WD-1001",user:"Juan Dela Cruz",amount:750,gcash:"09171234567",status:"Pending",date:"2026-08-12"},
-  {id:"WD-1002",user:"Maria Santos",amount:500,gcash:"09181234567",status:"Pending",date:"2026-08-20"},
-  {id:"WD-1003",user:"Pedro Reyes",amount:300,gcash:"09201234567",status:"Paid",date:"2026-09-03"}
+  {id:"WD-1001",user:"Juan Dela Cruz",amount:750,charge:38,gcash:"09171234567",status:"Pending",date:"2026-08-12"},
+  {id:"WD-1002",user:"Maria Santos",amount:500,charge:25,gcash:"09181234567",status:"Pending",date:"2026-08-20"},
+  {id:"WD-1003",user:"Pedro Reyes",amount:300,charge:15,gcash:"09201234567",status:"Paid",date:"2026-09-03"}
  ],
  loads:[
   {id:"LD-1001",user:"Juan Dela Cruz",amount:5000,date:"2026-08-01"},
@@ -209,7 +447,7 @@ function getServiceKey(){
  return(window.SUPABASE_SERVICE_KEY||"").trim();
 }
 function initSB(){
- const url=(window.SUPABASE_URL||"").trim(),key=(window.SUPABASE_ANON_KEY||"").trim();
+ const url=(window.SUPABASE_URL||"https://okvpjjnowtusjnnlnfgq.supabase.co").trim(),key=(window.SUPABASE_ANON_KEY||"sb_publishable_vYzxNIVStG6MeGfToNeRJQ_6Ufbrr51").trim();
  if(url&&key&&!url.includes("placeholder")&&!url.includes("example")&&window.supabase){
   sb=window.supabase.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,storage:localStorage,detectSessionInUrl:true}});
   useSB=true;
@@ -238,15 +476,18 @@ function saveServiceKey(){
 async function loadData(){
  if(!useSB)return;
  try{
-  const[{data:users,error:e1},{data:wds,error:e2},{data:lds,error:e3}]=await Promise.all([
+  const[{data:users,error:e1},{data:wds,error:e2},{data:lds,error:e3},{data:rcpts,error:e4}]=await Promise.all([
    sb.from("profiles").select("*"),
    sb.from("withdrawals").select("*").order("date",{ascending:false}),
-   sb.from("loads").select("*").order("date",{ascending:false})
+   sb.from("loads").select("*").order("date",{ascending:false}),
+   sb.from("receipts").select("*").order("date",{ascending:false})
   ]);
   if(e1)console.error("profiles load error:",e1.message);
+  if(e4)console.error("receipts load error:",e4.message);
   state.users=users||[];
   state.withdrawals=(wds||[]).map(w=>({...w,user:w.user_name}));
   state.loads=(lds||[]).map(l=>({...l,user:l.user_name}));
+  state.receipts=rcpts||[];
  }catch(e){console.error("loadData error:",e)}
 }
 function loadLocal(){
@@ -255,7 +496,7 @@ function loadLocal(){
  }catch{}
  Object.assign(state,JSON.parse(JSON.stringify(SEED)));saveLocal();
 }
-function saveLocal(){localStorage.setItem("savings_pro_demo",JSON.stringify({users:state.users,withdrawals:state.withdrawals,loads:state.loads}))}
+function saveLocal(){localStorage.setItem("savings_pro_demo",JSON.stringify({users:state.users,withdrawals:state.withdrawals,loads:state.loads,receipts:state.receipts||[]}))}
 
 /* ════════ AUTH ════════ */
 async function checkSession(){
@@ -358,7 +599,7 @@ async function registerAction(){
  }else{
   if(state.users.some(x=>x.username===u)){toast("Username already exists.");return}
   let name=u.charAt(0).toUpperCase()+u.slice(1);
-  let m={id:Math.max(...state.users.map(x=>x.id))+1,name,username:u,password:p,role:"Member",balance:0,loaded:0,gcash:"",status:"Active",joined:new Date().toISOString().slice(0,10)};
+  let m={id:Math.max(...state.users.map(x=>x.id))+1,name,username:u,password:p,role:"Member",balance:0,loaded:0,gcash:"",gcash_name:"",mobile:"",facebook:"",address:"",age:"",email:"",backup_mobile:"",status:"Active",joined:new Date().toISOString().slice(0,10)};
   state.users.push(m);state.user=m;state.page="Dashboard";saveLocal();render();toast("Account created successfully.");
  }
 }
@@ -366,30 +607,34 @@ function logout(){if(useSB)sb.auth.signOut();localStorage.removeItem("sb_session
 
 /* ════════ ACTIONS ════════ */
 async function submitLoad(){
- let un=document.getElementById("loadUser").value,a=Number(document.getElementById("loadAmount").value);
+ let un=document.getElementById("loadUser").value,a=Number(document.getElementById("loadAmount").value),action=document.getElementById("loadAction")?document.getElementById("loadAction").value:"add";
  if(!a||a<=0){toast("Enter a valid amount.");return}
  let u=state.users.find(x=>x.username===un);if(!u)return;
+ if(action==="deduct"&&a>u.balance){toast("Amount exceeds current balance.");return}
+ let delta=action==="deduct"?-a:a;
  if(useSB){
-  await sb.from("profiles").update({balance:u.balance+a,loaded:u.loaded+a}).eq("id",u.id);
-  await sb.from("loads").insert({id:"LD-"+(1001+state.loads.length),user_id:u.id,user_name:u.name,amount:a,date:new Date().toISOString().slice(0,10)});
+  await sb.from("profiles").update({balance:u.balance+delta,loaded:action==="add"?u.loaded+a:u.loaded}).eq("id",u.id);
+  await sb.from("loads").insert({id:"LD-"+(1001+state.loads.length),user_id:u.id,user_name:u.name,amount:delta,date:new Date().toISOString().slice(0,10)});
   await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
  }else{
-  u.balance+=a;u.loaded+=a;state.loads.unshift({id:"LD-"+(1001+state.loads.length),user:u.name,amount:a,date:new Date().toISOString().slice(0,10)});saveLocal();
+  u.balance+=delta;if(action==="add")u.loaded+=a;state.loads.unshift({id:"LD-"+(1001+state.loads.length),user:u.name,amount:delta,date:new Date().toISOString().slice(0,10)});saveLocal();
  }
- closeModal();render();toast(peso(a)+" loaded to "+u.name+".");
+ closeModal();render();toast(peso(a)+(action==="deduct"?" deducted from ":" loaded to ")+u.name+".");
 }
 async function submitWithdrawal(){
  let a=Number(document.getElementById("wdAmount").value);
- if(a<300||a>state.user.balance){toast("Enter a valid withdrawal amount.");return}
+ if(a<MIN_WITHDRAWAL||a>state.user.balance){toast("Enter a valid withdrawal amount (min "+peso(MIN_WITHDRAWAL)+").");return}
  let u=state.users.find(x=>x.id===state.user.id);if(!u)return;
+ let charge=calcCharge(a),totalDeduction=a+charge;
+ if(totalDeduction>u.balance){toast("Insufficient balance for withdrawal + charge ("+peso(totalDeduction)+").");return}
  if(useSB){
-  await sb.from("profiles").update({balance:u.balance-a}).eq("id",u.id);
-  await sb.from("withdrawals").insert({id:"WD-"+(1001+state.withdrawals.length),user_id:u.id,user_name:u.name,amount:a,gcash:u.gcash,status:"Pending",date:new Date().toISOString().slice(0,10)});
+  await sb.from("profiles").update({balance:u.balance-totalDeduction}).eq("id",u.id);
+  await sb.from("withdrawals").insert({id:"WD-"+(1001+state.withdrawals.length),user_id:u.id,user_name:u.name,amount:a,charge:charge,gcash:u.gcash,status:"Pending",date:new Date().toISOString().slice(0,10)});
   await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
  }else{
-  u.balance-=a;state.withdrawals.unshift({id:"WD-"+(1001+state.withdrawals.length),user:u.name,amount:a,gcash:u.gcash,status:"Pending",date:new Date().toISOString().slice(0,10)});saveLocal();
+  u.balance-=totalDeduction;state.withdrawals.unshift({id:"WD-"+(1001+state.withdrawals.length),user:u.name,amount:a,charge:charge,gcash:u.gcash,status:"Pending",date:new Date().toISOString().slice(0,10)});saveLocal();
  }
- closeModal();render();toast("Withdrawal request submitted.");
+ closeModal();render();toast("Withdrawal request submitted. Charge: "+peso(charge)+".");
 }
 async function pay(id){
  let w=state.withdrawals.find(x=>x.id===id);if(!w)return;
@@ -409,29 +654,111 @@ async function addMember(){
   await loadData();
  }else{
   if(state.users.some(x=>x.username===u)){toast("Username already exists.");return}
-  state.users.push({id:Math.max(...state.users.map(x=>x.id))+1,name:n,username:u,password:"demo",role:"Member",balance:0,loaded:0,gcash:g,status:"Active",joined:new Date().toISOString().slice(0,10)});saveLocal();
+  state.users.push({id:Math.max(...state.users.map(x=>x.id))+1,name:n,username:u,password:"demo",role:"Member",balance:0,loaded:0,gcash:g,gcash_name:"",mobile:"",facebook:"",address:"",age:"",email:"",backup_mobile:"",status:"Active",joined:new Date().toISOString().slice(0,10)});saveLocal();
  }
  render();toast("Member created.");
 }
 async function saveProfile(){
  let u=state.users.find(x=>x.id===state.user.id);if(!u)return;
  let name=document.getElementById("pName").value.trim()||u.name;
+ let age=document.getElementById("pAge").value.trim();
+ let email=document.getElementById("pEmail").value.trim();
+ let mobile=document.getElementById("pMobile").value.trim();
+ let backup_mobile=document.getElementById("pBackupMobile").value.trim();
+ let facebook=document.getElementById("pFacebook").value.trim();
+ let address=document.getElementById("pAddress").value.trim();
  let gcash=document.getElementById("pGcash").value.trim();
+ let gcash_name=document.getElementById("pGcashName").value.trim();
  if(useSB){
-  await sb.from("profiles").update({name,gcash}).eq("id",u.id);
+  await sb.from("profiles").update({name,age,email,mobile,backup_mobile,facebook,address,gcash,gcash_name}).eq("id",u.id);
   await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
  }else{
-  u.name=name;u.gcash=gcash;state.user=u;saveLocal();
+  Object.assign(u,{name,age,email,mobile,backup_mobile,facebook,address,gcash,gcash_name});state.user=u;saveLocal();
  }
  render();toast("Profile updated.");
 }
+async function updateCredentials(){
+ let u=state.users.find(x=>x.id===state.user.id);if(!u)return;
+ let pw=document.getElementById("pPassword").value;
+ let pw2=document.getElementById("pPassword2").value;
+ if(!pw){toast("Password cannot be empty.");return}
+ if(pw!==pw2){toast("Passwords do not match.");return}
+ if(useSB){
+  await sb.from("profiles").update({password:pw}).eq("id",u.id);
+  const{error}=await sb.auth.updateUser({password:pw});
+  if(error)console.error("auth password update error:",error.message);
+  await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
+ }else{
+  u.password=pw;state.user=u;saveLocal();
+ }
+ render();toast("Credentials updated successfully.");
+}
+function copyGcash(id){let v=document.getElementById(id).value;if(v){navigator.clipboard.writeText(v).then(()=>toast("GCash number copied."))}else{toast("Nothing to copy.")}}
+function gcashPaymentModal(){
+ const admin=state.users.find(u=>u.role==="Admin")||state.user;
+ const num=admin.gcash||"";
+ const name=admin.gcash_name||"";
+ document.body.insertAdjacentHTML("beforeend",`<div class="modal-bg" id="modal"><div class="gcash-pay-modal">
+  <div class="gp-head">
+   <div class="gp-ico">📱</div>
+   <div class="gp-titles"><p class="gp-title">Payment via GCash</p><p class="gp-sub">Send payment here, then upload receipt.</p></div>
+   <button class="gp-close" onclick="closeModal()">×</button>
+  </div>
+  <div class="gp-logo"><div class="gp-logo-img"></div></div>
+  <p class="gp-brand">SAVINGS PRO</p>
+  <p class="gp-num-lbl">GCash Number</p>
+  <div class="gp-num">${num||"Not set"}</div>
+  <div class="gp-name">GCash Name: ${name||"Not set"}</div>
+  <button class="gp-copy" onclick="copyGcashNumber('${num}')">⧉ Click Here to Copy Number</button>
+  <p class="gp-instr">And open your GCash App to paste the GCash Number there</p>
+  <button class="gp-upload" onclick="uploadReceipt()">☁ Upload Receipt</button>
+ </div></div>`);
+}
+function copyGcashNumber(num){if(!num){toast("No GCash number set.");return}navigator.clipboard.writeText(num).then(()=>toast("GCash number copied."))}
+function compressImage(file,maxW,quality){return new Promise((res)=>{const r=new FileReader();r.onload=e=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;if(w>maxW){h=Math.round(h*maxW/w);w=maxW}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/jpeg',quality))};img.src=e.target.result};r.readAsDataURL(file)})}
+async function uploadToCloudinary(dataUrl){
+ const cloudName=(window.CLOUDINARY_CLOUD_NAME||"").trim();
+ const preset=(window.CLOUDINARY_UPLOAD_PRESET||"").trim();
+ if(!cloudName||!preset)throw new Error("Cloudinary not configured");
+ const blob=await(await fetch(dataUrl)).blob();
+ const fd=new FormData();fd.append("file",blob);fd.append("upload_preset",preset);
+ const res=await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,{method:"POST",body:fd});
+ if(!res.ok)throw new Error("Cloudinary upload failed");
+ const json=await res.json();return json.secure_url;
+}
+function uploadReceipt(){
+ const f=document.createElement('input');f.type='file';f.accept='image/*,video/*';
+ f.onchange=async e=>{const file=e.target.files[0];if(!file)return;
+  const dataUrl=await compressImage(file,1000,0.7);
+  const u=state.users.find(x=>x.id===state.user.id);if(!u)return;
+  const id="RC-"+(1001+(state.receipts||[]).length);
+  let imageUrl;
+  try{imageUrl=await uploadToCloudinary(dataUrl)}catch(err){console.error("Cloudinary error:",err);toast("Cloudinary upload failed.");return}
+  if(useSB){
+   const{error}=await sb.from("receipts").insert({id,user_id:u.id,user_name:u.name,image:imageUrl,date:new Date().toISOString()});
+   if(error){toast("Receipt upload failed — run the latest schema SQL to add the receipts table.");return}
+   await loadData();
+  }else{
+   state.receipts.unshift({id,user_id:u.id,user_name:u.name,image:imageUrl,date:new Date().toISOString()});saveLocal();
+  }
+  closeModal();render();toast("Receipt uploaded.");
+ };
+ f.click();
+}
+function viewReceipt(id){const r=(state.receipts||[]).find(x=>x.id===id);if(!r)return;document.body.insertAdjacentHTML("beforeend",`<div class="modal-bg" id="modal" onclick="closeModal()"><div class="receipt-lightbox" onclick="event.stopPropagation()"><div class="receipt-lb-head"><b>${r.user_name||"Member"} — ${(r.date||"").slice(0,10)}</b><button class="gp-close" onclick="closeModal()">×</button></div><img src="${r.image}" alt="receipt"></div></div>`)}
 
 /* ════════ HELPERS ════════ */
+const CHARGE_RATE=0.05; /* 5% service charge on withdrawals */
+const MIN_WITHDRAWAL=300;
+function calcCharge(amount){return Math.round(amount*CHARGE_RATE)}
+function calcNet(amount){return amount-calcCharge(amount)}
 function peso(n){return "₱"+Number(n||0).toLocaleString("en-PH",{minimumFractionDigits:0,maximumFractionDigits:2})}
 function toast(x){let t=document.getElementById("toast");t.textContent=x;t.style.display="block";setTimeout(()=>t.style.display="none",2400)}
 function togglePw(id,btn){let i=document.getElementById(id);if(i.type==='password'){i.type='text';btn.textContent='🙈'}else{i.type='password';btn.textContent='👁'}}
 function today(){return new Date().toISOString().slice(0,10)}
 function totalWithdrawn(name){return state.withdrawals.filter(w=>w.user===name&&w.status!=="Rejected").reduce((a,w)=>a+w.amount,0)}
+function totalCharge(name){return state.withdrawals.filter(w=>w.user===name&&w.status!=="Rejected").reduce((a,w)=>a+(w.charge||0),0)}
+function totalNet(name){return totalWithdrawn(name)-totalCharge(name)}
 
 /* ════════ RENDERING ════════ */
 function header(auth){
@@ -442,36 +769,34 @@ function landing(){
 <section class="hero">
  <div class="hero-logo"></div>
  <div class="badge">SAVE YOUR BUDGET MORE</div>
- <h1>Save Smart with <span class="hl">Savings Pro</span></h1>
- <p>A simple savings wallet loaded by the admin. Track your balance, request withdrawals to GCash, and watch your savings grow — no codes, no levels, just savings.</p>
+ <h1>Gastos mo, magiging ipon mo na ! dito lang sa <span class="hl">Savings Pro</span></h1>
+ <p>A simple savings wallet loaded by the admin. Track your balance, request withdrawals to GCash with a small service charge, and watch your savings grow — no codes, no levels, just savings.</p>
  <div class="hero-actions">
   <button class="btn btn-primary" onclick="go('Register')">Get Started Free →</button>
   <button class="btn btn-outline" onclick="go('Login')">Log In to My Wallet</button>
  </div>
  <div class="hero-stats">
-  <div class="glass-card"><strong>1,200+</strong><span>Active Members</span></div>
-  <div class="glass-card"><strong>₱5M+</strong><span>Total Saved</span></div>
-  <div class="glass-card"><strong>₱300</strong><span>Min Withdrawal</span></div>
-  <div class="glass-card amber"><strong>GCash</strong><span>Payout Method</span></div>
+  <div class="glass-card reveal"><strong>1,200+</strong><span>Active Members</span></div>
+  <div class="glass-card reveal"><strong>₱5M+</strong><span>Total Saved</span></div>
+  <div class="glass-card reveal"><strong>5%</strong><span>Service Charge</span></div>
+  <div class="glass-card reveal"><strong>GCash</strong><span>Payout Method</span></div>
  </div>
 </section>
 <section class="section center">
- <h2>How Savings Pro Works</h2>
- <p class="sub">Three simple steps to start saving.</p>
+ <div class="reveal"><h2>How <span class="hl">Savings Pro</span> Works</h2><p class="sub">Three simple steps to start saving.</p></div>
  <div class="steps">
-  <div class="step"><div class="step-num">1</div><h3>Create Your Account</h3><p>Sign up and complete your profile with your GCash details.</p></div>
-  <div class="step"><div class="step-num">2</div><h3>Admin Loads Your Wallet</h3><p>The admin funds your savings wallet. Your balance updates instantly.</p></div>
-  <div class="step"><div class="step-num">3</div><h3>Withdraw Anytime</h3><p>Request a withdrawal and receive it straight to your GCash account.</p></div>
+  <div class="step reveal-slide"><div class="step-num g1">1</div><div><h3>Create Your Account</h3><p>Sign up and complete your profile with your GCash details.</p></div></div>
+  <div class="step reveal-slide"><div class="step-num g2">2</div><div><h3>Admin Loads Your Wallet</h3><p>The admin funds your savings wallet. Your balance updates instantly.</p></div></div>
+  <div class="step reveal-slide"><div class="step-num g3">3</div><div><h3>Withdraw Anytime</h3><p>Request a withdrawal with a small 5% service charge and receive it straight to your GCash account.</p></div></div>
  </div>
 </section>
-<section class="section center" style="background:#fff">
- <h2>Why Choose Savings Pro?</h2>
- <p class="sub">Everything you need to manage your savings in one place.</p>
+<section class="section center">
+ <div class="reveal"><h2>Why Choose <span class="hl">Savings Pro</span>?</h2><p class="sub">Everything you need to manage your savings in one place.</p></div>
  <div class="features">
-  <div class="feature"><div class="ico">◉</div><h3>Your Savings Wallet</h3><p>Track your savings balance in one simple wallet. Every load from the admin shows up instantly.</p></div>
-  <div class="feature"><div class="ico">＋</div><h3>Admin-Loaded Savings</h3><p>Your wallet is funded by the admin — no codes, no levels, just straightforward savings.</p></div>
-  <div class="feature"><div class="ico">₱</div><h3>GCash Withdrawals</h3><p>Request a withdrawal anytime and receive it straight to your GCash account.</p></div>
-  <div class="feature"><div class="ico">✓</div><h3>Secure & Simple</h3><p>A clean, secure wallet experience focused only on your savings and withdrawals.</p></div>
+  <div class="feature reveal"><div class="ico g1">◉</div><h3>Your Savings Wallet</h3><p>Track your savings balance in one simple wallet. Every load from the admin shows up instantly.</p></div>
+  <div class="feature reveal"><div class="ico g2">＋</div><h3>Admin-Loaded Savings</h3><p>Your wallet is funded by the admin — no codes, no levels, just straightforward savings.</p></div>
+  <div class="feature reveal"><div class="ico g3">₱</div><h3>GCash Withdrawals</h3><p>Request a withdrawal anytime with a 5% service charge and receive it straight to your GCash account.</p></div>
+  <div class="feature reveal"><div class="ico g4">✓</div><h3>Secure & Simple</h3><p>A clean, secure wallet experience focused only on your savings and withdrawals.</p></div>
  </div>
 </section>
 <section class="cta">
@@ -523,13 +848,14 @@ function register(){
  </div></div>`;
 }
 function sideNav(){
- let items=state.user.role==="Admin"?["Dashboard","Members","Wallet Loads","Withdrawals","Monitoring","Profile","Settings"]:["Dashboard","Total Withdrawal","My Profile"];
- let icons={Dashboard:"▦",Members:"♙","Wallet Loads":"＋",Withdrawals:"↗",Monitoring:"◉","Total Withdrawal":"↗","My Profile":"○",Profile:"○",Settings:"⚙"};
+ let items=state.user.role==="Admin"?["Dashboard","Total Withdrawal","My Profile","Admin Panel"]:["Dashboard","Total Withdrawal","My Profile"];
+ let icons={Dashboard:"▦","Total Withdrawal":"📋","My Profile":"👤","Admin Panel":"🛡",Earnings:"₱",Members:"♙","Wallet Loads":"＋",Withdrawals:"↗",Monitoring:"◉",Profile:"○",Settings:"⚙"};
  return `<aside class="sidebar">
   <div class="sb-brand"><span class="logo"></span><div><b>Savings Pro</b><br><small>Savings Wallet</small></div></div>
-  <nav class="nav">${items.map(x=>`<button class="${state.page===x?'active':''}" onclick="go('${x}')"><span class="ico">${icons[x]||"•"}</span> ${x}</button>`).join("")}</nav>
+  <nav class="nav">${items.map(x=>`<button class="${state.page===x?'active':''}" onclick="go('${x}')"><span class="ico">${icons[x]||"•"}</span> ${x}${state.page===x?' <span style="margin-left:auto;font-size:12px">›</span>':''}</button>`).join("")}</nav>
   <div class="sb-footer">
    <div class="sb-user"><div class="av">${(state.user.name||"U")[0]}</div><div><b>${state.user.name}</b><small>${state.user.role}</small></div></div>
+   <div class="sb-gcash-bubble" onclick="gcashPaymentModal()"><span class="gcash-ico">💳</span> GCash</div>
    <div class="sb-logout" onclick="logout()">⏻ Logout</div>
   </div>
  </aside>`;
@@ -538,6 +864,7 @@ function appShell(){return `<div class="app">${header(true)}<div class="app-body
 function page(){
  switch(state.page){
   case"Dashboard":return dashboard();
+  case"Earnings":return earnings();
   case"Total Withdrawal":return withdrawals();
   case"My Profile":return profile();
   case"Withdrawals":return withdrawals();
@@ -546,17 +873,40 @@ function page(){
   case"Monitoring":return monitoring();
   case"Profile":return profile();
   case"Settings":return settings();
+  case"Admin Panel":return adminPanel();
   default:return dashboard();
  }
 }
 function dashboard(){
  if(state.user.role==="Admin")return adminDashboard();
- return `<div class="page-head"><div><h1>My Savings</h1><p>Welcome back, ${state.user.name}.</p></div><button class="btn btn-primary" onclick="withdrawModal()">Request Withdrawal</button></div>
- <div class="grid2">
-  <div class="wallet-card"><div><div class="lbl">AVAILABLE BALANCE</div><div class="val">${peso(state.user.balance)}</div></div><div class="tag">Savings wallet · GCash withdrawals</div></div>
-  <div class="card"><h3>Account Summary</h3><div class="summary">${srow("Total loaded",peso(state.user.loaded))}${srow("Total withdrawn",peso(totalWithdrawn(state.user.name)))}${srow("Minimum withdrawal",peso(300))}${srow("GCash",state.user.gcash||"Not set")}</div></div>
+ let profileIncomplete=!state.user.gcash;
+ let hasTx=state.withdrawals.some(w=>w.user===state.user.name)||state.loads.some(l=>l.user===state.user.name);
+ return `<div class="page-head"><div><h1>Welcome back, <span style="color:var(--orange)">${state.user.name}</span></h1><p>Here's your savings wallet overview</p></div><button class="terms-link" onclick="window.open('https://forms.gle/bMLvWgG2KGfYXzBz8','_blank')">Membership Terms & Conditions</button></div>
+ <div class="savings-card">
+  <div class="sc-top"><div class="sc-ico">👛</div><div class="sc-lbl">Savings Balance</div></div>
+  <div class="sc-val">${peso(state.user.balance)}</div>
+  <div class="sc-sub">Minimum withdrawal: ${peso(MIN_WITHDRAWAL)}</div>
+  ${profileIncomplete?`<div class="sc-notif">⚠️ Complete your profile (GCash, phone, address) to withdraw — <a href="#" onclick="go('My Profile');return false">My Profile</a></div>`:""}
+  <button class="sc-withdraw" onclick="withdrawModal()">Withdraw</button>
  </div>
- <div class="card mt"><h3>Recent Activity</h3>${activityTable(state.user.name)}</div>`;
+ <div class="card mt">
+  <h3>Transaction History</h3>
+  <p style="color:var(--muted);font-size:14px;margin:0 0 16px">Your savings deposits and withdrawals</p>
+  ${hasTx?activityTable(state.user.name):`<div class="tx-empty"><div class="tx-ico">👛</div><div class="tx-title">No transactions yet</div><div class="tx-sub">Your savings will appear here once the admin loads your wallet.</div></div>`}
+ </div>`;
+}
+function earnings(){
+ return `<div class="page-head"><div><h1>Earnings</h1><p>Your savings and wallet funding history.</p></div></div>
+ <div class="stat-cards">
+  ${stat("Current Balance",peso(state.user.balance),"Available savings")}
+  ${stat("Total Loaded",peso(state.user.loaded),"All admin wallet loads","",true)}
+  ${stat("Total Withdrawn",peso(totalWithdrawn(state.user.name)),"Completed + pending")}
+  ${stat("Total Charges",peso(totalCharge(state.user.name)),"Service fees","amber")}
+ </div>
+ <div class="grid2 mt">
+  <div class="card"><h3>Wallet Loads</h3>${loadTable(20,state.user.name)}</div>
+  <div class="card"><h3>Earnings Summary</h3><div class="summary">${srow("Total loaded",peso(state.user.loaded))}${srow("Total withdrawn",peso(totalWithdrawn(state.user.name)))}${srow("Total charges",peso(totalCharge(state.user.name)))}${srow("Net received",peso(totalNet(state.user.name)))}${srow("Current balance",peso(state.user.balance))}</div></div>
+ </div>`;
 }
 function adminDashboard(){
  return `<div class="page-head"><div><h1>Admin Dashboard</h1><p>Manage savings wallets, loads, and withdrawals.</p></div><button class="btn btn-primary" onclick="loadModal()">Load Wallet</button></div>
@@ -564,30 +914,256 @@ function adminDashboard(){
   ${stat("Total Members",state.users.filter(u=>u.role==="Member").length,"Registered members")}
   ${stat("Total Saved",peso(state.users.reduce((a,u)=>a+(u.balance||0),0)),"Current balances","",true)}
   ${stat("Pending Withdrawals",state.withdrawals.filter(w=>w.status==="Pending").length,"Awaiting review","amber")}
-  ${stat("Total Loaded",peso(state.users.reduce((a,u)=>a+(u.loaded||0),0)),"Wallet funding")}
+  ${stat("Total Charges",peso(state.withdrawals.reduce((a,w)=>a+(w.charge||0),0)),"Service fees collected","amber")}
+  ${stat("Total Loaded",peso(state.users.reduce((a,u)=>a+(u.loaded||0),0)),"Wallet funding","",true)}
  </div>
  <div class="grid2 mt">
   <div class="card"><h3>Recent Wallet Loads</h3>${loadTable(5)}</div>
   <div class="card"><h3>Withdrawal Requests</h3>${withdrawTable(5)}</div>
  </div>`;
 }
+function adminPanel(){
+ const members=state.users.filter(u=>u.role==="Member");
+ const pendingWd=state.withdrawals.filter(w=>w.status==="Pending").length;
+ const totalSavings=state.users.reduce((a,u)=>a+(u.balance||0),0);
+ return `<div class="admin-panel">
+  <div class="admin-head"><div class="shield">🛡</div><h1>Admin Panel</h1></div>
+  <p class="admin-sub">Manage members, load wallets, and withdrawals</p>
+  <div class="admin-cards">
+   <div class="admin-card"><div><div class="lbl">Total Members</div><div class="val">${members.length}</div></div><div class="ico blue">👥</div></div>
+   <div class="admin-card"><div><div class="lbl">Pending Approval</div><div class="val">0</div></div><div class="ico orange">⏰</div></div>
+   <div class="admin-card"><div><div class="lbl">Pending Withdrawals</div><div class="val">${pendingWd}</div></div><div class="ico teal">⬇</div></div>
+   <div class="admin-card"><div><div class="lbl">Total Savings</div><div class="val">${peso(totalSavings)}</div></div><div class="ico pink">👛</div></div>
+  </div>
+  <div class="admin-tabs">
+   <button class="admin-tab ${state.adminTab==='Profile'?'active':''}" onclick="goAdminTab('Profile')"><span class="tab-check">✓</span> My Profile</button>
+   <button class="admin-tab ${state.adminTab==='Members'?'active':''}" onclick="goAdminTab('Members')"><span class="tab-check">✓</span> Members (${members.length})</button>
+   <button class="admin-tab ${state.adminTab==='Withdrawals'?'active':''}" onclick="goAdminTab('Withdrawals')"><span class="tab-check">✓</span> Withdrawals</button>
+   <button class="admin-tab ${state.adminTab==='GCash'?'active':''}" onclick="goAdminTab('GCash')"><span class="tab-check">✓</span> GCash</button>
+  </div>
+  ${adminTabContent()}
+ </div>`;
+}
+function adminTabContent(){
+ switch(state.adminTab){
+  case'Profile':return profileTabContent();
+  case'Withdrawals':return `<div class="card">${withdrawTable(50)}</div>`;
+  case'GCash':return gcashTabContent();
+  default:return membersTabContent();
+ }
+}
+function membersTabContent(){
+ const members=state.users.filter(u=>u.role==="Member");
+ return `<div class="admin-search"><span class="ico">🔍</span><input id="adminSearch" placeholder="Search approved members..." oninput="filterMembers()"></div>
+ <div class="card"><table class="admin-table" id="membersTable"><tr><th></th><th>Member</th><th>Balance</th><th>Actions</th></tr>${members.map((u,i)=>`<tr class="member-row"><td><div class="row-num">${i+1}</div></td><td><div class="member-name">${u.name}</div><div class="member-username">@${u.username}</div></td><td><div class="bal-lbl">Balance</div><div class="bal-val">${peso(u.balance)}</div></td><td><div class="act-btns"><button class="act-btn view" title="View" onclick="viewMember('${u.username}')">👁</button><button class="act-btn wallet" title="Load Wallet" onclick="loadSpecific('${u.username}')">👛</button><button class="act-btn edit" title="Edit" onclick="editMember('${u.username}')">✏</button></div></td></tr>`).join("")}</table></div>`;
+}
+function profileTabContent(){
+ const allMembers=state.users;
+ const sel=state.adminSelectedMember||state.user;
+ const m=state.users.find(x=>x.id===sel.id)||state.user;
+ return `<div class="member-selector"><label>SELECT MEMBER</label><select onchange="selectAdminMember(this.value)">${allMembers.map(u=>`<option value="${u.id}" ${u.id===m.id?'selected':''}>${u.name} (@${u.username})</option>`).join("")}</select></div>
+ <div class="card" style="max-width:640px">
+  <h3 style="margin:0 0 4px;font-size:20px">Member Profile</h3>
+  <p style="color:var(--muted);font-size:14px;margin:0 0 20px">Update ${m.name}'s personal information and credentials</p>
+  <div class="prof-section-title">Personal Information</div>
+  <div class="prof-form">
+   <div class="prof-row2">
+    <div class="field"><label>Full Name</label><input id="apName" value="${m.name||""}"></div>
+    <div class="field"><label>Age</label><input id="apAge" type="number" value="${m.age||""}" placeholder="Age"></div>
+   </div>
+   <div class="field"><label>Email Address</label><input id="apEmail" type="email" value="${m.email||""}" placeholder="Enter email"></div>
+   <div class="field"><label>Mobile Number</label><input id="apMobile" value="${m.mobile||""}" placeholder="e.g. 09XX XXX XXXX"></div>
+   <div class="field"><label>Backup Mobile Number</label><input id="apBackupMobile" value="${m.backup_mobile||""}" placeholder="e.g. 09XX XXX XXXX"></div>
+   <div class="field"><label>Facebook Profile Name</label><input id="apFacebook" value="${m.facebook||""}" placeholder="Facebook name"></div>
+   <div class="field"><label>Address</label><input id="apAddress" value="${m.address||""}" placeholder="Address"></div>
+  </div>
+  <div class="prof-section-title" style="margin-top:24px">GCash Information</div>
+  <div class="prof-form">
+   <div class="field"><label>GCash Number</label><div class="gcash-input-row"><input id="apGcash" value="${m.gcash||""}" placeholder="09XXXXXXXXX"><button type="button" class="gcash-copy" onclick="copyGcash('apGcash')" title="Copy to clipboard">⧉</button></div></div>
+   <div class="field"><label>GCash Account Name</label><input id="apGcashName" value="${m.gcash_name||""}" placeholder="Registered GCash name"></div>
+  </div>
+  <div class="prof-section-title" style="margin-top:24px">🔑 Login Credentials</div>
+  <div class="prof-form">
+   <div class="field"><label>Username</label><input id="apUsername" value="${m.username||""}" disabled></div>
+   <div class="field"><label>New Password</label><div class="pw-field"><input id="apPassword" type="password" value="${m.password||""}"><button type="button" class="toggle-pw" onclick="togglePw('apPassword',this)">👁</button></div></div>
+   <div class="field"><label>Confirm New Password</label><div class="pw-field"><input id="apPassword2" type="password" placeholder="Re-enter new password"><button type="button" class="toggle-pw" onclick="togglePw('apPassword2',this)">👁</button></div></div>
+   <button class="btn-cred" onclick="updateAdminCredentials(${m.id})">🔒 Update Credentials</button>
+  </div>
+  <button class="btn-save-profile" onclick="saveAdminProfile(${m.id})">💾 Save Profile</button>
+ </div>`;
+}
+function selectAdminMember(id){state.adminSelectedMember=state.users.find(x=>x.id===Number(id))||state.user;render()}
+async function saveAdminProfile(id){
+ let u=state.users.find(x=>x.id===id);if(!u)return;
+ let name=document.getElementById("apName").value.trim()||u.name;
+ let age=document.getElementById("apAge").value.trim();
+ let email=document.getElementById("apEmail").value.trim();
+ let mobile=document.getElementById("apMobile").value.trim();
+ let backup_mobile=document.getElementById("apBackupMobile").value.trim();
+ let facebook=document.getElementById("apFacebook").value.trim();
+ let address=document.getElementById("apAddress").value.trim();
+ let gcash=document.getElementById("apGcash").value.trim();
+ let gcash_name=document.getElementById("apGcashName").value.trim();
+ if(useSB){
+  await sb.from("profiles").update({name,age,email,mobile,backup_mobile,facebook,address,gcash,gcash_name}).eq("id",u.id);
+  await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
+ }else{
+  Object.assign(u,{name,age,email,mobile,backup_mobile,facebook,address,gcash,gcash_name});saveLocal();
+ }
+ render();toast("Profile updated for "+name+".");
+}
+async function updateAdminCredentials(id){
+ let u=state.users.find(x=>x.id===id);if(!u)return;
+ let pw=document.getElementById("apPassword").value;
+ let pw2=document.getElementById("apPassword2").value;
+ if(!pw){toast("Password cannot be empty.");return}
+ if(pw!==pw2){toast("Passwords do not match.");return}
+ if(useSB){
+  await sb.from("profiles").update({password:pw}).eq("id",u.id);
+  if(sbAdmin&&u.auth_id){try{await sbAdmin.auth.admin.updateUserById(u.auth_id,{password:pw})}catch(e){console.error("auth password update error:",e.message)}}
+  await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
+ }else{
+  u.password=pw;saveLocal();
+ }
+ render();toast("Credentials updated for "+u.name+".");
+}
+function gcashTabContent(){
+ const admin=state.user;
+ const receipts=state.receipts||[];
+ return `<div class="gcash-panel">
+   <h3 class="gcash-panel-head">GCash Payment Info</h3>
+   <p class="gcash-panel-desc">Set the GCash number and name shown to all members for loading wallets.</p>
+   <div class="field"><label>GCash Name</label><input id="adminGcashName" value="${admin.gcash_name||""}" placeholder="e.g. Juan Dela Cruz"></div>
+   <div class="field"><label>GCash Number</label><input id="adminGcashNum" value="${admin.gcash||""}" placeholder="e.g. 09XXXXXXXXX"></div>
+   <button class="btn-save-gcash" onclick="saveGcashInfo()">💾 Save GCash Info</button>
+  </div>
+  <div class="card mt">
+   <div class="gcash-receipts-head"><h3>Member GCash Receipts</h3><span class="gcash-receipts-badge">${receipts.length} total</span></div>
+   <p class="gcash-receipts-desc">Receipts uploaded by members as proof of payment. Click an image to view.</p>
+   ${receipts.length?`<div class="gcash-receipts-grid">${receipts.map(r=>`<div class="gcash-receipt-item" onclick="viewReceipt('${r.id}')"><img src="${r.image}" alt="receipt"><div class="gcash-receipt-meta"><b>${r.user_name||"Member"}</b><small>${(r.date||"").slice(0,10)}</small></div></div>`).join("")}</div>`:`<div class="gcash-receipts-empty">No receipts uploaded yet.</div>`}
+  </div>`;
+}
+async function saveGcashInfo(){
+ let gcash_name=document.getElementById("adminGcashName").value.trim();
+ let gcash=document.getElementById("adminGcashNum").value.trim();
+ let u=state.users.find(x=>x.id===state.user.id)||state.user;
+ if(!u||!u.id){toast("Cannot save — user not found.");return}
+ if(useSB){
+  let{error}=await sb.from("profiles").update({gcash,gcash_name}).eq("id",u.id);
+  if(error&&sbAdmin){({error}=await sbAdmin.from("profiles").update({gcash,gcash_name}).eq("id",u.id))}
+  if(error){toast("Save failed: "+error.message);console.error("saveGcashInfo:",error.message);return}
+  state.user.gcash=gcash;state.user.gcash_name=gcash_name;
+  await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
+ }else{
+  Object.assign(u,{gcash,gcash_name});state.user=u;saveLocal();
+ }
+ render();toast("GCash info saved.");
+}
+function goAdminTab(tab){state.adminTab=tab;render()}
+function filterMembers(){const q=(document.getElementById("adminSearch").value||"").toLowerCase();document.querySelectorAll(".member-row").forEach(r=>{const n=r.querySelector(".member-name").textContent.toLowerCase();const u=r.querySelector(".member-username").textContent.toLowerCase();r.style.display=(n.includes(q)||u.includes(q))?"":"none"})}
+function viewMember(u){let m=state.users.find(x=>x.username===u);if(m)toast(m.name+" — Balance: "+peso(m.balance)+" · GCash: "+(m.gcash||"N/A"))}
+function editMember(u){resetCredentialsModal(u)}
+function resetCredentialsModal(u){let m=state.users.find(x=>x.username===u);if(!m)return;document.body.insertAdjacentHTML("beforeend",modal(`<div class="modal-head"><h2>Reset Credentials — ${m.name}</h2><button class="close" onclick="closeModal()">×</button></div><div class="field"><label>Display Name</label><input id="rcName" value="${m.name}"></div><div class="field"><label>Username</label><input id="rcUsername" value="${m.username}" disabled></div><div class="field"><label>New Password</label><input id="rcPassword" type="password" placeholder="Enter new password (leave blank to keep current)"></div><div class="lw-footer"><button class="lw-cancel" onclick="closeModal()">Cancel</button><button class="rc-submit" onclick="submitResetCredentials('${u}')">Save Changes</button></div>`))}
+async function submitResetCredentials(u){let m=state.users.find(x=>x.username===u);if(!m)return;let name=document.getElementById("rcName").value.trim()||m.name;let pw=document.getElementById("rcPassword").value;if(useSB){let updates={name};if(pw)updates.password=pw;await sb.from("profiles").update(updates).eq("id",m.id);if(pw&&sbAdmin){try{await sbAdmin.auth.admin.updateUserById(m.auth_id,{password:pw})}catch(e){console.error("auth password update error:",e.message)}}await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;}else{m.name=name;if(pw)m.password=pw;saveLocal();}closeModal();render();toast("Credentials updated for "+name+".");}
 function stat(l,v,s,cls="",accent=false){return `<div class="stat-card ${cls} ${accent?'accent':''}"><div class="lbl">${l}</div><div class="val">${v}</div><div class="sub">${s}</div></div>`}
 function srow(a,b){return `<div class="summary-row"><span class="lbl">${a}</span><b>${b}</b></div>`}
-function activityTable(name){let rows=state.withdrawals.filter(w=>w.user===name);return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Amount</th><th>Status</th><th>Date</th></tr>${rows.map(w=>`<tr><td>${w.id}</td><td>${peso(w.amount)}</td><td>${badge(w.status)}</td><td>${w.date}</td></tr>`).join("")||`<tr><td colspan="4" class="empty">No activity yet.</td></tr>`}</table></div>`}
+function activityTable(name){let rows=state.withdrawals.filter(w=>w.user===name);return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Amount</th><th>Charge</th><th>Net</th><th>Status</th><th>Date</th></tr>${rows.map(w=>`<tr><td>${w.id}</td><td>${peso(w.amount)}</td><td style="color:var(--red)">${peso(w.charge||0)}</td><td style="color:var(--green-ok)">${peso((w.amount||0)-(w.charge||0))}</td><td>${badge(w.status)}</td><td>${w.date}</td></tr>`).join("")||`<tr><td colspan="6" class="empty">No activity yet.</td></tr>`}</table></div>`}
 function badge(s){return `<span class="badge ${s}">${s}</span>`}
-function withdrawTable(limit=20,rows=state.withdrawals){return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Member</th><th>Amount</th><th>GCash</th><th>Status</th><th>Date</th><th></th></tr>${rows.slice(0,limit).map(w=>`<tr><td>${w.id}</td><td>${w.user}</td><td><b>${peso(w.amount)}</b></td><td>${w.gcash||"—"}</td><td>${badge(w.status)}</td><td>${w.date}</td><td>${state.user.role==="Admin"&&w.status==="Pending"?`<button class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="pay('${w.id}')">Mark Paid</button>`:""}</td></tr>`).join("")||`<tr><td colspan="7" class="empty">No withdrawal records.</td></tr>`}</table></div>`}
+function withdrawTable(limit=20,rows=state.withdrawals){return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Member</th><th>Amount</th><th>Charge</th><th>Net</th><th>GCash</th><th>Status</th><th>Date</th><th></th></tr>${rows.slice(0,limit).map(w=>`<tr><td>${w.id}</td><td>${w.user}</td><td><b>${peso(w.amount)}</b></td><td style="color:var(--red)">${peso(w.charge||0)}</td><td style="color:var(--green-ok)">${peso((w.amount||0)-(w.charge||0))}</td><td>${w.gcash||"—"}</td><td>${badge(w.status)}</td><td>${w.date}</td><td>${state.user.role==="Admin"&&w.status==="Pending"?`<button class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="pay('${w.id}')">Mark Paid</button>`:""}</td></tr>`).join("")||`<tr><td colspan="9" class="empty">No withdrawal records.</td></tr>`}</table></div>`}
 function loadTable(limit=20,userName=null){let rows=state.loads.filter(x=>!userName||x.user===userName).slice(0,limit);return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Member</th><th>Amount</th><th>Date</th></tr>${rows.map(x=>`<tr><td>${x.id}</td><td>${x.user}</td><td><b>${peso(x.amount)}</b></td><td>${x.date}</td></tr>`).join("")||`<tr><td colspan="4" class="empty">No wallet loads.</td></tr>`}</table></div>`}
-function withdrawals(){let rows=state.user.role==="Admin"?state.withdrawals:state.withdrawals.filter(w=>w.user===state.user.name);return `<div class="page-head"><div><h1>${state.user.role==="Admin"?"Withdrawals":"Total Withdrawal"}</h1><p>Request and track GCash payouts.</p></div>${state.user.role==="Member"?`<button class="btn btn-primary" onclick="withdrawModal()">Request Withdrawal</button>`:""}</div><div class="card"><div class="notice" style="margin-bottom:15px">Minimum withdrawal is ${peso(300)}. Payout method: GCash.</div>${withdrawTable(30,rows)}</div>`}
+function withdrawals(){
+ let rows=state.user.role==="Admin"?state.withdrawals:state.withdrawals.filter(w=>w.user===state.user.name);
+ let approvedTotal=rows.filter(w=>w.status==="Paid").reduce((a,w)=>a+(w.amount||0),0);
+ let isMember=state.user.role==="Member";
+ return `<div class="page-head">
+   <div style="display:flex;align-items:center;gap:14px"><div class="tw-head-ico">⬇</div><div><h1>Total Withdrawal</h1><p>History of all your approved withdrawals</p></div></div>
+   ${isMember?`<button class="btn btn-primary" onclick="withdrawModal()">Request Withdrawal</button>`:""}
+  </div>
+  <div class="tw-summary-card">
+   <div class="tw-summary-ico">↗</div>
+   <div class="tw-summary-lbl">Total Withdrawal</div>
+   <div class="tw-summary-val">${peso(approvedTotal)}</div>
+   <div class="tw-summary-cap">Total of all approved withdrawals</div>
+  </div>
+  <div class="card mt">
+   <div class="tw-history-head">
+    <h3>Transaction History</h3>
+    <div class="tw-filter">
+     <svg class="tw-filter-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 4h18l-7 8v6l-4 2v-8z"/></svg>
+     <select id="twFilter" onchange="filterWithdrawals()">
+      <option value="all">All Transactions</option>
+      <option value="Pending">Pending</option>
+      <option value="Paid">Paid</option>
+     </select>
+     <span class="tw-chevron">▼</span>
+    </div>
+   </div>
+   <div class="notice" style="margin-bottom:15px">Minimum withdrawal is ${peso(MIN_WITHDRAWAL)}. Service charge: ${(CHARGE_RATE*100)}% per withdrawal. Payout method: GCash.</div>
+   <div id="twTableWrap">${withdrawalHistoryTable(rows)}</div>
+  </div>`;
+}
+function withdrawalHistoryTable(rows){
+ if(!rows.length){
+  return `<div class="tw-empty"><div class="tw-empty-ico">📅</div><div class="tw-empty-title">No transactions found</div><div class="tw-empty-sub">Your withdrawal history will appear here once approved.</div></div>`;
+ }
+ return withdrawTable(30,rows);
+}
+function filterWithdrawals(){
+ let filter=document.getElementById('twFilter').value;
+ let rows=state.user.role==="Admin"?state.withdrawals:state.withdrawals.filter(w=>w.user===state.user.name);
+ if(filter!=='all')rows=rows.filter(w=>w.status===filter);
+ document.getElementById('twTableWrap').innerHTML=withdrawalHistoryTable(rows);
+}
 function members(){return `<div class="page-head"><div><h1>Members</h1><p>Manage registered Savings Pro members.</p></div><button class="btn btn-primary" onclick="addMember()">Add Member</button></div><div class="card"><div class="table-wrap"><table class="table"><tr><th>Member</th><th>Username</th><th>Password</th><th>GCash</th><th>Balance</th><th>Loaded</th><th>Status</th><th></th></tr>${state.users.filter(u=>u.role==="Member").map(u=>`<tr><td><b>${u.name}</b></td><td>${u.username}</td><td>${u.password||"—"}</td><td>${u.gcash||"—"}</td><td>${peso(u.balance)}</td><td>${peso(u.loaded)}</td><td>${badge(u.status)}</td><td><button class="btn btn-outline" style="padding:6px 12px;font-size:12px;color:var(--orange-dark);border-color:var(--orange)" onclick="loadSpecific('${u.username}')">Load Wallet</button></td></tr>`).join("")}</table></div></div>`}
 function loads(){return `<div class="page-head"><div><h1>Wallet Loads</h1><p>Admin-funded savings wallet transactions.</p></div><button class="btn btn-primary" onclick="loadModal()">Load Wallet</button></div><div class="card">${loadTable(50)}</div>`}
-function monitoring(){return `<div class="page-head"><div><h1>Monitoring</h1><p>Overview of Savings Pro activity.</p></div></div><div class="stat-cards">${stat("System","Online","Application status","green-ok")}${stat("Members",state.users.filter(u=>u.role==="Member").length,"Active accounts")}${stat("Pending",state.withdrawals.filter(w=>w.status==="Pending").length,"Withdrawal requests","amber")}${stat("GCash","Enabled","Payout method")}</div><div class="card mt"><h3>System Notes</h3><div class="summary">${srow("Wallet model","Admin loaded")}${srow("Withdrawal method","GCash")}${srow("Minimum withdrawal",peso(300))}${srow("Commission levels","None")}</div></div>`}
-function profile(){return `<div class="page-head"><div><h1>My Profile</h1><p>Update your account and GCash information.</p></div></div><div class="profile-grid"><div class="card"><h3>Profile Details</h3><div class="field"><label>FULL NAME</label><input id="pName" value="${state.user.name}"></div><div class="field"><label>USERNAME</label><input value="${state.user.username}" disabled></div><div class="field"><label>GCASH NUMBER</label><input id="pGcash" value="${state.user.gcash||""}" placeholder="09XXXXXXXXX"></div><button class="btn btn-primary" onclick="saveProfile()">Save Changes</button></div><div class="card"><h3>Account</h3><div class="summary">${srow("Role",state.user.role)}${srow("Status",state.user.status)}${srow("Joined",state.user.joined)}${srow("Available balance",peso(state.user.balance))}</div></div></div>`}
+function monitoring(){return `<div class="page-head"><div><h1>Monitoring</h1><p>Overview of Savings Pro activity.</p></div></div><div class="stat-cards">${stat("System","Online","Application status","green-ok")}${stat("Members",state.users.filter(u=>u.role==="Member").length,"Active accounts")}${stat("Pending",state.withdrawals.filter(w=>w.status==="Pending").length,"Withdrawal requests","amber")}${stat("GCash","Enabled","Payout method")}</div><div class="card mt"><h3>System Notes</h3><div class="summary">${srow("Wallet model","Admin loaded")}${srow("Withdrawal method","GCash")}${srow("Minimum withdrawal",peso(MIN_WITHDRAWAL))}${srow("Service charge",(CHARGE_RATE*100)+"% per withdrawal")}</div></div>`}
+function profile(){
+ const u=state.user;
+ return `<div class="page-head"><div><h1>My Profile</h1><p>Update your personal information, GCash details, and login credentials.</p></div></div>
+ <div class="card" style="max-width:640px">
+  <div class="prof-section-title">Personal Information</div>
+  <div class="prof-form">
+   <div class="prof-row2">
+    <div class="field"><label>Full Name</label><input id="pName" value="${u.name||""}"></div>
+    <div class="field"><label>Age</label><input id="pAge" type="number" value="${u.age||""}" placeholder="Age"></div>
+   </div>
+   <div class="field"><label>Email Address</label><input id="pEmail" type="email" value="${u.email||""}" placeholder="Enter your email"></div>
+   <div class="field"><label>Mobile Number</label><input id="pMobile" value="${u.mobile||""}" placeholder="e.g. 09XX XXX XXXX"></div>
+   <div class="field"><label>Backup Mobile Number</label><input id="pBackupMobile" value="${u.backup_mobile||""}" placeholder="e.g. 09XX XXX XXXX"></div>
+   <div class="field"><label>Facebook Profile Name</label><input id="pFacebook" value="${u.facebook||""}" placeholder="Your Facebook name"></div>
+   <div class="field"><label>Address</label><input id="pAddress" value="${u.address||""}" placeholder="Enter your address"></div>
+  </div>
+  <div class="prof-section-title" style="margin-top:24px">GCash Information</div>
+  <div class="prof-form">
+   <div class="field"><label>GCash Number</label><div class="gcash-input-row"><input id="pGcash" value="${u.gcash||""}" placeholder="09XXXXXXXXX"><button type="button" class="gcash-copy" onclick="copyGcash('pGcash')" title="Copy to clipboard">⧉</button></div></div>
+   <div class="field"><label>GCash Account Name</label><input id="pGcashName" value="${u.gcash_name||""}" placeholder="Registered GCash name"></div>
+  </div>
+  <div class="prof-section-title" style="margin-top:24px">🔑 Login Credentials</div>
+  <div class="prof-form">
+   <div class="field"><label>Username</label><input id="pUsername" value="${u.username||""}" disabled></div>
+   <div class="field"><label>New Password</label><div class="pw-field"><input id="pPassword" type="password" value="${u.password||""}"><button type="button" class="toggle-pw" onclick="togglePw('pPassword',this)">👁</button></div></div>
+   <div class="field"><label>Confirm New Password</label><div class="pw-field"><input id="pPassword2" type="password" placeholder="Re-enter new password"><button type="button" class="toggle-pw" onclick="togglePw('pPassword2',this)">👁</button></div></div>
+   <button class="btn-cred" onclick="updateCredentials()">🔒 Update Credentials</button>
+  </div>
+  <button class="btn-save-profile" onclick="saveProfile()">💾 Save Profile</button>
+ </div>`;
+}
 function settings(){const sk=getServiceKey();const hasKey=sk&&!sk.includes("placeholder");return `<div class="page-head"><div><h1>Settings</h1><p>Configure Supabase service key for admin operations.</p></div></div><div class="card" style="max-width:640px"><h3>Supabase Service Key</h3><div class="notice" style="margin-bottom:16px">The service role key is required for admin operations like creating new members. Find it in your Supabase Dashboard → Settings → API → <b>service_role</b> secret key. It is stored locally in your browser only.</div><div class="field"><label>SERVICE ROLE KEY</label><input id="serviceKeyInput" type="password" value="${hasKey?sk:""}" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..." style="font-family:monospace;font-size:12px"></div><div style="display:flex;gap:10px;align-items:center"><button class="btn btn-primary" onclick="saveServiceKey()">Save Key</button>${hasKey?'<span style="color:var(--green-ok);font-size:13px;font-weight:600">✓ Key configured</span>':'<span style="color:var(--muted);font-size:13px">No key set — add member feature disabled</span>'}</div></div>`}
 
 /* ════════ MODALS ════════ */
 function modal(content){return `<div class="modal-bg" id="modal"><div class="modal">${content}</div></div>`}
-function loadModal(user){let m=user||state.users.find(u=>u.role==="Member");if(!m)return;document.body.insertAdjacentHTML("beforeend",modal(`<div class="modal-head"><h2>Load Wallet</h2><button class="close" onclick="closeModal()">×</button></div><p class="muted">Add savings directly to a member's wallet.</p><div class="field"><label>MEMBER</label><select id="loadUser">${state.users.filter(u=>u.role==="Member").map(u=>`<option value="${u.username}" ${u.username===m.username?"selected":""}>${u.name} — ${u.username}</option>`).join("")}</select></div><div class="field"><label>AMOUNT</label><input id="loadAmount" type="number" min="1" placeholder="0"></div><button class="btn btn-primary" style="width:100%" onclick="submitLoad()">Load Wallet</button>`))}
-function withdrawModal(){document.body.insertAdjacentHTML("beforeend",modal(`<div class="modal-head"><h2>Request Withdrawal</h2><button class="close" onclick="closeModal()">×</button></div><p class="muted">Withdraw to your registered GCash number.</p><div class="notice">Available balance: <b>${peso(state.user.balance)}</b><br>Minimum withdrawal: <b>${peso(300)}</b></div><div class="field" style="margin-top:14px"><label>AMOUNT</label><input id="wdAmount" type="number" min="300" max="${state.user.balance}" placeholder="300"></div><button class="btn btn-primary" style="width:100%" onclick="submitWithdrawal()">Submit Request</button>`))}
+function loadModal(user){let m=user||state.users.find(u=>u.role==="Member");if(!m)return;document.body.insertAdjacentHTML("beforeend",modal(`<div class="lw-head"><div class="lw-head-left"><div class="wallet-ico">👛</div><h2>Load Wallet — ${m.name}</h2></div><button class="close" onclick="closeModal()">×</button></div><input type="hidden" id="loadUser" value="${m.username}"><div class="lw-balance-box"><div class="lbl">Current balance:</div><div class="val">${peso(m.balance)}</div></div><div class="lw-field"><label>Action</label><select id="loadAction"><option value="add">＋ Add Savings (Load Wallet)</option><option value="deduct">－ Deduct Savings</option></select></div><div class="lw-field"><label>Amount (₱)</label><input id="loadAmount" type="number" min="1" placeholder="Enter amount"></div><div class="lw-footer"><button class="lw-cancel" onclick="closeModal()">Cancel</button><button class="lw-submit" onclick="submitLoad()">Load Wallet</button></div>`))}
+function withdrawModal(){
+ let bal=state.user.balance,maxWd=Math.floor(bal/(1+CHARGE_RATE));
+ document.body.insertAdjacentHTML("beforeend",modal(`<div class="modal-head"><h2>Request Withdrawal</h2><button class="close" onclick="closeModal()">×</button></div><p class="muted">Withdraw to your registered GCash number.</p><div class="notice">Available balance: <b>${peso(bal)}</b><br>Minimum withdrawal: <b>${peso(MIN_WITHDRAWAL)}</b><br>Service charge: <b>${(CHARGE_RATE*100)}%</b> of withdrawal amount</div><div class="field" style="margin-top:14px"><label>AMOUNT TO RECEIVE</label><input id="wdAmount" type="number" min="${MIN_WITHDRAWAL}" max="${maxWd}" placeholder="${MIN_WITHDRAWAL}" oninput="updateWdBreakdown()"></div><div id="wdBreakdown" style="background:#f9fafb;border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px;font-size:14px"></div><button class="btn btn-primary" style="width:100%" onclick="submitWithdrawal()">Submit Request</button>`))
+}
+function updateWdBreakdown(){
+ let a=Number(document.getElementById("wdAmount").value)||0;
+ let charge=calcCharge(a),net=a,totalDeduction=a+charge;
+ let el=document.getElementById("wdBreakdown");
+ if(a<=0){el.innerHTML='<span style="color:var(--muted)">Enter an amount to see breakdown.</span>';return}
+ el.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:var(--muted)">You receive:</span><b>${peso(net)}</b></div><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:var(--muted)">Service charge (${CHARGE_RATE*100}%):</span><b style="color:var(--red)">-${peso(charge)}</b></div><div style="display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:8px"><span style="font-weight:700">Total deduction:</span><b>${peso(totalDeduction)}</b></div>`;
+}
 function closeModal(){document.getElementById("modal")?.remove()}
 function loadSpecific(u){loadModal(state.users.find(x=>x.username===u))}
 
@@ -598,7 +1174,8 @@ function go(p){
  }else{state.page=p}
  render();
 }
-function render(){let r=document.getElementById("root");r.innerHTML=state.page==="Landing"?landing():state.page==="Login"?login():state.page==="Register"?register():state.user?appShell():login();r.classList.remove('page-enter');void r.offsetWidth;r.classList.add('page-enter')}
+function initRevealObserver(){const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');obs.unobserve(e.target)}})},{threshold:.15});document.querySelectorAll('.reveal,.reveal-slide').forEach(el=>obs.observe(el))}
+function render(){let r=document.getElementById("root");r.innerHTML=state.page==="Landing"?landing():state.page==="Login"?login():state.page==="Register"?register():state.user?appShell():login();r.classList.remove('page-enter');void r.offsetWidth;r.classList.add('page-enter');if(state.page==="Landing")initRevealObserver()}
 
 /* ════════ INIT ════════ */
 async function init(){

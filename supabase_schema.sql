@@ -14,9 +14,25 @@ create table if not exists public.profiles (
   balance   numeric default 0,
   loaded    numeric default 0,
   gcash     text default '',
+  gcash_name text default '',
+  mobile    text default '',
+  facebook  text default '',
+  address   text default '',
+  age       text default '',
+  email     text default '',
+  backup_mobile text default '',
   status    text default 'Active',
   joined    date default current_date
 );
+
+-- Add new columns if table already exists (safe to run anytime)
+alter table public.profiles add column if not exists age text default '';
+alter table public.profiles add column if not exists email text default '';
+alter table public.profiles add column if not exists backup_mobile text default '';
+alter table public.profiles add column if not exists gcash_name text default '';
+alter table public.profiles add column if not exists mobile text default '';
+alter table public.profiles add column if not exists facebook text default '';
+alter table public.profiles add column if not exists address text default '';
 
 -- Withdrawals table
 create table if not exists public.withdrawals (
@@ -24,10 +40,14 @@ create table if not exists public.withdrawals (
   user_id    uuid references public.profiles(id) on delete cascade,
   user_name  text,
   amount     numeric,
+  charge     numeric default 0,
   gcash      text,
   status     text default 'Pending',
   date       date
 );
+
+-- Add charge column if table already exists (run once)
+-- alter table public.withdrawals add column if not exists charge numeric default 0;
 
 -- Loads table
 create table if not exists public.loads (
@@ -37,6 +57,20 @@ create table if not exists public.loads (
   amount     numeric,
   date       date
 );
+
+-- Receipts table (member payment proof images, stored as compressed data URLs)
+create table if not exists public.receipts (
+  id         text primary key,
+  user_id    uuid references public.profiles(id) on delete cascade,
+  user_name  text,
+  image      text,
+  date       timestamptz default now()
+);
+
+-- Add receipts RLS (run once)
+alter table public.receipts enable row level security;
+create policy "read receipts"  on public.receipts for select to authenticated using (true);
+create policy "insert receipt" on public.receipts for insert to authenticated with check (true);
 
 -- ── Row Level Security ──
 alter table public.profiles    enable row level security;
