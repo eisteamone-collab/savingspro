@@ -1031,9 +1031,13 @@ function gcashTabContent(){
 async function saveGcashInfo(){
  let gcash_name=document.getElementById("adminGcashName").value.trim();
  let gcash=document.getElementById("adminGcashNum").value.trim();
- let u=state.users.find(x=>x.id===state.user.id);if(!u)return;
+ let u=state.users.find(x=>x.id===state.user.id)||state.user;
+ if(!u||!u.id){toast("Cannot save — user not found.");return}
  if(useSB){
-  await sb.from("profiles").update({gcash,gcash_name}).eq("id",u.id);
+  let{error}=await sb.from("profiles").update({gcash,gcash_name}).eq("id",u.id);
+  if(error&&sbAdmin){({error}=await sbAdmin.from("profiles").update({gcash,gcash_name}).eq("id",u.id))}
+  if(error){toast("Save failed: "+error.message);console.error("saveGcashInfo:",error.message);return}
+  state.user.gcash=gcash;state.user.gcash_name=gcash_name;
   await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
  }else{
   Object.assign(u,{gcash,gcash_name});state.user=u;saveLocal();

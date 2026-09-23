@@ -25,14 +25,14 @@ create table if not exists public.profiles (
   joined    date default current_date
 );
 
--- Add new columns if table already exists (run once)
--- alter table public.profiles add column if not exists age text default '';
--- alter table public.profiles add column if not exists email text default '';
--- alter table public.profiles add column if not exists backup_mobile text default '';
--- alter table public.profiles add column if not exists gcash_name text default '';
--- alter table public.profiles add column if not exists mobile text default '';
--- alter table public.profiles add column if not exists facebook text default '';
--- alter table public.profiles add column if not exists address text default '';
+-- Add new columns if table already exists (safe to run anytime)
+alter table public.profiles add column if not exists age text default '';
+alter table public.profiles add column if not exists email text default '';
+alter table public.profiles add column if not exists backup_mobile text default '';
+alter table public.profiles add column if not exists gcash_name text default '';
+alter table public.profiles add column if not exists mobile text default '';
+alter table public.profiles add column if not exists facebook text default '';
+alter table public.profiles add column if not exists address text default '';
 
 -- Withdrawals table
 create table if not exists public.withdrawals (
