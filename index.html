@@ -261,7 +261,7 @@ window.dispatchEvent(new Event("supabase-ready"))
 .admin-tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
 .admin-tab{padding:8px 16px;border-radius:999px;font-size:13px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--muted);cursor:pointer;transition:.15s}
 .admin-tab:hover{border-color:#d1d5db}
-.admin-tab.active{background:linear-gradient(135deg,#fff7ed,#fff);color:var(--orange-dark);border-color:var(--orange);box-shadow:0 2px 8px rgba(249,115,22,.12)}
+.admin-tab.active{background:#3B82F6;color:#fff;border-color:#3B82F6;box-shadow:0 2px 8px rgba(59,130,246,.25)}
 .admin-tab .tab-check{display:none;margin-right:6px}
 .admin-tab.active .tab-check{display:inline}
 .admin-search{position:relative;margin-bottom:16px;max-width:360px}
@@ -351,6 +351,22 @@ window.dispatchEvent(new Event("supabase-ready"))
 .tw-empty .tw-empty-ico{width:64px;height:64px;border-radius:50%;background:#f3f4f6;display:grid;place-items:center;font-size:28px;color:#9ca3af;margin:0 auto 14px}
 .tw-empty .tw-empty-title{font-size:16px;font-weight:700;color:#374151;margin-bottom:4px}
 .tw-empty .tw-empty-sub{font-size:14px;color:var(--muted)}
+
+/* ── Admin GCash Tab ── */
+.gcash-panel{background:#F0F4FF;border:1px solid #dbe4ff;border-radius:14px;padding:24px;margin-bottom:16px}
+.gcash-panel-head{font-size:16px;font-weight:700;color:#1f2937;margin:0 0 4px}
+.gcash-panel-desc{font-size:13px;color:#6b7280;margin:0 0 18px}
+.gcash-panel .field{margin-bottom:14px}
+.gcash-panel .field label{font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;display:block}
+.gcash-panel .field input{width:100%;border:1px solid #d1d5db;border-radius:10px;padding:11px 14px;outline:0;background:#fff;color:#1f2937;font-size:14px;transition:border-color .15s,box-shadow .15s}
+.gcash-panel .field input:focus{border-color:#4F46E5;box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+.btn-save-gcash{background:#4F46E5;color:#fff;font-weight:600;padding:12px 24px;border-radius:10px;font-size:14px;display:inline-flex;align-items:center;gap:8px;border:0;cursor:pointer;box-shadow:0 4px 12px rgba(79,70,229,.25);transition:transform .15s,box-shadow .15s}
+.btn-save-gcash:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(79,70,229,.35)}
+.gcash-receipts-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.gcash-receipts-head h3{margin:0;font-size:16px;font-weight:700}
+.gcash-receipts-badge{background:#9ca3af;color:#fff;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px}
+.gcash-receipts-desc{font-size:13px;color:#6b7280;margin:0 0 18px}
+.gcash-receipts-empty{text-align:center;padding:48px 20px;color:#9ca3af;font-size:15px}
 
 @media(max-width:900px){.stat-cards,.admin-cards{grid-template-columns:repeat(2,1fr)}.grid2,.profile-grid{grid-template-columns:1fr}.hero-stats{grid-template-columns:repeat(2,1fr)}.features{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:650px){.header{padding:0 14px}.sidebar{position:static;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px}.sidebar .sb-brand{display:none}.nav{flex-direction:row;overflow-x:auto;white-space:nowrap}.sb-footer{display:none}.content{margin:0;width:100%;padding:16px}.hero-stats{margin-top:36px}.section{padding:50px 20px}.features{grid-template-columns:1fr}}
@@ -915,8 +931,31 @@ async function updateAdminCredentials(id){
  render();toast("Credentials updated for "+u.name+".");
 }
 function gcashTabContent(){
- const members=state.users.filter(u=>u.role==="Member");
- return `<div class="card"><table class="admin-table"><tr><th></th><th>Member</th><th>GCash Number</th></tr>${members.map((u,i)=>`<tr><td><div class="row-num">${i+1}</div></td><td><div class="member-name">${u.name}</div><div class="member-username">@${u.username}</div></td><td>${u.gcash||"—"}</td></tr>`).join("")}</table></div>`;
+ const admin=state.user;
+ return `<div class="gcash-panel">
+   <h3 class="gcash-panel-head">GCash Payment Info</h3>
+   <p class="gcash-panel-desc">Set the GCash number and name shown to all members for loading wallets.</p>
+   <div class="field"><label>GCash Name</label><input id="adminGcashName" value="${admin.gcash_name||""}" placeholder="e.g. Juan Dela Cruz"></div>
+   <div class="field"><label>GCash Number</label><input id="adminGcashNum" value="${admin.gcash||""}" placeholder="e.g. 09XXXXXXXXX"></div>
+   <button class="btn-save-gcash" onclick="saveGcashInfo()">💾 Save GCash Info</button>
+  </div>
+  <div class="card mt">
+   <div class="gcash-receipts-head"><h3>Member GCash Receipts</h3><span class="gcash-receipts-badge">0 total</span></div>
+   <p class="gcash-receipts-desc">Receipts uploaded by members as proof of payment.</p>
+   <div class="gcash-receipts-empty">No receipts uploaded yet.</div>
+  </div>`;
+}
+async function saveGcashInfo(){
+ let gcash_name=document.getElementById("adminGcashName").value.trim();
+ let gcash=document.getElementById("adminGcashNum").value.trim();
+ let u=state.users.find(x=>x.id===state.user.id);if(!u)return;
+ if(useSB){
+  await sb.from("profiles").update({gcash,gcash_name}).eq("id",u.id);
+  await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
+ }else{
+  Object.assign(u,{gcash,gcash_name});state.user=u;saveLocal();
+ }
+ render();toast("GCash info saved.");
 }
 function goAdminTab(tab){state.adminTab=tab;render()}
 function filterMembers(){const q=(document.getElementById("adminSearch").value||"").toLowerCase();document.querySelectorAll(".member-row").forEach(r=>{const n=r.querySelector(".member-name").textContent.toLowerCase();const u=r.querySelector(".member-username").textContent.toLowerCase();r.style.display=(n.includes(q)||u.includes(q))?"":"none"})}
