@@ -316,6 +316,21 @@ window.dispatchEvent(new Event("supabase-ready"))
 .terms-link{background:linear-gradient(135deg,#fde68a,#facc15);color:#78350f;font-weight:600;padding:9px 16px;border-radius:10px;font-size:13px;border:1px solid #fbbf24;transition:transform .15s,box-shadow .15s;cursor:pointer}
 .terms-link:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(250,204,21,.3)}
 
+/* ── Profile form (reference design) ── */
+.prof-row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.gcash-input-row{display:flex;gap:8px}
+.gcash-input-row input{flex:1}
+.gcash-copy{border:1px solid #d1d5db;background:#f9fafb;border-radius:10px;padding:0 14px;cursor:pointer;font-size:16px;color:#6b7280;transition:.15s;flex-shrink:0}
+.gcash-copy:hover{background:#f3f4f6;color:#374151}
+.pw-field{position:relative}
+.pw-field input{width:100%;padding-right:40px}
+.pw-field .toggle-pw{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#9ca3af;font-size:15px;background:none;border:none;padding:2px}
+.pw-field .toggle-pw:hover{color:var(--orange)}
+.btn-cred{width:100%;border:1px solid #3b82f6;background:transparent;color:#3b82f6;font-weight:600;padding:11px;border-radius:10px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s;margin-top:4px}
+.btn-cred:hover{background:#eff6ff}
+.btn-save-profile{width:100%;background:linear-gradient(135deg,#fb923c,#ea580c);color:#fff;font-weight:700;padding:13px;border-radius:10px;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(234,88,12,.3);transition:transform .15s,box-shadow .15s;margin-top:20px}
+.btn-save-profile:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(234,88,12,.4)}
+
 @media(max-width:900px){.stat-cards,.admin-cards{grid-template-columns:repeat(2,1fr)}.grid2,.profile-grid{grid-template-columns:1fr}.hero-stats{grid-template-columns:repeat(2,1fr)}.features{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:650px){.header{padding:0 14px}.sidebar{position:static;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px}.sidebar .sb-brand{display:none}.nav{flex-direction:row;overflow-x:auto;white-space:nowrap}.sb-footer{display:none}.content{margin:0;width:100%;padding:16px}.hero-stats{margin-top:36px}.section{padding:50px 20px}.features{grid-template-columns:1fr}}
 
@@ -329,10 +344,10 @@ const state={page:"Landing",user:null,users:[],withdrawals:[],loads:[],adminTab:
 
 const SEED={
  users:[
-  {id:1,name:"Tan",username:"Tan",password:"heyhey",role:"Admin",balance:0,loaded:0,gcash:"",age:"",email:"",backup_mobile:"",status:"Active",joined:"2026-01-10"},
-  {id:2,name:"Juan Dela Cruz",username:"juan",password:"demo",role:"Member",balance:4250,loaded:5000,gcash:"09171234567",age:"28",email:"juan@gmail.com",backup_mobile:"09181234567",status:"Active",joined:"2026-02-03"},
-  {id:3,name:"Maria Santos",username:"maria",password:"demo",role:"Member",balance:1850,loaded:2500,gcash:"09181234567",age:"24",email:"maria@gmail.com",backup_mobile:"09201234567",status:"Active",joined:"2026-02-14"},
-  {id:4,name:"Pedro Reyes",username:"pedro",password:"demo",role:"Member",balance:900,loaded:1500,gcash:"09201234567",age:"31",email:"pedro@gmail.com",backup_mobile:"09171234567",status:"Active",joined:"2026-03-01"}
+  {id:1,name:"Tan",username:"Tan",password:"heyhey",role:"Admin",balance:0,loaded:0,gcash:"",gcash_name:"",mobile:"",facebook:"",address:"",age:"",email:"",backup_mobile:"",status:"Active",joined:"2026-01-10"},
+  {id:2,name:"Juan Dela Cruz",username:"juan",password:"demo",role:"Member",balance:4250,loaded:5000,gcash:"09171234567",gcash_name:"Juan Dela Cruz",mobile:"09171234567",facebook:"Juan Dela Cruz",address:"Quezon City, Metro Manila",age:"28",email:"juan@gmail.com",backup_mobile:"09181234567",status:"Active",joined:"2026-02-03"},
+  {id:3,name:"Maria Santos",username:"maria",password:"demo",role:"Member",balance:1850,loaded:2500,gcash:"09181234567",gcash_name:"Maria Santos",mobile:"09181234567",facebook:"Maria Santos",address:"Makati City, Metro Manila",age:"24",email:"maria@gmail.com",backup_mobile:"09201234567",status:"Active",joined:"2026-02-14"},
+  {id:4,name:"Pedro Reyes",username:"pedro",password:"demo",role:"Member",balance:900,loaded:1500,gcash:"09201234567",gcash_name:"Pedro Reyes",mobile:"09201234567",facebook:"Pedro Reyes",address:"Pasig City, Metro Manila",age:"31",email:"pedro@gmail.com",backup_mobile:"09171234567",status:"Active",joined:"2026-03-01"}
  ],
  withdrawals:[
   {id:"WD-1001",user:"Juan Dela Cruz",amount:750,charge:38,gcash:"09171234567",status:"Pending",date:"2026-08-12"},
@@ -503,7 +518,7 @@ async function registerAction(){
  }else{
   if(state.users.some(x=>x.username===u)){toast("Username already exists.");return}
   let name=u.charAt(0).toUpperCase()+u.slice(1);
-  let m={id:Math.max(...state.users.map(x=>x.id))+1,name,username:u,password:p,role:"Member",balance:0,loaded:0,gcash:"",status:"Active",joined:new Date().toISOString().slice(0,10)};
+  let m={id:Math.max(...state.users.map(x=>x.id))+1,name,username:u,password:p,role:"Member",balance:0,loaded:0,gcash:"",gcash_name:"",mobile:"",facebook:"",address:"",age:"",email:"",backup_mobile:"",status:"Active",joined:new Date().toISOString().slice(0,10)};
   state.users.push(m);state.user=m;state.page="Dashboard";saveLocal();render();toast("Account created successfully.");
  }
 }
@@ -558,22 +573,46 @@ async function addMember(){
   await loadData();
  }else{
   if(state.users.some(x=>x.username===u)){toast("Username already exists.");return}
-  state.users.push({id:Math.max(...state.users.map(x=>x.id))+1,name:n,username:u,password:"demo",role:"Member",balance:0,loaded:0,gcash:g,status:"Active",joined:new Date().toISOString().slice(0,10)});saveLocal();
+  state.users.push({id:Math.max(...state.users.map(x=>x.id))+1,name:n,username:u,password:"demo",role:"Member",balance:0,loaded:0,gcash:g,gcash_name:"",mobile:"",facebook:"",address:"",age:"",email:"",backup_mobile:"",status:"Active",joined:new Date().toISOString().slice(0,10)});saveLocal();
  }
  render();toast("Member created.");
 }
 async function saveProfile(){
  let u=state.users.find(x=>x.id===state.user.id);if(!u)return;
  let name=document.getElementById("pName").value.trim()||u.name;
+ let age=document.getElementById("pAge").value.trim();
+ let email=document.getElementById("pEmail").value.trim();
+ let mobile=document.getElementById("pMobile").value.trim();
+ let backup_mobile=document.getElementById("pBackupMobile").value.trim();
+ let facebook=document.getElementById("pFacebook").value.trim();
+ let address=document.getElementById("pAddress").value.trim();
  let gcash=document.getElementById("pGcash").value.trim();
+ let gcash_name=document.getElementById("pGcashName").value.trim();
  if(useSB){
-  await sb.from("profiles").update({name,gcash}).eq("id",u.id);
+  await sb.from("profiles").update({name,age,email,mobile,backup_mobile,facebook,address,gcash,gcash_name}).eq("id",u.id);
   await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
  }else{
-  u.name=name;u.gcash=gcash;state.user=u;saveLocal();
+  Object.assign(u,{name,age,email,mobile,backup_mobile,facebook,address,gcash,gcash_name});state.user=u;saveLocal();
  }
  render();toast("Profile updated.");
 }
+async function updateCredentials(){
+ let u=state.users.find(x=>x.id===state.user.id);if(!u)return;
+ let pw=document.getElementById("pPassword").value;
+ let pw2=document.getElementById("pPassword2").value;
+ if(!pw){toast("Password cannot be empty.");return}
+ if(pw!==pw2){toast("Passwords do not match.");return}
+ if(useSB){
+  await sb.from("profiles").update({password:pw}).eq("id",u.id);
+  const{error}=await sb.auth.updateUser({password:pw});
+  if(error)console.error("auth password update error:",error.message);
+  await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
+ }else{
+  u.password=pw;state.user=u;saveLocal();
+ }
+ render();toast("Credentials updated successfully.");
+}
+function copyGcash(id){let v=document.getElementById(id).value;if(v){navigator.clipboard.writeText(v).then(()=>toast("GCash number copied."))}else{toast("Nothing to copy.")}}
 
 /* ════════ HELPERS ════════ */
 const CHARGE_RATE=0.05; /* 5% service charge on withdrawals */
@@ -789,18 +828,34 @@ function profileTabContent(){
  const sel=state.adminSelectedMember||state.user;
  const m=state.users.find(x=>x.id===sel.id)||state.user;
  return `<div class="member-selector"><label>SELECT MEMBER</label><select onchange="selectAdminMember(this.value)">${allMembers.map(u=>`<option value="${u.id}" ${u.id===m.id?'selected':''}>${u.name} (@${u.username})</option>`).join("")}</select></div>
- <div class="card">
-  <h3 style="margin:0 0 4px;font-size:20px">My Profile</h3>
-  <p style="color:var(--muted);font-size:14px;margin:0 0 20px">Update your personal information</p>
+ <div class="card" style="max-width:640px">
+  <h3 style="margin:0 0 4px;font-size:20px">Member Profile</h3>
+  <p style="color:var(--muted);font-size:14px;margin:0 0 20px">Update ${m.name}'s personal information and credentials</p>
   <div class="prof-section-title">Personal Information</div>
   <div class="prof-form">
-   <div class="field"><label>Full Name</label><input id="apName" value="${m.name||""}"></div>
-   <div class="field"><label>Age</label><input id="apAge" type="number" value="${m.age||""}" placeholder="Age"></div>
-   <div class="field"><label>Email Address</label><input id="apEmail" type="email" value="${m.email||""}" placeholder="Enter your email"></div>
-   <div class="field"><label>Mobile Number</label><input id="apMobile" value="${m.gcash||""}" placeholder="e.g. 09XX XXX XXXX"></div>
+   <div class="prof-row2">
+    <div class="field"><label>Full Name</label><input id="apName" value="${m.name||""}"></div>
+    <div class="field"><label>Age</label><input id="apAge" type="number" value="${m.age||""}" placeholder="Age"></div>
+   </div>
+   <div class="field"><label>Email Address</label><input id="apEmail" type="email" value="${m.email||""}" placeholder="Enter email"></div>
+   <div class="field"><label>Mobile Number</label><input id="apMobile" value="${m.mobile||""}" placeholder="e.g. 09XX XXX XXXX"></div>
    <div class="field"><label>Backup Mobile Number</label><input id="apBackupMobile" value="${m.backup_mobile||""}" placeholder="e.g. 09XX XXX XXXX"></div>
-   <button class="btn btn-primary" onclick="saveAdminProfile(${m.id})">Save Changes</button>
+   <div class="field"><label>Facebook Profile Name</label><input id="apFacebook" value="${m.facebook||""}" placeholder="Facebook name"></div>
+   <div class="field"><label>Address</label><input id="apAddress" value="${m.address||""}" placeholder="Address"></div>
   </div>
+  <div class="prof-section-title" style="margin-top:24px">GCash Information</div>
+  <div class="prof-form">
+   <div class="field"><label>GCash Number</label><div class="gcash-input-row"><input id="apGcash" value="${m.gcash||""}" placeholder="09XXXXXXXXX"><button type="button" class="gcash-copy" onclick="copyGcash('apGcash')" title="Copy to clipboard">⧉</button></div></div>
+   <div class="field"><label>GCash Account Name</label><input id="apGcashName" value="${m.gcash_name||""}" placeholder="Registered GCash name"></div>
+  </div>
+  <div class="prof-section-title" style="margin-top:24px">🔑 Login Credentials</div>
+  <div class="prof-form">
+   <div class="field"><label>Username</label><input id="apUsername" value="${m.username||""}" disabled></div>
+   <div class="field"><label>New Password</label><div class="pw-field"><input id="apPassword" type="password" value="${m.password||""}"><button type="button" class="toggle-pw" onclick="togglePw('apPassword',this)">👁</button></div></div>
+   <div class="field"><label>Confirm New Password</label><div class="pw-field"><input id="apPassword2" type="password" placeholder="Re-enter new password"><button type="button" class="toggle-pw" onclick="togglePw('apPassword2',this)">👁</button></div></div>
+   <button class="btn-cred" onclick="updateAdminCredentials(${m.id})">🔒 Update Credentials</button>
+  </div>
+  <button class="btn-save-profile" onclick="saveAdminProfile(${m.id})">💾 Save Profile</button>
  </div>`;
 }
 function selectAdminMember(id){state.adminSelectedMember=state.users.find(x=>x.id===Number(id))||state.user;render()}
@@ -811,13 +866,32 @@ async function saveAdminProfile(id){
  let email=document.getElementById("apEmail").value.trim();
  let mobile=document.getElementById("apMobile").value.trim();
  let backup_mobile=document.getElementById("apBackupMobile").value.trim();
+ let facebook=document.getElementById("apFacebook").value.trim();
+ let address=document.getElementById("apAddress").value.trim();
+ let gcash=document.getElementById("apGcash").value.trim();
+ let gcash_name=document.getElementById("apGcashName").value.trim();
  if(useSB){
-  await sb.from("profiles").update({name,age,email,gcash:mobile,backup_mobile}).eq("id",u.id);
+  await sb.from("profiles").update({name,age,email,mobile,backup_mobile,facebook,address,gcash,gcash_name}).eq("id",u.id);
   await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
  }else{
-  u.name=name;u.age=age;u.email=email;u.gcash=mobile;u.backup_mobile=backup_mobile;saveLocal();
+  Object.assign(u,{name,age,email,mobile,backup_mobile,facebook,address,gcash,gcash_name});saveLocal();
  }
  render();toast("Profile updated for "+name+".");
+}
+async function updateAdminCredentials(id){
+ let u=state.users.find(x=>x.id===id);if(!u)return;
+ let pw=document.getElementById("apPassword").value;
+ let pw2=document.getElementById("apPassword2").value;
+ if(!pw){toast("Password cannot be empty.");return}
+ if(pw!==pw2){toast("Passwords do not match.");return}
+ if(useSB){
+  await sb.from("profiles").update({password:pw}).eq("id",u.id);
+  if(sbAdmin&&u.auth_id){try{await sbAdmin.auth.admin.updateUserById(u.auth_id,{password:pw})}catch(e){console.error("auth password update error:",e.message)}}
+  await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
+ }else{
+  u.password=pw;saveLocal();
+ }
+ render();toast("Credentials updated for "+u.name+".");
 }
 function gcashTabContent(){
  const members=state.users.filter(u=>u.role==="Member");
@@ -839,7 +913,37 @@ function withdrawals(){let rows=state.user.role==="Admin"?state.withdrawals:stat
 function members(){return `<div class="page-head"><div><h1>Members</h1><p>Manage registered Savings Pro members.</p></div><button class="btn btn-primary" onclick="addMember()">Add Member</button></div><div class="card"><div class="table-wrap"><table class="table"><tr><th>Member</th><th>Username</th><th>Password</th><th>GCash</th><th>Balance</th><th>Loaded</th><th>Status</th><th></th></tr>${state.users.filter(u=>u.role==="Member").map(u=>`<tr><td><b>${u.name}</b></td><td>${u.username}</td><td>${u.password||"—"}</td><td>${u.gcash||"—"}</td><td>${peso(u.balance)}</td><td>${peso(u.loaded)}</td><td>${badge(u.status)}</td><td><button class="btn btn-outline" style="padding:6px 12px;font-size:12px;color:var(--orange-dark);border-color:var(--orange)" onclick="loadSpecific('${u.username}')">Load Wallet</button></td></tr>`).join("")}</table></div></div>`}
 function loads(){return `<div class="page-head"><div><h1>Wallet Loads</h1><p>Admin-funded savings wallet transactions.</p></div><button class="btn btn-primary" onclick="loadModal()">Load Wallet</button></div><div class="card">${loadTable(50)}</div>`}
 function monitoring(){return `<div class="page-head"><div><h1>Monitoring</h1><p>Overview of Savings Pro activity.</p></div></div><div class="stat-cards">${stat("System","Online","Application status","green-ok")}${stat("Members",state.users.filter(u=>u.role==="Member").length,"Active accounts")}${stat("Pending",state.withdrawals.filter(w=>w.status==="Pending").length,"Withdrawal requests","amber")}${stat("GCash","Enabled","Payout method")}</div><div class="card mt"><h3>System Notes</h3><div class="summary">${srow("Wallet model","Admin loaded")}${srow("Withdrawal method","GCash")}${srow("Minimum withdrawal",peso(MIN_WITHDRAWAL))}${srow("Service charge",(CHARGE_RATE*100)+"% per withdrawal")}</div></div>`}
-function profile(){return `<div class="page-head"><div><h1>My Profile</h1><p>Update your account and GCash information.</p></div></div><div class="profile-grid"><div class="card"><h3>Profile Details</h3><div class="field"><label>FULL NAME</label><input id="pName" value="${state.user.name}"></div><div class="field"><label>USERNAME</label><input value="${state.user.username}" disabled></div><div class="field"><label>GCASH NUMBER</label><input id="pGcash" value="${state.user.gcash||""}" placeholder="09XXXXXXXXX"></div><button class="btn btn-primary" onclick="saveProfile()">Save Changes</button></div><div class="card"><h3>Account</h3><div class="summary">${srow("Role",state.user.role)}${srow("Status",state.user.status)}${srow("Joined",state.user.joined)}${srow("Available balance",peso(state.user.balance))}</div></div></div>`}
+function profile(){
+ const u=state.user;
+ return `<div class="page-head"><div><h1>My Profile</h1><p>Update your personal information, GCash details, and login credentials.</p></div></div>
+ <div class="card" style="max-width:640px">
+  <div class="prof-section-title">Personal Information</div>
+  <div class="prof-form">
+   <div class="prof-row2">
+    <div class="field"><label>Full Name</label><input id="pName" value="${u.name||""}"></div>
+    <div class="field"><label>Age</label><input id="pAge" type="number" value="${u.age||""}" placeholder="Age"></div>
+   </div>
+   <div class="field"><label>Email Address</label><input id="pEmail" type="email" value="${u.email||""}" placeholder="Enter your email"></div>
+   <div class="field"><label>Mobile Number</label><input id="pMobile" value="${u.mobile||""}" placeholder="e.g. 09XX XXX XXXX"></div>
+   <div class="field"><label>Backup Mobile Number</label><input id="pBackupMobile" value="${u.backup_mobile||""}" placeholder="e.g. 09XX XXX XXXX"></div>
+   <div class="field"><label>Facebook Profile Name</label><input id="pFacebook" value="${u.facebook||""}" placeholder="Your Facebook name"></div>
+   <div class="field"><label>Address</label><input id="pAddress" value="${u.address||""}" placeholder="Enter your address"></div>
+  </div>
+  <div class="prof-section-title" style="margin-top:24px">GCash Information</div>
+  <div class="prof-form">
+   <div class="field"><label>GCash Number</label><div class="gcash-input-row"><input id="pGcash" value="${u.gcash||""}" placeholder="09XXXXXXXXX"><button type="button" class="gcash-copy" onclick="copyGcash('pGcash')" title="Copy to clipboard">⧉</button></div></div>
+   <div class="field"><label>GCash Account Name</label><input id="pGcashName" value="${u.gcash_name||""}" placeholder="Registered GCash name"></div>
+  </div>
+  <div class="prof-section-title" style="margin-top:24px">🔑 Login Credentials</div>
+  <div class="prof-form">
+   <div class="field"><label>Username</label><input id="pUsername" value="${u.username||""}" disabled></div>
+   <div class="field"><label>New Password</label><div class="pw-field"><input id="pPassword" type="password" value="${u.password||""}"><button type="button" class="toggle-pw" onclick="togglePw('pPassword',this)">👁</button></div></div>
+   <div class="field"><label>Confirm New Password</label><div class="pw-field"><input id="pPassword2" type="password" placeholder="Re-enter new password"><button type="button" class="toggle-pw" onclick="togglePw('pPassword2',this)">👁</button></div></div>
+   <button class="btn-cred" onclick="updateCredentials()">🔒 Update Credentials</button>
+  </div>
+  <button class="btn-save-profile" onclick="saveProfile()">💾 Save Profile</button>
+ </div>`;
+}
 function settings(){const sk=getServiceKey();const hasKey=sk&&!sk.includes("placeholder");return `<div class="page-head"><div><h1>Settings</h1><p>Configure Supabase service key for admin operations.</p></div></div><div class="card" style="max-width:640px"><h3>Supabase Service Key</h3><div class="notice" style="margin-bottom:16px">The service role key is required for admin operations like creating new members. Find it in your Supabase Dashboard → Settings → API → <b>service_role</b> secret key. It is stored locally in your browser only.</div><div class="field"><label>SERVICE ROLE KEY</label><input id="serviceKeyInput" type="password" value="${hasKey?sk:""}" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..." style="font-family:monospace;font-size:12px"></div><div style="display:flex;gap:10px;align-items:center"><button class="btn btn-primary" onclick="saveServiceKey()">Save Key</button>${hasKey?'<span style="color:var(--green-ok);font-size:13px;font-weight:600">✓ Key configured</span>':'<span style="color:var(--muted);font-size:13px">No key set — add member feature disabled</span>'}</div></div>`}
 
 /* ════════ MODALS ════════ */
