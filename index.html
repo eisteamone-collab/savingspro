@@ -736,7 +736,7 @@ function register(){
  </div></div>`;
 }
 function sideNav(){
- let items=state.user.role==="Admin"?["Dashboard","Total Withdrawal","My Profile","Admin Panel"]:["Dashboard","Earnings","Total Withdrawal","My Profile"];
+ let items=state.user.role==="Admin"?["Dashboard","Total Withdrawal","My Profile","Admin Panel"]:["Dashboard","Total Withdrawal","My Profile"];
  let icons={Dashboard:"▦","Total Withdrawal":"📋","My Profile":"👤","Admin Panel":"🛡",Earnings:"₱",Members:"♙","Wallet Loads":"＋",Withdrawals:"↗",Monitoring:"◉",Profile:"○",Settings:"⚙"};
  return `<aside class="sidebar">
   <div class="sb-brand"><span class="logo"></span><div><b>Savings Pro</b><br><small>Savings Wallet</small></div></div>
