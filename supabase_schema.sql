@@ -58,6 +58,20 @@ create table if not exists public.loads (
   date       date
 );
 
+-- Receipts table (member payment proof images, stored as compressed data URLs)
+create table if not exists public.receipts (
+  id         text primary key,
+  user_id    uuid references public.profiles(id) on delete cascade,
+  user_name  text,
+  image      text,
+  date       timestamptz default now()
+);
+
+-- Add receipts RLS (run once)
+alter table public.receipts enable row level security;
+create policy "read receipts"  on public.receipts for select to authenticated using (true);
+create policy "insert receipt" on public.receipts for insert to authenticated with check (true);
+
 -- ── Row Level Security ──
 alter table public.profiles    enable row level security;
 alter table public.withdrawals enable row level security;

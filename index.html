@@ -391,6 +391,19 @@ window.dispatchEvent(new Event("supabase-ready"))
 .gp-upload{width:100%;background:#3a59d8;color:#fff;font-weight:700;padding:13px;border-radius:999px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;border:0;cursor:pointer;transition:transform .15s,background .15s}
 .gp-upload:hover{transform:translateY(-1px);background:#344fc9}
 
+/* ── Receipts grid & lightbox ── */
+.gcash-receipts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}
+.gcash-receipt-item{cursor:pointer;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;transition:transform .15s,box-shadow .15s}
+.gcash-receipt-item:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.1)}
+.gcash-receipt-item img{width:100%;height:120px;object-fit:cover;display:block}
+.gcash-receipt-meta{padding:8px 10px}
+.gcash-receipt-meta b{font-size:13px;display:block;color:#1f2937}
+.gcash-receipt-meta small{font-size:11px;color:var(--muted)}
+.receipt-lightbox{background:#fff;border-radius:16px;max-width:520px;width:100%;padding:16px;box-shadow:0 25px 70px rgba(0,0,0,.3);animation:modalEnter .3s cubic-bezier(.4,0,.2,1)}
+.receipt-lb-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.receipt-lb-head b{font-size:15px}
+.receipt-lightbox img{width:100%;border-radius:10px;display:block}
+
 @media(max-width:900px){.stat-cards,.admin-cards{grid-template-columns:repeat(2,1fr)}.grid2,.profile-grid{grid-template-columns:1fr}.hero-stats{grid-template-columns:repeat(2,1fr)}.features{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:650px){.header{padding:0 14px}.sidebar{position:static;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px}.sidebar .sb-brand{display:none}.nav{flex-direction:row;overflow-x:auto;white-space:nowrap}.sb-footer{display:none}.content{margin:0;width:100%;padding:16px}.hero-stats{margin-top:36px}.section{padding:50px 20px}.features{grid-template-columns:1fr}}
 
@@ -400,7 +413,7 @@ window.dispatchEvent(new Event("supabase-ready"))
 <script src="config.js"></script>
 <script>
 /* ════════ STATE ════════ */
-const state={page:"Landing",user:null,users:[],withdrawals:[],loads:[],adminTab:"Profile",adminSelectedMember:null};
+const state={page:"Landing",user:null,users:[],withdrawals:[],loads:[],receipts:[],adminTab:"Profile",adminSelectedMember:null};
 
 const SEED={
  users:[
@@ -458,15 +471,18 @@ function saveServiceKey(){
 async function loadData(){
  if(!useSB)return;
  try{
-  const[{data:users,error:e1},{data:wds,error:e2},{data:lds,error:e3}]=await Promise.all([
+  const[{data:users,error:e1},{data:wds,error:e2},{data:lds,error:e3},{data:rcpts,error:e4}]=await Promise.all([
    sb.from("profiles").select("*"),
    sb.from("withdrawals").select("*").order("date",{ascending:false}),
-   sb.from("loads").select("*").order("date",{ascending:false})
+   sb.from("loads").select("*").order("date",{ascending:false}),
+   sb.from("receipts").select("*").order("date",{ascending:false})
   ]);
   if(e1)console.error("profiles load error:",e1.message);
+  if(e4)console.error("receipts load error:",e4.message);
   state.users=users||[];
   state.withdrawals=(wds||[]).map(w=>({...w,user:w.user_name}));
   state.loads=(lds||[]).map(l=>({...l,user:l.user_name}));
+  state.receipts=rcpts||[];
  }catch(e){console.error("loadData error:",e)}
 }
 function loadLocal(){
@@ -475,7 +491,7 @@ function loadLocal(){
  }catch{}
  Object.assign(state,JSON.parse(JSON.stringify(SEED)));saveLocal();
 }
-function saveLocal(){localStorage.setItem("savings_pro_demo",JSON.stringify({users:state.users,withdrawals:state.withdrawals,loads:state.loads}))}
+function saveLocal(){localStorage.setItem("savings_pro_demo",JSON.stringify({users:state.users,withdrawals:state.withdrawals,loads:state.loads,receipts:state.receipts||[]}))}
 
 /* ════════ AUTH ════════ */
 async function checkSession(){
@@ -694,7 +710,25 @@ function gcashPaymentModal(){
  </div></div>`);
 }
 function copyGcashNumber(num){if(!num){toast("No GCash number set.");return}navigator.clipboard.writeText(num).then(()=>toast("GCash number copied."))}
-function uploadReceipt(){const f=document.createElement('input');f.type='file';f.accept='image/*';f.onchange=e=>{if(e.target.files[0]){closeModal();toast("Receipt uploaded.")}};f.click()}
+function compressImage(file,maxW,quality){return new Promise((res)=>{const r=new FileReader();r.onload=e=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;if(w>maxW){h=Math.round(h*maxW/w);w=maxW}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/jpeg',quality))};img.src=e.target.result};r.readAsDataURL(file)})}
+function uploadReceipt(){
+ const f=document.createElement('input');f.type='file';f.accept='image/*';
+ f.onchange=async e=>{const file=e.target.files[0];if(!file)return;
+  const dataUrl=await compressImage(file,1000,0.7);
+  const u=state.users.find(x=>x.id===state.user.id);if(!u)return;
+  const id="RC-"+(1001+(state.receipts||[]).length);
+  if(useSB){
+   const{error}=await sb.from("receipts").insert({id,user_id:u.id,user_name:u.name,image:dataUrl,date:new Date().toISOString()});
+   if(error){toast("Receipt upload failed — run the latest schema SQL to add the receipts table.");return}
+   await loadData();
+  }else{
+   state.receipts.unshift({id,user_id:u.id,user_name:u.name,image:dataUrl,date:new Date().toISOString()});saveLocal();
+  }
+  closeModal();render();toast("Receipt uploaded.");
+ };
+ f.click();
+}
+function viewReceipt(id){const r=(state.receipts||[]).find(x=>x.id===id);if(!r)return;document.body.insertAdjacentHTML("beforeend",`<div class="modal-bg" id="modal" onclick="closeModal()"><div class="receipt-lightbox" onclick="event.stopPropagation()"><div class="receipt-lb-head"><b>${r.user_name||"Member"} — ${(r.date||"").slice(0,10)}</b><button class="gp-close" onclick="closeModal()">×</button></div><img src="${r.image}" alt="receipt"></div></div>`)}
 
 /* ════════ HELPERS ════════ */
 const CHARGE_RATE=0.05; /* 5% service charge on withdrawals */
@@ -799,12 +833,14 @@ function register(){
 function sideNav(){
  let items=state.user.role==="Admin"?["Dashboard","Total Withdrawal","My Profile","Admin Panel"]:["Dashboard","Total Withdrawal","My Profile"];
  let icons={Dashboard:"▦","Total Withdrawal":"📋","My Profile":"👤","Admin Panel":"🛡",Earnings:"₱",Members:"♙","Wallet Loads":"＋",Withdrawals:"↗",Monitoring:"◉",Profile:"○",Settings:"⚙"};
+ const gcashAdmin=state.users.find(u=>u.role==="Admin")||state.user;
+ const gcashNum=gcashAdmin&&gcashAdmin.gcash?gcashAdmin.gcash:"";
  return `<aside class="sidebar">
   <div class="sb-brand"><span class="logo"></span><div><b>Savings Pro</b><br><small>Savings Wallet</small></div></div>
   <nav class="nav">${items.map(x=>`<button class="${state.page===x?'active':''}" onclick="go('${x}')"><span class="ico">${icons[x]||"•"}</span> ${x}${state.page===x?' <span style="margin-left:auto;font-size:12px">›</span>':''}</button>`).join("")}</nav>
   <div class="sb-footer">
    <div class="sb-user"><div class="av">${(state.user.name||"U")[0]}</div><div><b>${state.user.name}</b><small>${state.user.role}</small></div></div>
-   <div class="sb-gcash-bubble" onclick="gcashPaymentModal()"><span>💳</span> GCash</div>
+   <div class="sb-gcash-bubble" onclick="gcashPaymentModal()"><span>💳</span> ${gcashNum||"GCash"}</div>
    <div class="sb-logout" onclick="logout()">⏻ Logout</div>
   </div>
  </aside>`;
@@ -978,6 +1014,7 @@ async function updateAdminCredentials(id){
 }
 function gcashTabContent(){
  const admin=state.user;
+ const receipts=state.receipts||[];
  return `<div class="gcash-panel">
    <h3 class="gcash-panel-head">GCash Payment Info</h3>
    <p class="gcash-panel-desc">Set the GCash number and name shown to all members for loading wallets.</p>
@@ -986,9 +1023,9 @@ function gcashTabContent(){
    <button class="btn-save-gcash" onclick="saveGcashInfo()">💾 Save GCash Info</button>
   </div>
   <div class="card mt">
-   <div class="gcash-receipts-head"><h3>Member GCash Receipts</h3><span class="gcash-receipts-badge">0 total</span></div>
-   <p class="gcash-receipts-desc">Receipts uploaded by members as proof of payment.</p>
-   <div class="gcash-receipts-empty">No receipts uploaded yet.</div>
+   <div class="gcash-receipts-head"><h3>Member GCash Receipts</h3><span class="gcash-receipts-badge">${receipts.length} total</span></div>
+   <p class="gcash-receipts-desc">Receipts uploaded by members as proof of payment. Click an image to view.</p>
+   ${receipts.length?`<div class="gcash-receipts-grid">${receipts.map(r=>`<div class="gcash-receipt-item" onclick="viewReceipt('${r.id}')"><img src="${r.image}" alt="receipt"><div class="gcash-receipt-meta"><b>${r.user_name||"Member"}</b><small>${(r.date||"").slice(0,10)}</small></div></div>`).join("")}</div>`:`<div class="gcash-receipts-empty">No receipts uploaded yet.</div>`}
   </div>`;
 }
 async function saveGcashInfo(){
