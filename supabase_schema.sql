@@ -24,10 +24,14 @@ create table if not exists public.withdrawals (
   user_id    uuid references public.profiles(id) on delete cascade,
   user_name  text,
   amount     numeric,
+  charge     numeric default 0,
   gcash      text,
   status     text default 'Pending',
   date       date
 );
+
+-- Add charge column if table already exists (run once)
+-- alter table public.withdrawals add column if not exists charge numeric default 0;
 
 -- Loads table
 create table if not exists public.loads (
