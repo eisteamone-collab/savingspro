@@ -369,8 +369,13 @@ window.dispatchEvent(new Event("supabase-ready"))
 .gcash-receipts-empty{text-align:center;padding:48px 20px;color:#9ca3af;font-size:15px}
 
 /* ── GCash Payment Bubble & Modal ── */
-.sb-gcash-bubble{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 10px;margin-left:auto;width:fit-content;padding:8px 14px;border-radius:999px;background:linear-gradient(135deg,#2e5bff,#1e3fd8);color:#fff;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(46,91,255,.3);transition:transform .15s,box-shadow .15s}
-.sb-gcash-bubble:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(46,91,255,.45)}
+.sb-gcash-bubble{position:relative;display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 10px;margin-left:auto;width:fit-content;padding:9px 16px;border-radius:999px;color:#fff;font-size:12px;font-weight:700;letter-spacing:.3px;cursor:pointer;overflow:hidden;background:linear-gradient(145deg,#3b7bff 0%,#1f54e0 55%,#163bbf 100%);box-shadow:inset 0 1px 1px rgba(255,255,255,.45),inset 0 -2px 4px rgba(0,0,0,.25),0 5px 14px rgba(31,84,224,.4),0 1px 3px rgba(0,0,0,.2);transition:transform .18s ease,box-shadow .18s ease;animation:gcashFloat 3.2s ease-in-out infinite}
+.sb-gcash-bubble::before{content:"";position:absolute;top:1px;left:8%;right:8%;height:42%;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(255,255,255,.05));filter:blur(.5px);pointer-events:none}
+.sb-gcash-bubble::after{content:"";position:absolute;top:14%;left:18%;width:22%;height:18%;border-radius:50%;background:rgba(255,255,255,.55);filter:blur(1px);pointer-events:none}
+.sb-gcash-bubble .gcash-ico{position:relative;z-index:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+.sb-gcash-bubble:hover{transform:translateY(-2px) scale(1.03);box-shadow:inset 0 1px 1px rgba(255,255,255,.5),inset 0 -2px 4px rgba(0,0,0,.25),0 9px 22px rgba(31,84,224,.55),0 2px 4px rgba(0,0,0,.25)}
+@keyframes gcashFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@media(prefers-reduced-motion:reduce){.sb-gcash-bubble{animation:none}}
 .gcash-pay-modal{background:#2e5bff;border-radius:18px;width:min(380px,100%);padding:24px;color:#fff;box-shadow:0 25px 70px rgba(0,0,0,.28);position:relative;animation:modalEnter .3s cubic-bezier(.4,0,.2,1)}
 .gp-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:18px}
 .gp-head .gp-ico{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:18px;flex-shrink:0}
@@ -833,14 +838,12 @@ function register(){
 function sideNav(){
  let items=state.user.role==="Admin"?["Dashboard","Total Withdrawal","My Profile","Admin Panel"]:["Dashboard","Total Withdrawal","My Profile"];
  let icons={Dashboard:"▦","Total Withdrawal":"📋","My Profile":"👤","Admin Panel":"🛡",Earnings:"₱",Members:"♙","Wallet Loads":"＋",Withdrawals:"↗",Monitoring:"◉",Profile:"○",Settings:"⚙"};
- const gcashAdmin=state.users.find(u=>u.role==="Admin")||state.user;
- const gcashNum=gcashAdmin&&gcashAdmin.gcash?gcashAdmin.gcash:"";
  return `<aside class="sidebar">
   <div class="sb-brand"><span class="logo"></span><div><b>Savings Pro</b><br><small>Savings Wallet</small></div></div>
   <nav class="nav">${items.map(x=>`<button class="${state.page===x?'active':''}" onclick="go('${x}')"><span class="ico">${icons[x]||"•"}</span> ${x}${state.page===x?' <span style="margin-left:auto;font-size:12px">›</span>':''}</button>`).join("")}</nav>
   <div class="sb-footer">
    <div class="sb-user"><div class="av">${(state.user.name||"U")[0]}</div><div><b>${state.user.name}</b><small>${state.user.role}</small></div></div>
-   <div class="sb-gcash-bubble" onclick="gcashPaymentModal()"><span>💳</span> ${gcashNum||"GCash"}</div>
+   <div class="sb-gcash-bubble" onclick="gcashPaymentModal()"><span class="gcash-ico">💳</span> GCash</div>
    <div class="sb-logout" onclick="logout()">⏻ Logout</div>
   </div>
  </aside>`;
