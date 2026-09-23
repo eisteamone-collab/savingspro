@@ -19,7 +19,7 @@ Single-file vanilla JS SPA (`index.html`) — a savings wallet system. Uses Supa
 - `SUPABASE_URL` — Supabase project URL
 - `SUPABASE_ANON_KEY` — Supabase anon/public key (client-side)
 - `SUPABASE_SERVICE_KEY` — Supabase service_role key (admin operations: creating members)
-- `CLOUDINARY_CLOUD_NAME` — Cloudinary cloud name (for receipt image uploads, saves Supabase egress)
+- `CLOUDINARY_CLOUD_NAME` — Cloudinary cloud name (ALL uploaded images/videos go to Cloudinary only, saves Supabase egress)
 - `CLOUDINARY_UPLOAD_PRESET` — Cloudinary unsigned upload preset name
 
 ## Roles

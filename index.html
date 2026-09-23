@@ -722,18 +722,18 @@ async function uploadToCloudinary(dataUrl){
  if(!cloudName||!preset)throw new Error("Cloudinary not configured");
  const blob=await(await fetch(dataUrl)).blob();
  const fd=new FormData();fd.append("file",blob);fd.append("upload_preset",preset);
- const res=await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,{method:"POST",body:fd});
+ const res=await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,{method:"POST",body:fd});
  if(!res.ok)throw new Error("Cloudinary upload failed");
  const json=await res.json();return json.secure_url;
 }
 function uploadReceipt(){
- const f=document.createElement('input');f.type='file';f.accept='image/*';
+ const f=document.createElement('input');f.type='file';f.accept='image/*,video/*';
  f.onchange=async e=>{const file=e.target.files[0];if(!file)return;
   const dataUrl=await compressImage(file,1000,0.7);
   const u=state.users.find(x=>x.id===state.user.id);if(!u)return;
   const id="RC-"+(1001+(state.receipts||[]).length);
-  let imageUrl=dataUrl;
-  try{imageUrl=await uploadToCloudinary(dataUrl)}catch(err){console.error("Cloudinary error:",err);toast("Cloudinary upload failed, saving locally.");return}
+  let imageUrl;
+  try{imageUrl=await uploadToCloudinary(dataUrl)}catch(err){console.error("Cloudinary error:",err);toast("Cloudinary upload failed.");return}
   if(useSB){
    const{error}=await sb.from("receipts").insert({id,user_id:u.id,user_name:u.name,image:imageUrl,date:new Date().toISOString()});
    if(error){toast("Receipt upload failed — run the latest schema SQL to add the receipts table.");return}
