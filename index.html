@@ -368,6 +368,29 @@ window.dispatchEvent(new Event("supabase-ready"))
 .gcash-receipts-desc{font-size:13px;color:#6b7280;margin:0 0 18px}
 .gcash-receipts-empty{text-align:center;padding:48px 20px;color:#9ca3af;font-size:15px}
 
+/* ── GCash Payment Bubble & Modal ── */
+.sb-gcash-bubble{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 10px;margin-left:auto;width:fit-content;padding:8px 14px;border-radius:999px;background:linear-gradient(135deg,#2e5bff,#1e3fd8);color:#fff;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(46,91,255,.3);transition:transform .15s,box-shadow .15s}
+.sb-gcash-bubble:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(46,91,255,.45)}
+.gcash-pay-modal{background:#2e5bff;border-radius:18px;width:min(380px,100%);padding:24px;color:#fff;box-shadow:0 25px 70px rgba(0,0,0,.28);position:relative;animation:modalEnter .3s cubic-bezier(.4,0,.2,1)}
+.gp-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:18px}
+.gp-head .gp-ico{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:18px;flex-shrink:0}
+.gp-head .gp-titles{flex:1;min-width:0}
+.gp-head .gp-title{font-size:16px;font-weight:700;margin:0 0 2px}
+.gp-head .gp-sub{font-size:12px;opacity:.85;margin:0;line-height:1.4}
+.gp-close{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.18);border:0;color:#fff;font-size:16px;cursor:pointer;flex-shrink:0;display:grid;place-items:center}
+.gp-close:hover{background:rgba(255,255,255,.3)}
+.gp-logo{width:84px;height:84px;border-radius:16px;background:#000;display:grid;place-items:center;margin:0 auto 6px}
+.gp-logo .gp-logo-img{width:54px;height:54px;border-radius:50%;background-image:url("https://media.base44.com/images/public/6a60265126ce76965dce5ea0/2798d58a3_A8.png");background-size:cover;background-position:center}
+.gp-brand{text-align:center;font-size:13px;font-weight:700;letter-spacing:1.5px;margin:0 0 22px;opacity:.95}
+.gp-num-lbl{font-size:12px;opacity:.85;text-align:center;margin-bottom:4px}
+.gp-num{font-size:26px;font-weight:800;text-align:center;letter-spacing:1px;margin-bottom:6px}
+.gp-name{text-align:center;font-size:13px;opacity:.9;margin-bottom:18px}
+.gp-copy{width:100%;background:#fff;color:#2e5bff;font-weight:700;padding:12px;border-radius:999px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;border:0;cursor:pointer;margin-bottom:10px;transition:transform .15s}
+.gp-copy:hover{transform:translateY(-1px)}
+.gp-instr{text-align:center;font-size:12px;opacity:.9;margin:0 0 16px;line-height:1.5}
+.gp-upload{width:100%;background:#3a59d8;color:#fff;font-weight:700;padding:13px;border-radius:999px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;border:0;cursor:pointer;transition:transform .15s,background .15s}
+.gp-upload:hover{transform:translateY(-1px);background:#344fc9}
+
 @media(max-width:900px){.stat-cards,.admin-cards{grid-template-columns:repeat(2,1fr)}.grid2,.profile-grid{grid-template-columns:1fr}.hero-stats{grid-template-columns:repeat(2,1fr)}.features{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:650px){.header{padding:0 14px}.sidebar{position:static;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px}.sidebar .sb-brand{display:none}.nav{flex-direction:row;overflow-x:auto;white-space:nowrap}.sb-footer{display:none}.content{margin:0;width:100%;padding:16px}.hero-stats{margin-top:36px}.section{padding:50px 20px}.features{grid-template-columns:1fr}}
 
@@ -650,6 +673,28 @@ async function updateCredentials(){
  render();toast("Credentials updated successfully.");
 }
 function copyGcash(id){let v=document.getElementById(id).value;if(v){navigator.clipboard.writeText(v).then(()=>toast("GCash number copied."))}else{toast("Nothing to copy.")}}
+function gcashPaymentModal(){
+ const admin=state.users.find(u=>u.role==="Admin")||state.user;
+ const num=admin.gcash||"";
+ const name=admin.gcash_name||"";
+ document.body.insertAdjacentHTML("beforeend",`<div class="modal-bg" id="modal"><div class="gcash-pay-modal">
+  <div class="gp-head">
+   <div class="gp-ico">📱</div>
+   <div class="gp-titles"><p class="gp-title">Payment via GCash</p><p class="gp-sub">Send payment here, then upload receipt.</p></div>
+   <button class="gp-close" onclick="closeModal()">×</button>
+  </div>
+  <div class="gp-logo"><div class="gp-logo-img"></div></div>
+  <p class="gp-brand">SAVINGS PRO</p>
+  <p class="gp-num-lbl">GCash Number</p>
+  <div class="gp-num">${num||"Not set"}</div>
+  <div class="gp-name">GCash Name: ${name||"Not set"}</div>
+  <button class="gp-copy" onclick="copyGcashNumber('${num}')">⧉ Click Here to Copy Number</button>
+  <p class="gp-instr">And open your GCash App to paste the GCash Number there</p>
+  <button class="gp-upload" onclick="uploadReceipt()">☁ Upload Receipt</button>
+ </div></div>`);
+}
+function copyGcashNumber(num){if(!num){toast("No GCash number set.");return}navigator.clipboard.writeText(num).then(()=>toast("GCash number copied."))}
+function uploadReceipt(){const f=document.createElement('input');f.type='file';f.accept='image/*';f.onchange=e=>{if(e.target.files[0]){closeModal();toast("Receipt uploaded.")}};f.click()}
 
 /* ════════ HELPERS ════════ */
 const CHARGE_RATE=0.05; /* 5% service charge on withdrawals */
@@ -758,7 +803,8 @@ function sideNav(){
   <div class="sb-brand"><span class="logo"></span><div><b>Savings Pro</b><br><small>Savings Wallet</small></div></div>
   <nav class="nav">${items.map(x=>`<button class="${state.page===x?'active':''}" onclick="go('${x}')"><span class="ico">${icons[x]||"•"}</span> ${x}${state.page===x?' <span style="margin-left:auto;font-size:12px">›</span>':''}</button>`).join("")}</nav>
   <div class="sb-footer">
-   <div class="sb-user"><div class="av">${(state.user.name||"U")[0]}</div><div><b>${state.user.name}</b><small>${state.user.role}</small>${state.user.gcash?`<small style="display:block;margin-top:2px;color:#059669;font-weight:600">💳 ${state.user.gcash}</small>`:""}</div></div>
+   <div class="sb-user"><div class="av">${(state.user.name||"U")[0]}</div><div><b>${state.user.name}</b><small>${state.user.role}</small></div></div>
+   <div class="sb-gcash-bubble" onclick="gcashPaymentModal()"><span>💳</span> GCash</div>
    <div class="sb-logout" onclick="logout()">⏻ Logout</div>
   </div>
  </aside>`;
