@@ -677,6 +677,14 @@ async function addMember(){
  }
  render();toast("User created.");
 }
+async function refreshCurrentUser(){
+ if(!useSB||!state.user)return;
+ try{
+  let{data,error}=await sb.from("profiles").select("*").eq("id",state.user.id).single();
+  if(error&&sbAdmin){const r=await sbAdmin.from("profiles").select("*").eq("id",state.user.id).single();data=r.data;error=r.error}
+  if(data){state.user=data;const idx=state.users.findIndex(x=>x.id===data.id);if(idx>=0)state.users[idx]=data}
+ }catch(e){console.error("refreshCurrentUser error:",e.message)}
+}
 async function saveProfile(){
  let u=state.users.find(x=>x.id===state.user.id);if(!u)return;
  let name=document.getElementById("pName").value.trim()||u.name;
@@ -689,7 +697,10 @@ async function saveProfile(){
  let gcash=document.getElementById("pGcash").value.trim();
  let gcash_name=document.getElementById("pGcashName").value.trim();
  if(useSB){
-  await sb.from("profiles").update({name,age,email,mobile,backup_mobile,facebook,address,gcash,gcash_name}).eq("id",u.id);
+  let{data:updData,error:updErr}=await sb.from("profiles").update({name,age,email,mobile,backup_mobile,facebook,address,gcash,gcash_name}).eq("id",u.id).select().single();
+  if(updErr&&sbAdmin){const r=await sbAdmin.from("profiles").update({name,age,email,mobile,backup_mobile,facebook,address,gcash,gcash_name}).eq("id",u.id).select().single();updData=r.data;updErr=r.error}
+  if(updErr){toast("Failed to update profile: "+updErr.message);return}
+  if(updData){state.user=updData;const idx=state.users.findIndex(x=>x.id===updData.id);if(idx>=0)state.users[idx]=updData}
   await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
  }else{
   Object.assign(u,{name,age,email,mobile,backup_mobile,facebook,address,gcash,gcash_name});state.user=u;saveLocal();
@@ -1412,7 +1423,8 @@ function go(p){
  if(p==="Landing"||p==="Login"||p==="Register"){
   state.user=null;state.page=p;
  }else{state.page=p}
- render();
+ if(p==="My Profile"){refreshCurrentUser().then(render)}
+ else render();
 }
 function initRevealObserver(){const obs=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');obs.unobserve(e.target)}})},{threshold:.15});document.querySelectorAll('.reveal,.reveal-slide').forEach(el=>obs.observe(el))}
 function render(){let r=document.getElementById("root");r.innerHTML=state.page==="Landing"?landing():state.page==="Login"?login():state.page==="Register"?register():state.user?appShell():login();r.classList.remove('page-enter');void r.offsetWidth;r.classList.add('page-enter');if(state.page==="Landing")initRevealObserver()}
