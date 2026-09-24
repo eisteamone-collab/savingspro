@@ -1268,11 +1268,11 @@ async function submitPromote(u){
  let m=state.users.find(x=>x.username===u);if(!m)return;
  let role=document.getElementById("promoteRole").value;
  if(useSB){
-  const{error:e1}=await sb.from("profiles").update({role}).eq("id",m.id);
-  if(e1){
-   console.error("promote update error:",e1.message);
-   if(sbAdmin){const{error:e2}=await sbAdmin.from("profiles").update({role}).eq("id",m.id);if(e2){toast("Failed to promote: "+e2.message);return}}
-   else{toast("Failed to promote: "+e1.message);return}
+  const{data:d1,error:e1}=await sb.from("profiles").update({role}).eq("id",m.id).select();
+  if(e1||!d1||d1.length===0){
+   console.error("promote via client failed:",e1?e1.message:"0 rows updated (RLS blocked)");
+   if(sbAdmin){const{data:d2,error:e2}=await sbAdmin.from("profiles").update({role}).eq("id",m.id).select();if(e2||!d2||!d2.length){toast("Failed to promote: "+(e2?e2.message:"no rows updated"));return}}
+   else{toast("Failed to promote: "+(e1?e1.message:"no rows updated"));return}
   }
   await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
  }else{
