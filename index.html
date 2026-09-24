@@ -1190,7 +1190,12 @@ async function submitPromote(u){
  let m=state.users.find(x=>x.username===u);if(!m)return;
  let role=document.getElementById("promoteRole").value;
  if(useSB){
-  await sb.from("profiles").update({role}).eq("id",m.id);
+  const{error:e1}=await sb.from("profiles").update({role}).eq("id",m.id);
+  if(e1){
+   console.error("promote update error:",e1.message);
+   if(sbAdmin){const{error:e2}=await sbAdmin.from("profiles").update({role}).eq("id",m.id);if(e2){toast("Failed to promote: "+e2.message);return}}
+   else{toast("Failed to promote: "+e1.message);return}
+  }
   await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
  }else{
   m.role=role;saveLocal();
