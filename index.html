@@ -945,7 +945,7 @@ function adminDashboard(){
  return memberDashboard();
 }
 function adminPanel(){
- const members=state.users.filter(u=>u.role==="Member"||u.role==="Store");
+ const members=state.users.filter(u=>u.role==="Member"||u.role==="Store"||u.role==="Admin");
  const pendingWd=state.withdrawals.filter(w=>w.status==="Pending").length;
  const totalSavings=state.users.reduce((a,u)=>a+(u.balance||0),0);
  return `<div class="admin-panel">
@@ -977,7 +977,7 @@ function adminTabContent(){
  }
 }
 function membersTabContent(){
- const members=state.users.filter(u=>u.role==="Member"||u.role==="Store");
+ const members=state.users.filter(u=>u.role==="Member"||u.role==="Store"||u.role==="Admin");
  return `<div class="admin-search"><span class="ico">🔍</span><input id="adminSearch" placeholder="Search approved users..." oninput="filterMembers()"></div>
  <div class="card"><table class="admin-table" id="membersTable"><tr><th></th><th>User</th><th>Role</th><th>Balance</th><th>Actions</th></tr>${members.map((u,i)=>`<tr class="member-row"><td><div class="row-num">${i+1}</div></td><td><div class="member-name">${u.name}</div><div class="member-username">@${u.username}</div></td><td><span class="badge ${u.role==='Store'?'Pending':'Active'}">${u.role}</span></td><td><div class="bal-lbl">Balance</div><div class="bal-val">${peso(u.balance)}</div></td><td><div class="act-btns"><button class="act-btn view" title="View" onclick="viewMember('${u.username}')">👁</button><button class="act-btn wallet" title="Load Wallet" onclick="loadSpecific('${u.username}')">👛</button><button class="act-btn" title="Assign Withdrawal" style="background:#dbeafe;color:#2563eb" onclick="assignWithdrawalModal('${u.username}')">↗</button><button class="act-btn" title="Promote to Admin or Store" style="background:#d1fae5;color:#059669" onclick="promoteModal('${u.username}')">⬆</button><button class="act-btn edit" title="Edit" onclick="editMember('${u.username}')">✏</button></div></td></tr>`).join("")}</table></div>`;
 }
