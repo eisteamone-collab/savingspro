@@ -495,6 +495,8 @@ async function loadData(){
    sb.from("receipts").select("*").order("date",{ascending:false})
   ]);
   if(e1)console.error("profiles load error:",e1.message);
+  if(e2)console.error("withdrawals load error:",e2.message);
+  if(e3)console.error("loads load error:",e3.message);
   if(e4)console.error("receipts load error:",e4.message);
   state.users=users||[];
   state.withdrawals=(wds||[]).map(w=>({...w,user:w.user_name}));
@@ -631,9 +633,12 @@ async function submitLoad(){
  if(action==="deduct"&&a>u.balance){toast("Amount exceeds current balance.");return}
  let delta=action==="deduct"?-a:a;
  if(useSB){
-  await sb.from("profiles").update({balance:u.balance+delta,loaded:action==="add"?u.loaded+a:u.loaded}).eq("id",u.id);
-  await sb.from("loads").insert({id:"LD-"+(1001+state.loads.length),user_id:u.id,user_name:u.name,amount:delta,date:new Date().toISOString().slice(0,10)});
-  await sb.from("withdrawals").insert({id:"WD-"+(1001+state.withdrawals.length),user_id:u.id,user_name:u.name,amount:a,gcash:u.gcash||"",status:"Paid",date:new Date().toISOString().slice(0,10)});
+  const{error:eProf}=await sb.from("profiles").update({balance:u.balance+delta,loaded:action==="add"?u.loaded+a:u.loaded}).eq("id",u.id);
+  if(eProf){console.error("profile update error:",eProf.message);toast("Error updating balance: "+eProf.message);return}
+  const{error:eLoad}=await sb.from("loads").insert({id:"LD-"+(1001+state.loads.length),user_id:u.id,user_name:u.name,amount:delta,date:new Date().toISOString().slice(0,10)});
+  if(eLoad)console.error("loads insert error:",eLoad.message);
+  const{error:eWd}=await sb.from("withdrawals").insert({id:"WD-"+(1001+state.withdrawals.length),user_id:u.id,user_name:u.name,amount:a,gcash:u.gcash||"",status:"Paid",date:new Date().toISOString().slice(0,10)});
+  if(eWd)console.error("withdrawals insert error:",eWd.message);
   await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
  }else{
   u.balance+=delta;if(action==="add")u.loaded+=a;state.loads.unshift({id:"LD-"+(1001+state.loads.length),user:u.name,amount:delta,date:new Date().toISOString().slice(0,10)});
