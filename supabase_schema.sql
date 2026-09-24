@@ -84,12 +84,17 @@ create table if not exists public.store_reports (
   category         text,
   amount           numeric,
   details          text default '',
+  status           text default 'Pending',
   date             date
 );
+
+-- Add status column if table already exists (run once)
+alter table public.store_reports add column if not exists status text default 'Pending';
 
 alter table public.store_reports enable row level security;
 create policy "read store reports"  on public.store_reports for select to authenticated using (true);
 create policy "insert store report" on public.store_reports for insert to authenticated with check (true);
+create policy "update store report" on public.store_reports for update to authenticated using (true);
 
 -- ── Row Level Security ──
 alter table public.profiles    enable row level security;

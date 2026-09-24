@@ -152,7 +152,7 @@ window.dispatchEvent(new Event("supabase-ready"))
 .table tbody tr{transition:background .12s}
 .table tbody tr:hover{background:#f9fafb}
 .badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700}
-.badge.Paid,.badge.Active{background:#dcfce7;color:#16a34a}
+.badge.Paid,.badge.Active,.badge.Approved{background:#dcfce7;color:#16a34a}
 .badge.Pending{background:#fef3c7;color:#d97706}
 .badge.Rejected,.badge.Failed{background:#fee2e2;color:#ef4444}
 .empty{text-align:center;padding:36px;color:var(--muted);font-size:14px}
@@ -424,7 +424,7 @@ window.dispatchEvent(new Event("supabase-ready"))
 <script src="config.js"></script>
 <script>
 /* ════════ STATE ════════ */
-const state={page:"Landing",user:null,users:[],withdrawals:[],loads:[],receipts:[],storeReports:[],adminTab:"Profile",adminSelectedMember:null};
+const state={page:"Landing",user:null,users:[],withdrawals:[],loads:[],receipts:[],storeReports:[],storeCategories:["Savings","Withdrawal","Deposit","Payment","Refund","Other"],adminTab:"Profile",adminSelectedMember:null};
 
 const SEED={
  users:[
@@ -445,9 +445,10 @@ const SEED={
   {id:"LD-1003",user:"Pedro Reyes",amount:1500,date:"2026-08-18"}
  ],
  storeReports:[
-  {id:"SR-1001",store_id:5,store_name:"Store Aling Nena",customer_name:"Juan Dela Cruz",category:"Savings",amount:500,details:"Weekly savings deposit",date:"2026-09-15"},
-  {id:"SR-1002",store_id:5,store_name:"Store Aling Nena",customer_name:"Maria Santos",category:"Withdrawal",amount:300,details:"Emergency withdrawal request",date:"2026-09-18"}
- ]
+  {id:"SR-1001",store_id:5,store_name:"Store Aling Nena",customer_name:"Juan Dela Cruz",customer_username:"juan",category:"Savings",amount:500,details:"Weekly savings deposit",status:"Pending",date:"2026-09-15"},
+  {id:"SR-1002",store_id:5,store_name:"Store Aling Nena",customer_name:"Maria Santos",customer_username:"maria",category:"Withdrawal",amount:300,details:"Emergency withdrawal request",status:"Approved",date:"2026-09-18"}
+ ],
+ storeCategories:["Savings","Withdrawal","Deposit","Payment","Refund","Other"]
 };
 
 /* ════════ SUPABASE ════════ */
@@ -510,7 +511,7 @@ function loadLocal(){
  }catch{}
  Object.assign(state,JSON.parse(JSON.stringify(SEED)));saveLocal();
 }
-function saveLocal(){localStorage.setItem("savings_pro_demo",JSON.stringify({users:state.users,withdrawals:state.withdrawals,loads:state.loads,receipts:state.receipts||[],storeReports:state.storeReports||[]}))}
+function saveLocal(){localStorage.setItem("savings_pro_demo",JSON.stringify({users:state.users,withdrawals:state.withdrawals,loads:state.loads,receipts:state.receipts||[],storeReports:state.storeReports||[],storeCategories:state.storeCategories||[]}))}
 
 /* ════════ AUTH ════════ */
 async function checkSession(){
@@ -913,7 +914,20 @@ function memberDashboard(){
  </div>`;
 }
 function storeDashboard(){
- return memberDashboard();
+ let myReports=state.storeReports.filter(r=>r.store_id===state.user.id);
+ let pending=myReports.filter(r=>(r.status||"Pending")==="Pending").length;
+ let approved=myReports.filter(r=>r.status==="Approved").length;
+ return `<div class="page-head"><div><h1>Welcome back, <span style="color:var(--orange)">${state.user.name}</span></h1><p>Here's your store overview</p></div><button class="terms-link" onclick="window.open('https://forms.gle/bMLvWgG2KGfYXzBz8','_blank')">User Terms & Conditions</button></div>
+ <div class="stat-cards">
+  ${stat("Total Reports",myReports.length,"Submitted to admin","accent")}
+  ${stat("Pending Approval",pending,"Awaiting admin review","amber")}
+  ${stat("Approved",approved,"Added to user wallets")}
+ </div>
+ <div class="card mt">
+  <h3>Transaction History</h3>
+  <p style="color:var(--muted);font-size:14px;margin:0 0 16px">Your submitted store reports and their approval status</p>
+  ${myReports.length?storeReportsTable(myReports,false):`<div class="tx-empty"><div class="tx-ico">📋</div><div class="tx-title">No reports yet</div><div class="tx-sub">Submit a customer report from the Store Panel.</div></div>`}
+ </div>`;
 }
 function earnings(){
  return `<div class="page-head"><div><h1>Earnings</h1><p>Your savings and wallet funding history.</p></div></div>
@@ -939,7 +953,7 @@ function adminPanel(){
   <p class="admin-sub">Manage users, load wallets, and withdrawals</p>
   <div class="admin-cards">
    <div class="admin-card"><div><div class="lbl">Total Users</div><div class="val">${members.length}</div></div><div class="ico blue">👥</div></div>
-   <div class="admin-card"><div><div class="lbl">Pending Approval</div><div class="val">0</div></div><div class="ico orange">⏰</div></div>
+   <div class="admin-card"><div><div class="lbl">Pending Store Reports</div><div class="val">${(state.storeReports||[]).filter(r=>(r.status||"Pending")==="Pending").length}</div></div><div class="ico orange">⏰</div></div>
    <div class="admin-card"><div><div class="lbl">Pending Withdrawals</div><div class="val">${pendingWd}</div></div><div class="ico teal">⬇</div></div>
    <div class="admin-card"><div><div class="lbl">Total Savings</div><div class="val">${peso(totalSavings)}</div></div><div class="ico pink">👛</div></div>
   </div>
@@ -1096,16 +1110,18 @@ async function submitResetCredentials(u){let m=state.users.find(x=>x.username===
 function storePanel(){
  let myReports=state.storeReports.filter(r=>r.store_id===state.user.id);
  let allUsers=state.users.filter(u=>u.role==="Member");
- const categories=["Savings","Withdrawal","Deposit","Payment","Refund","Other"];
- return `<div class="page-head"><div><h1>Store Panel</h1><p>Report customer details to admin. Click a customer name to view their profile.</p></div></div>
+ let categories=state.storeCategories||["Savings","Withdrawal","Deposit","Payment","Refund","Other"];
+ let pending=myReports.filter(r=>(r.status||"Pending")==="Pending").length;
+ let approved=myReports.filter(r=>r.status==="Approved").length;
+ return `<div class="page-head"><div><h1>Store Panel</h1><p>Report customer purchases to admin for approval. Click a customer name to view their profile.</p></div></div>
  <div class="stat-cards">
   ${stat("Total Reports",myReports.length,"Submitted to admin","accent")}
-  ${stat("Total Amount",peso(myReports.reduce((a,r)=>a+(r.amount||0),0)),"All reported amounts","amber")}
-  ${stat("Customers",allUsers.length,"Available customers")}
+  ${stat("Pending Approval",pending,"Awaiting admin review","amber")}
+  ${stat("Approved",approved,"Added to user wallets")}
  </div>
  <div class="card mt">
   <h3>📋 Submit Customer Report</h3>
-  <p style="color:var(--muted);font-size:14px;margin:0 0 18px">Fill in the customer details below to report to admin.</p>
+  <p style="color:var(--muted);font-size:14px;margin:0 0 18px">Fill in the customer details below. Admin must approve before the amount is added to the user's wallet.</p>
   <div class="prof-form" style="max-width:640px">
    <div class="prof-row2">
     <div class="field"><label>Customer Name *</label>
@@ -1114,14 +1130,18 @@ function storePanel(){
       ${allUsers.map(u=>`<option value="${u.username}">${u.name} (@${u.username})</option>`).join("")}
      </select>
     </div>
-    <div class="field"><label>Category *</label>
-     <select id="srCategory">
-      ${categories.map(c=>`<option value="${c}">${c}</option>`).join("")}
-     </select>
+    <div class="field"><label>Purchase Category *</label>
+     <div style="display:flex;gap:8px">
+      <select id="srCategory" style="flex:1">
+       ${categories.map(c=>`<option value="${c}">${c}</option>`).join("")}
+      </select>
+      <input id="srNewCategory" type="text" placeholder="Add new..." style="width:130px;border:1px solid #d1d5db;border-radius:10px;padding:11px 14px;font-size:14px;background:#fff">
+      <button type="button" class="btn btn-primary" style="padding:11px 14px;font-size:13px;white-space:nowrap" onclick="addStoreCategory()">＋ Add</button>
+     </div>
     </div>
    </div>
    <div class="prof-row2">
-    <div class="field"><label>Amount (₱) *</label><input id="srAmount" type="number" min="1" placeholder="Enter amount"></div>
+    <div class="field"><label>Amount Paid to Store (₱) *</label><input id="srAmount" type="number" min="1" placeholder="Enter amount"></div>
     <div class="field"><label>Important Details</label><input id="srDetails" placeholder="e.g. Weekly savings deposit"></div>
    </div>
    <div id="srCustomerInfo" style="display:none;margin-bottom:16px"></div>
@@ -1131,8 +1151,21 @@ function storePanel(){
  <div class="card mt">
   <h3>Submitted Reports</h3>
   <p style="color:var(--muted);font-size:14px;margin:0 0 16px">Reports you have submitted to admin. Click a customer name to view details.</p>
-  ${myReports.length?storeReportsTable(myReports):`<div class="tx-empty"><div class="tx-ico">📋</div><div class="tx-title">No reports yet</div><div class="tx-sub">Submit a customer report using the form above.</div></div>`}
+  ${myReports.length?storeReportsTable(myReports,false):`<div class="tx-empty"><div class="tx-ico">📋</div><div class="tx-title">No reports yet</div><div class="tx-sub">Submit a customer report using the form above.</div></div>`}
  </div>`;
+}
+function addStoreCategory(){
+ let inp=document.getElementById("srNewCategory");
+ let val=inp.value.trim();
+ if(!val){toast("Enter a category name.");return}
+ if(state.storeCategories.some(c=>c.toLowerCase()===val.toLowerCase())){toast("Category already exists.");return}
+ state.storeCategories.push(val);
+ if(!useSB)saveLocal();
+ let sel=document.getElementById("srCategory");
+ sel.innerHTML=state.storeCategories.map(c=>`<option value="${c}">${c}</option>`).join("");
+ sel.value=val;
+ inp.value="";
+ toast("Category '"+val+"' added.");
 }
 function onStoreReportCustomerChange(){
  let sel=document.getElementById("srCustomer");
@@ -1152,18 +1185,62 @@ async function submitStoreReport(){
  let customer=state.users.find(x=>x.username===customerUsername);
  if(!customer){toast("Customer not found.");return}
  let id="SR-"+(1001+state.storeReports.length);
- let report={id,store_id:state.user.id,store_name:state.user.name,customer_name:customer.name,customer_username:customerUsername,category,amount,details:details||"—",date:new Date().toISOString().slice(0,10)};
+ let report={id,store_id:state.user.id,store_name:state.user.name,customer_name:customer.name,customer_username:customerUsername,category,amount,details:details||"—",status:"Pending",date:new Date().toISOString().slice(0,10)};
  if(useSB){
-  const{error}=await sb.from("store_reports").insert({id,store_id:state.user.id,store_name:state.user.name,customer_name:customer.name,customer_username:customerUsername,category,amount,details:details||"",date:new Date().toISOString().slice(0,10)});
+  const{error}=await sb.from("store_reports").insert({id,store_id:state.user.id,store_name:state.user.name,customer_name:customer.name,customer_username:customerUsername,category,amount,details:details||"",status:"Pending",date:new Date().toISOString().slice(0,10)});
   if(error){toast("Report submission failed.");console.error("store_report insert:",error.message);return}
   await loadData();
  }else{
   state.storeReports.unshift(report);saveLocal();
  }
- render();toast("Customer report submitted to admin.");
+ render();toast("Customer report submitted to admin. Awaiting approval.");
 }
-function storeReportsTable(reports){
- return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Customer</th><th>Category</th><th>Amount</th><th>Details</th><th>Date</th></tr>${reports.map(r=>`<tr><td>${r.id}</td><td><a href="#" onclick="viewStoreReportCustomer('${r.customer_username||r.customer_name}');return false" style="font-weight:700;color:var(--orange)">${r.customer_name}</a></td><td><span class="badge Pending">${r.category||"—"}</span></td><td><b>${peso(r.amount)}</b></td><td style="max-width:200px;white-space:normal">${r.details||"—"}</td><td>${r.date}</td></tr>`).join("")||`<tr><td colspan="6" class="empty">No store reports.</td></tr>`}</table></div>`;
+function storeReportsTable(reports,isAdmin=false){
+ let cols=isAdmin?8:7;
+ return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Customer</th><th>Category</th><th>Amount</th><th>Details</th><th>Status</th><th>Date</th>${isAdmin?"<th>Action</th>":""}</tr>${reports.map(r=>{
+  let st=r.status||"Pending";
+  let actions="";
+  if(isAdmin&&st==="Pending"){
+   actions=`<td style="white-space:nowrap"><button class="btn btn-primary" style="padding:5px 10px;font-size:12px;background:#059669;margin-right:4px" onclick="approveStoreReport('${r.id}')">✓ Approve</button><button class="btn" style="padding:5px 10px;font-size:12px;background:#ef4444;color:#fff" onclick="rejectStoreReport('${r.id}')">✕ Reject</button></td>`;
+  }else if(isAdmin){
+   actions=`<td>—</td>`;
+  }
+  return `<tr><td>${r.id}</td><td><a href="#" onclick="viewStoreReportCustomer('${r.customer_username||r.customer_name}');return false" style="font-weight:700;color:var(--orange)">${r.customer_name}</a></td><td><span class="badge Pending">${r.category||"—"}</span></td><td><b>${peso(r.amount)}</b></td><td style="max-width:200px;white-space:normal">${r.details||"—"}</td><td>${badge(st)}</td><td>${r.date}</td>${actions}</tr>`;
+ }).join("")||`<tr><td colspan="${cols}" class="empty">No store reports.</td></tr>`}</table></div>`;
+}
+async function approveStoreReport(id){
+ let r=state.storeReports.find(x=>x.id===id);if(!r)return;
+ if((r.status||"Pending")!=="Pending"){toast("Report already processed.");return}
+ let customer=state.users.find(u=>u.username===r.customer_username)||state.users.find(u=>u.name===r.customer_name);
+ if(!customer){toast("Customer not found.");return}
+ if(useSB){
+  const{error:e1}=await sb.from("store_reports").update({status:"Approved"}).eq("id",id);
+  if(e1&&sbAdmin){await sbAdmin.from("store_reports").update({status:"Approved"}).eq("id",id)}
+  else if(e1){toast("Failed to approve.");console.error("approve error:",e1.message);return}
+  await sb.from("profiles").update({balance:(customer.balance||0)+r.amount,loaded:(customer.loaded||0)+r.amount}).eq("id",customer.id);
+  await sb.from("loads").insert({id:"LD-"+(1001+state.loads.length),user_id:customer.id,user_name:customer.name,amount:r.amount,date:new Date().toISOString().slice(0,10)});
+  await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
+ }else{
+  r.status="Approved";
+  customer.balance=(customer.balance||0)+r.amount;
+  customer.loaded=(customer.loaded||0)+r.amount;
+  state.loads.unshift({id:"LD-"+(1001+state.loads.length),user:customer.name,amount:r.amount,date:new Date().toISOString().slice(0,10)});
+  saveLocal();
+ }
+ render();toast("Report approved. "+peso(r.amount)+" added to "+customer.name+"'s wallet.");
+}
+async function rejectStoreReport(id){
+ let r=state.storeReports.find(x=>x.id===id);if(!r)return;
+ if((r.status||"Pending")!=="Pending"){toast("Report already processed.");return}
+ if(useSB){
+  const{error:e1}=await sb.from("store_reports").update({status:"Rejected"}).eq("id",id);
+  if(e1&&sbAdmin){await sbAdmin.from("store_reports").update({status:"Rejected"}).eq("id",id)}
+  else if(e1){toast("Failed to reject.");console.error("reject error:",e1.message);return}
+  await loadData();
+ }else{
+  r.status="Rejected";saveLocal();
+ }
+ render();toast("Report rejected.");
 }
 function viewStoreReportCustomer(identifier){
  let u=state.users.find(x=>x.username===identifier)||state.users.find(x=>x.name===identifier);
@@ -1174,11 +1251,12 @@ function viewStoreReportCustomer(identifier){
 function storeReportsTabContent(){
  let reports=state.storeReports||[];
  let stores=state.users.filter(u=>u.role==="Store");
+ let pending=reports.filter(r=>(r.status||"Pending")==="Pending").length;
  return `<div class="card" style="margin-bottom:16px">
-   <h3>🏪 Store Reports</h3>
-   <p style="color:var(--muted);font-size:14px;margin:0 0 16px">Customer reports submitted by promoted stores. Click a customer name to view full details.</p>
-   ${stores.length?`<div style="margin-bottom:12px">${stores.map(s=>`<span class="badge Active" style="margin-right:8px">${s.name}</span>`).join("")}</div>`:""}
-   ${reports.length?storeReportsTable(reports):`<div class="tx-empty"><div class="tx-ico">📋</div><div class="tx-title">No store reports</div><div class="tx-sub">Promote a user to Store to start receiving reports.</div></div>`}
+   <h3>🏪 Store Reports ${pending?`<span class="badge Pending" style="margin-left:6px">${pending} pending</span>`:""}</h3>
+   <p style="color:var(--muted);font-size:14px;margin:0 0 16px">Customer reports submitted by stores. Approve to add the amount to the customer's wallet.</p>
+   ${stores.length?`<div style="margin-bottom:12px"><small style="color:var(--muted);font-weight:600">Stores:</small> ${stores.map(s=>`<span class="badge Active" style="margin:0 4px">${s.name}</span>`).join("")}</div>`:""}
+   ${reports.length?storeReportsTable(reports,true):`<div class="tx-empty"><div class="tx-ico">📋</div><div class="tx-title">No store reports</div><div class="tx-sub">Promote a user to Store to start receiving reports.</div></div>`}
   </div>`;
 }
 /* ════════ PROMOTE USER ════════ */
@@ -1204,7 +1282,12 @@ async function submitPromote(u){
 }
 function stat(l,v,s,cls="",accent=false){return `<div class="stat-card ${cls} ${accent?'accent':''}"><div class="lbl">${l}</div><div class="val">${v}</div><div class="sub">${s}</div></div>`}
 function srow(a,b){return `<div class="summary-row"><span class="lbl">${a}</span><b>${b}</b></div>`}
-function activityTable(name){let rows=state.withdrawals.filter(w=>w.user===name);return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Amount</th><th>Status</th><th>Date</th></tr>${rows.map(w=>`<tr><td>${w.id}</td><td>${peso(w.amount)}</td><td>${badge(w.status)}</td><td>${w.date}</td></tr>`).join("")||`<tr><td colspan="4" class="empty">No activity yet.</td></tr>`}</table></div>`}
+function activityTable(name){
+ let wdRows=state.withdrawals.filter(w=>w.user===name).map(w=>({id:w.id,amount:w.amount,status:w.status,date:w.date,type:"Withdrawal",store:""}));
+ let srRows=state.storeReports.filter(r=>r.customer_name===name&&r.status==="Approved").map(r=>({id:r.id,amount:r.amount,status:"Approved",date:r.date,type:"Store Load",store:r.store_name}));
+ let rows=[...wdRows,...srRows].sort((a,b)=>b.date.localeCompare(a.date));
+ return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr>${rows.map(r=>`<tr><td>${r.id}</td><td>${r.type==="Store Load"?"🏪 "+r.type:r.type}</td><td><b>${peso(r.amount)}</b></td><td>${badge(r.status)}</td><td>${r.date}</td></tr>`).join("")||`<tr><td colspan="5" class="empty">No activity yet.</td></tr>`}</table></div>`;
+}
 function badge(s){return `<span class="badge ${s}">${s}</span>`}
 function withdrawTable(limit=20,rows=state.withdrawals){return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>User</th><th>Amount</th><th>GCash</th><th>Status</th><th>Date</th><th></th></tr>${rows.slice(0,limit).map(w=>`<tr><td>${w.id}</td><td>${w.user}</td><td><b>${peso(w.amount)}</b></td><td>${w.gcash||"—"}</td><td>${badge(w.status)}</td><td>${w.date}</td><td>${state.user.role==="Admin"&&w.status==="Pending"?`<button class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="pay('${w.id}')">Mark Paid</button>`:""}</td></tr>`).join("")||`<tr><td colspan="7" class="empty">No withdrawal records.</td></tr>`}</table></div>`}
 function loadTable(limit=20,userName=null){let rows=state.loads.filter(x=>!userName||x.user===userName).slice(0,limit);return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>User</th><th>Amount</th><th>Date</th></tr>${rows.map(x=>`<tr><td>${x.id}</td><td>${x.user}</td><td><b>${peso(x.amount)}</b></td><td>${x.date}</td></tr>`).join("")||`<tr><td colspan="4" class="empty">No wallet loads.</td></tr>`}</table></div>`}
