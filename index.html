@@ -1014,14 +1014,14 @@ function profileTabContent(){
    <div class="field"><label>Username</label><input id="apUsername" value="${m.username||""}" disabled></div>
    <div class="field"><label>New Password</label><div class="pw-field"><input id="apPassword" type="password" placeholder="Enter new password (min 6 chars)"><button type="button" class="toggle-pw" onclick="togglePw('apPassword',this)">👁</button></div></div>
    <div class="field"><label>Confirm New Password</label><div class="pw-field"><input id="apPassword2" type="password" placeholder="Re-enter new password"><button type="button" class="toggle-pw" onclick="togglePw('apPassword2',this)">👁</button></div></div>
-   <button class="btn-cred" onclick="updateAdminCredentials(${m.id})">🔒 Update Credentials</button>
+   <button class="btn-cred" onclick="updateAdminCredentials('${m.id}')">🔒 Update Credentials</button>
   </div>
-  <button class="btn-save-profile" onclick="saveAdminProfile(${m.id})">💾 Save Profile</button>
+  <button class="btn-save-profile" onclick="saveAdminProfile('${m.id}')">💾 Save Profile</button>
  </div>`;
 }
-function selectAdminMember(id){state.adminSelectedMember=state.users.find(x=>x.id===Number(id))||state.user;render()}
+function selectAdminMember(id){state.adminSelectedMember=state.users.find(x=>String(x.id)===String(id))||state.user;render()}
 async function saveAdminProfile(id){
- let u=state.users.find(x=>x.id===id);if(!u)return;
+ let u=state.users.find(x=>String(x.id)===String(id));if(!u)return;
  let name=document.getElementById("apName").value.trim()||u.name;
  let age=document.getElementById("apAge").value.trim();
  let email=document.getElementById("apEmail").value.trim();
@@ -1040,7 +1040,7 @@ async function saveAdminProfile(id){
  render();toast("Profile updated for "+name+".");
 }
 async function updateAdminCredentials(id){
- let u=state.users.find(x=>x.id===id);if(!u)return;
+ let u=state.users.find(x=>String(x.id)===String(id));if(!u)return;
  let pw=document.getElementById("apPassword").value;
  let pw2=document.getElementById("apPassword2").value;
  if(!pw){toast("Password cannot be empty.");return}
