@@ -1,5 +1,5 @@
 -- ──────────────────────────────────────────────
--- Savings Pro — Supabase Schema
+-- Savings Pro — Supabase Schema (safe to re-run anytime)
 -- Run this in: Supabase Dashboard > SQL Editor
 -- ──────────────────────────────────────────────
 
@@ -26,7 +26,7 @@ create table if not exists public.profiles (
   joined    date default current_date
 );
 
--- Add new columns if table already exists (safe to run anytime)
+-- Add new columns if table already exists
 alter table public.profiles add column if not exists age text default '';
 alter table public.profiles add column if not exists email text default '';
 alter table public.profiles add column if not exists backup_mobile text default '';
@@ -35,6 +35,7 @@ alter table public.profiles add column if not exists mobile text default '';
 alter table public.profiles add column if not exists facebook text default '';
 alter table public.profiles add column if not exists address text default '';
 alter table public.profiles add column if not exists assigned_withdrawal numeric default 0;
+alter table public.profiles add column if not exists status text default 'Active';
 
 -- Withdrawals table
 create table if not exists public.withdrawals (
@@ -48,8 +49,7 @@ create table if not exists public.withdrawals (
   date       date
 );
 
--- Add charge column if table already exists (run once)
--- alter table public.withdrawals add column if not exists charge numeric default 0;
+alter table public.withdrawals add column if not exists charge numeric default 0;
 
 -- Loads table
 create table if not exists public.loads (
@@ -69,11 +69,6 @@ create table if not exists public.receipts (
   date       timestamptz default now()
 );
 
--- Add receipts RLS (run once)
-alter table public.receipts enable row level security;
-create policy "read receipts"  on public.receipts for select to authenticated using (true);
-create policy "insert receipt" on public.receipts for insert to authenticated with check (true);
-
 -- Store reports table (promoted stores report customer details to admin)
 create table if not exists public.store_reports (
   id               text primary key,
@@ -88,32 +83,55 @@ create table if not exists public.store_reports (
   date             date
 );
 
--- Add status column if table already exists (run once)
 alter table public.store_reports add column if not exists status text default 'Pending';
+alter table public.store_reports add column if not exists customer_username text default '';
 
+-- ── Enable RLS on all tables ──
+alter table public.profiles      enable row level security;
+alter table public.withdrawals  enable row level security;
+alter table public.loads        enable row level security;
+alter table public.receipts     enable row level security;
 alter table public.store_reports enable row level security;
-create policy "read store reports"  on public.store_reports for select to authenticated using (true);
-create policy "insert store report" on public.store_reports for insert to authenticated with check (true);
-create policy "update store report" on public.store_reports for update to authenticated using (true);
 
--- ── Row Level Security ──
-alter table public.profiles    enable row level security;
-alter table public.withdrawals enable row level security;
-alter table public.loads       enable row level security;
+-- ── Drop existing policies (safe to re-run) ──
+drop policy if exists "read profiles"      on public.profiles;
+drop policy if exists "insert profile"     on public.profiles;
+drop policy if exists "update profile"     on public.profiles;
+drop policy if exists "read withdrawals"   on public.withdrawals;
+drop policy if exists "insert withdrawal"  on public.withdrawals;
+drop policy if exists "update withdrawal"  on public.withdrawals;
+drop policy if exists "read loads"         on public.loads;
+drop policy if exists "insert load"        on public.loads;
+drop policy if exists "read receipts"       on public.receipts;
+drop policy if exists "insert receipt"     on public.receipts;
+drop policy if exists "read store reports"  on public.store_reports;
+drop policy if exists "insert store report" on public.store_reports;
+drop policy if exists "update store report" on public.store_reports;
 
--- Profiles: authenticated users can read all, update own
+-- ── Create fresh policies ──
+-- Profiles: any authenticated user can read/insert/update ALL profiles
+-- (admin needs to update other users' roles/balances)
 create policy "read profiles"  on public.profiles  for select to authenticated using (true);
 create policy "insert profile" on public.profiles  for insert to authenticated with check (true);
-create policy "update profile" on public.profiles  for update to authenticated using (true);
+create policy "update profile" on public.profiles  for update to authenticated using (true) with check (true);
 
--- Withdrawals: authenticated users can read/insert/update
+-- Withdrawals
 create policy "read withdrawals"  on public.withdrawals for select to authenticated using (true);
 create policy "insert withdrawal" on public.withdrawals for insert to authenticated with check (true);
-create policy "update withdrawal" on public.withdrawals for update to authenticated using (true);
+create policy "update withdrawal" on public.withdrawals for update to authenticated using (true) with check (true);
 
--- Loads: authenticated users can read/insert
+-- Loads
 create policy "read loads" on public.loads for select to authenticated using (true);
 create policy "insert load" on public.loads for insert to authenticated with check (true);
+
+-- Receipts
+create policy "read receipts"  on public.receipts for select to authenticated using (true);
+create policy "insert receipt" on public.receipts for insert to authenticated with check (true);
+
+-- Store reports
+create policy "read store reports"  on public.store_reports for select to authenticated using (true);
+create policy "insert store report" on public.store_reports for insert to authenticated with check (true);
+create policy "update store report" on public.store_reports for update to authenticated using (true) with check (true);
 
 -- ── Auto-create profile on signup (bypasses RLS) ──
 create or replace function public.handle_new_user()
