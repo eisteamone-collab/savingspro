@@ -428,10 +428,10 @@ const state={page:"Landing",user:null,users:[],withdrawals:[],loads:[],receipts:
 
 const SEED={
  users:[
-  {id:1,name:"Tan",username:"Tan",password:"heyhey",role:"Admin",balance:0,loaded:0,gcash:"",gcash_name:"",mobile:"",facebook:"",address:"",age:"",email:"",backup_mobile:"",status:"Active",joined:"2026-01-10"},
-  {id:2,name:"Juan Dela Cruz",username:"juan",password:"demo",role:"Member",balance:4250,loaded:5000,gcash:"09171234567",gcash_name:"Juan Dela Cruz",mobile:"09171234567",facebook:"Juan Dela Cruz",address:"Quezon City, Metro Manila",age:"28",email:"juan@gmail.com",backup_mobile:"09181234567",status:"Active",joined:"2026-02-03"},
-  {id:3,name:"Maria Santos",username:"maria",password:"demo",role:"Member",balance:1850,loaded:2500,gcash:"09181234567",gcash_name:"Maria Santos",mobile:"09181234567",facebook:"Maria Santos",address:"Makati City, Metro Manila",age:"24",email:"maria@gmail.com",backup_mobile:"09201234567",status:"Active",joined:"2026-02-14"},
-  {id:4,name:"Pedro Reyes",username:"pedro",password:"demo",role:"Member",balance:900,loaded:1500,gcash:"09201234567",gcash_name:"Pedro Reyes",mobile:"09201234567",facebook:"Pedro Reyes",address:"Pasig City, Metro Manila",age:"31",email:"pedro@gmail.com",backup_mobile:"09171234567",status:"Active",joined:"2026-03-01"}
+  {id:1,name:"Tan",username:"Tan",password:"heyhey",role:"Admin",balance:0,loaded:0,gcash:"",gcash_name:"",mobile:"",facebook:"",address:"",age:"",email:"",backup_mobile:"",assigned_withdrawal:0,status:"Active",joined:"2026-01-10"},
+  {id:2,name:"Juan Dela Cruz",username:"juan",password:"demo",role:"Member",balance:4250,loaded:5000,gcash:"09171234567",gcash_name:"Juan Dela Cruz",mobile:"09171234567",facebook:"Juan Dela Cruz",address:"Quezon City, Metro Manila",age:"28",email:"juan@gmail.com",backup_mobile:"09181234567",assigned_withdrawal:0,status:"Active",joined:"2026-02-03"},
+  {id:3,name:"Maria Santos",username:"maria",password:"demo",role:"Member",balance:1850,loaded:2500,gcash:"09181234567",gcash_name:"Maria Santos",mobile:"09181234567",facebook:"Maria Santos",address:"Makati City, Metro Manila",age:"24",email:"maria@gmail.com",backup_mobile:"09201234567",assigned_withdrawal:0,status:"Active",joined:"2026-02-14"},
+  {id:4,name:"Pedro Reyes",username:"pedro",password:"demo",role:"Member",balance:900,loaded:1500,gcash:"09201234567",gcash_name:"Pedro Reyes",mobile:"09201234567",facebook:"Pedro Reyes",address:"Pasig City, Metro Manila",age:"31",email:"pedro@gmail.com",backup_mobile:"09171234567",assigned_withdrawal:0,status:"Active",joined:"2026-03-01"}
  ],
  withdrawals:[
   {id:"WD-1001",user:"Juan Dela Cruz",amount:750,charge:38,gcash:"09171234567",status:"Pending",date:"2026-08-12"},
@@ -605,7 +605,7 @@ async function registerAction(){
  }else{
   if(state.users.some(x=>x.username===u)){toast("Username already exists.");return}
   let name=u.charAt(0).toUpperCase()+u.slice(1);
-  let m={id:Math.max(...state.users.map(x=>x.id))+1,name,username:u,password:p,role:"Member",balance:0,loaded:0,gcash:"",gcash_name:"",mobile:"",facebook:"",address:"",age:"",email:"",backup_mobile:"",status:"Active",joined:new Date().toISOString().slice(0,10)};
+  let m={id:Math.max(...state.users.map(x=>x.id))+1,name,username:u,password:p,role:"Member",balance:0,loaded:0,gcash:"",gcash_name:"",mobile:"",facebook:"",address:"",age:"",email:"",backup_mobile:"",assigned_withdrawal:0,status:"Active",joined:new Date().toISOString().slice(0,10)};
   state.users.push(m);state.user=m;state.page="Dashboard";saveLocal();render();toast("Account created successfully.");
  }
 }
@@ -629,16 +629,16 @@ async function submitLoad(){
 }
 async function submitWithdrawal(){
  let a=Number(document.getElementById("wdAmount").value);
- if(a<MIN_WITHDRAWAL||a>state.user.balance){toast("Enter a valid withdrawal amount (min "+peso(MIN_WITHDRAWAL)+").");return}
+ if(a<=0||a>state.user.balance){toast("Enter a valid withdrawal amount.");return}
  let u=state.users.find(x=>x.id===state.user.id);if(!u)return;
  let charge=calcCharge(a),totalDeduction=a+charge;
  if(totalDeduction>u.balance){toast("Insufficient balance for withdrawal ("+peso(totalDeduction)+").");return}
  if(useSB){
-  await sb.from("profiles").update({balance:u.balance-totalDeduction}).eq("id",u.id);
+  await sb.from("profiles").update({balance:u.balance-totalDeduction,assigned_withdrawal:0}).eq("id",u.id);
   await sb.from("withdrawals").insert({id:"WD-"+(1001+state.withdrawals.length),user_id:u.id,user_name:u.name,amount:a,charge:charge,gcash:u.gcash,status:"Pending",date:new Date().toISOString().slice(0,10)});
   await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
  }else{
-  u.balance-=totalDeduction;state.withdrawals.unshift({id:"WD-"+(1001+state.withdrawals.length),user:u.name,amount:a,charge:charge,gcash:u.gcash,status:"Pending",date:new Date().toISOString().slice(0,10)});saveLocal();
+  u.balance-=totalDeduction;u.assigned_withdrawal=0;state.withdrawals.unshift({id:"WD-"+(1001+state.withdrawals.length),user:u.name,amount:a,charge:charge,gcash:u.gcash,status:"Pending",date:new Date().toISOString().slice(0,10)});saveLocal();
  }
  closeModal();render();toast("Withdrawal request submitted.");
 }
@@ -660,7 +660,7 @@ async function addMember(){
   await loadData();
  }else{
   if(state.users.some(x=>x.username===u)){toast("Username already exists.");return}
-  state.users.push({id:Math.max(...state.users.map(x=>x.id))+1,name:n,username:u,password:"demo",role:"Member",balance:0,loaded:0,gcash:g,gcash_name:"",mobile:"",facebook:"",address:"",age:"",email:"",backup_mobile:"",status:"Active",joined:new Date().toISOString().slice(0,10)});saveLocal();
+  state.users.push({id:Math.max(...state.users.map(x=>x.id))+1,name:n,username:u,password:"demo",role:"Member",balance:0,loaded:0,gcash:g,gcash_name:"",mobile:"",facebook:"",address:"",age:"",email:"",backup_mobile:"",assigned_withdrawal:0,status:"Active",joined:new Date().toISOString().slice(0,10)});saveLocal();
  }
  render();toast("User created.");
 }
@@ -755,7 +755,6 @@ function viewReceipt(id){const r=(state.receipts||[]).find(x=>x.id===id);if(!r)r
 
 /* ════════ HELPERS ════════ */
 const CHARGE_RATE=0; /* no service charge */
-const MIN_WITHDRAWAL=300;
 function calcCharge(amount){return Math.round(amount*CHARGE_RATE)}
 function calcNet(amount){return amount-calcCharge(amount)}
 function peso(n){return "₱"+Number(n||0).toLocaleString("en-PH",{minimumFractionDigits:0,maximumFractionDigits:2})}
@@ -883,14 +882,16 @@ function page(){
 function dashboard(){
  if(state.user.role==="Admin")return adminDashboard();
  let profileIncomplete=!state.user.gcash;
+ let assignedAmount=state.user.assigned_withdrawal||0;
+ let canWithdraw=!profileIncomplete&&assignedAmount>0;
  let hasTx=state.withdrawals.some(w=>w.user===state.user.name)||state.loads.some(l=>l.user===state.user.name);
+ let subText=profileIncomplete?"Complete your My Profile details first":(assignedAmount>0?"Assigned withdrawal: "+peso(assignedAmount):"Waiting for admin to assign withdrawal amount");
  return `<div class="page-head"><div><h1>Welcome back, <span style="color:var(--orange)">${state.user.name}</span></h1><p>Here's your savings wallet overview</p></div><button class="terms-link" onclick="window.open('https://forms.gle/bMLvWgG2KGfYXzBz8','_blank')">User Terms & Conditions</button></div>
  <div class="savings-card">
   <div class="sc-top"><div class="sc-ico">👛</div><div class="sc-lbl">Savings Balance</div></div>
   <div class="sc-val">${peso(state.user.balance)}</div>
-  <div class="sc-sub">Minimum withdrawal: ${peso(MIN_WITHDRAWAL)}</div>
-  ${profileIncomplete?`<div class="sc-notif">⚠️ Complete your profile (GCash, phone, address) to withdraw — <a href="#" onclick="go('My Profile');return false">My Profile</a></div>`:""}
-  <button class="sc-withdraw" onclick="withdrawModal()">Withdraw</button>
+  <div class="sc-sub">${subText}</div>
+  <button class="sc-withdraw" ${canWithdraw?'onclick="withdrawModal()"':'disabled style="opacity:.5;cursor:not-allowed"'}>Withdraw</button>
  </div>
  <div class="card mt">
   <h3>Transaction History</h3>
@@ -956,7 +957,7 @@ function adminTabContent(){
 function membersTabContent(){
  const members=state.users.filter(u=>u.role==="Member");
  return `<div class="admin-search"><span class="ico">🔍</span><input id="adminSearch" placeholder="Search approved users..." oninput="filterMembers()"></div>
- <div class="card"><table class="admin-table" id="membersTable"><tr><th></th><th>User</th><th>Balance</th><th>Actions</th></tr>${members.map((u,i)=>`<tr class="member-row"><td><div class="row-num">${i+1}</div></td><td><div class="member-name">${u.name}</div><div class="member-username">@${u.username}</div></td><td><div class="bal-lbl">Balance</div><div class="bal-val">${peso(u.balance)}</div></td><td><div class="act-btns"><button class="act-btn view" title="View" onclick="viewMember('${u.username}')">👁</button><button class="act-btn wallet" title="Load Wallet" onclick="loadSpecific('${u.username}')">👛</button><button class="act-btn edit" title="Edit" onclick="editMember('${u.username}')">✏</button></div></td></tr>`).join("")}</table></div>`;
+ <div class="card"><table class="admin-table" id="membersTable"><tr><th></th><th>User</th><th>Balance</th><th>Actions</th></tr>${members.map((u,i)=>`<tr class="member-row"><td><div class="row-num">${i+1}</div></td><td><div class="member-name">${u.name}</div><div class="member-username">@${u.username}</div></td><td><div class="bal-lbl">Balance</div><div class="bal-val">${peso(u.balance)}</div></td><td><div class="act-btns"><button class="act-btn view" title="View" onclick="viewMember('${u.username}')">👁</button><button class="act-btn wallet" title="Load Wallet" onclick="loadSpecific('${u.username}')">👛</button><button class="act-btn" title="Assign Withdrawal" style="background:#dbeafe;color:#2563eb" onclick="assignWithdrawalModal('${u.username}')">↗</button><button class="act-btn edit" title="Edit" onclick="editMember('${u.username}')">✏</button></div></td></tr>`).join("")}</table></div>`;
 }
 function profileTabContent(){
  const allMembers=state.users;
@@ -1064,6 +1065,23 @@ function goAdminTab(tab){state.adminTab=tab;render()}
 function filterMembers(){const q=(document.getElementById("adminSearch").value||"").toLowerCase();document.querySelectorAll(".member-row").forEach(r=>{const n=r.querySelector(".member-name").textContent.toLowerCase();const u=r.querySelector(".member-username").textContent.toLowerCase();r.style.display=(n.includes(q)||u.includes(q))?"":"none"})}
 function viewMember(u){let m=state.users.find(x=>x.username===u);if(m)toast(m.name+" — Balance: "+peso(m.balance)+" · GCash: "+(m.gcash||"N/A"))}
 function editMember(u){resetCredentialsModal(u)}
+function assignWithdrawalModal(u){
+ let m=state.users.find(x=>x.username===u);if(!m)return;
+ document.body.insertAdjacentHTML("beforeend",modal(`<div class="modal-head"><h2>Assign Withdrawal — ${m.name}</h2><button class="close" onclick="closeModal()">×</button></div><p class="muted">Assign a withdrawal amount for this user. The user will be able to withdraw once assigned.</p><div class="lw-balance-box"><div class="lbl">Current balance:</div><div class="val">${peso(m.balance)}</div></div><div class="lw-field"><label>Withdrawal Amount (₱)</label><input id="assignWdAmount" type="number" min="1" max="${m.balance}" value="${m.assigned_withdrawal||0}" placeholder="Enter amount"></div><div class="lw-footer"><button class="lw-cancel" onclick="closeModal()">Cancel</button><button class="lw-submit" onclick="submitAssignWithdrawal('${u}')">Assign Amount</button></div>`))
+}
+async function submitAssignWithdrawal(u){
+ let m=state.users.find(x=>x.username===u);if(!m)return;
+ let a=Number(document.getElementById("assignWdAmount").value);
+ if(!a||a<=0){toast("Enter a valid amount.");return}
+ if(a>m.balance){toast("Amount exceeds user balance.");return}
+ if(useSB){
+  await sb.from("profiles").update({assigned_withdrawal:a}).eq("id",m.id);
+  await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
+ }else{
+  m.assigned_withdrawal=a;saveLocal();
+ }
+ closeModal();render();toast("Withdrawal amount assigned to "+m.name+".");
+}
 function resetCredentialsModal(u){let m=state.users.find(x=>x.username===u);if(!m)return;document.body.insertAdjacentHTML("beforeend",modal(`<div class="modal-head"><h2>Reset Credentials — ${m.name}</h2><button class="close" onclick="closeModal()">×</button></div><div class="field"><label>Display Name</label><input id="rcName" value="${m.name}"></div><div class="field"><label>Username</label><input id="rcUsername" value="${m.username}" disabled></div><div class="field"><label>New Password</label><input id="rcPassword" type="password" placeholder="Enter new password (leave blank to keep current)"></div><div class="lw-footer"><button class="lw-cancel" onclick="closeModal()">Cancel</button><button class="rc-submit" onclick="submitResetCredentials('${u}')">Save Changes</button></div>`))}
 async function submitResetCredentials(u){let m=state.users.find(x=>x.username===u);if(!m)return;let name=document.getElementById("rcName").value.trim()||m.name;let pw=document.getElementById("rcPassword").value;if(useSB){let updates={name};if(pw)updates.password=pw;await sb.from("profiles").update(updates).eq("id",m.id);if(pw&&sbAdmin){try{await sbAdmin.auth.admin.updateUserById(m.auth_id,{password:pw})}catch(e){console.error("auth password update error:",e.message)}}await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;}else{m.name=name;if(pw)m.password=pw;saveLocal();}closeModal();render();toast("Credentials updated for "+name+".");}
 function stat(l,v,s,cls="",accent=false){return `<div class="stat-card ${cls} ${accent?'accent':''}"><div class="lbl">${l}</div><div class="val">${v}</div><div class="sub">${s}</div></div>`}
@@ -1078,7 +1096,7 @@ function withdrawals(){
  let isMember=state.user.role==="Member";
  return `<div class="page-head">
    <div style="display:flex;align-items:center;gap:14px"><div class="tw-head-ico">⬇</div><div><h1>Total Withdrawal</h1><p>History of all your approved withdrawals</p></div></div>
-   ${isMember?`<button class="btn btn-primary" onclick="withdrawModal()">Request Withdrawal</button>`:""}
+   ${isMember?`<button class="btn btn-primary" ${(!state.user.gcash||!(state.user.assigned_withdrawal>0))?'disabled style="opacity:.5;cursor:not-allowed"':'onclick="withdrawModal()"'}>Request Withdrawal</button>`:""}
   </div>
   <div class="tw-summary-card">
    <div class="tw-summary-ico">↗</div>
@@ -1099,7 +1117,7 @@ function withdrawals(){
      <span class="tw-chevron">▼</span>
     </div>
    </div>
-   <div class="notice" style="margin-bottom:15px">Minimum withdrawal is ${peso(MIN_WITHDRAWAL)}. Payout method: GCash.</div>
+   <div class="notice" style="margin-bottom:15px">Payout method: GCash. No minimum withdrawal amount.</div>
    <div id="twTableWrap">${withdrawalHistoryTable(rows)}</div>
   </div>`;
 }
@@ -1117,7 +1135,7 @@ function filterWithdrawals(){
 }
 function members(){return `<div class="page-head"><div><h1>Users</h1><p>Manage registered Savings Pro users.</p></div><button class="btn btn-primary" onclick="addMember()">Add User</button></div><div class="card"><div class="table-wrap"><table class="table"><tr><th>User</th><th>Username</th><th>Password</th><th>GCash</th><th>Balance</th><th>Loaded</th><th>Status</th><th></th></tr>${state.users.filter(u=>u.role==="Member").map(u=>`<tr><td><b>${u.name}</b></td><td>${u.username}</td><td>${u.password||"—"}</td><td>${u.gcash||"—"}</td><td>${peso(u.balance)}</td><td>${peso(u.loaded)}</td><td>${badge(u.status)}</td><td><button class="btn btn-outline" style="padding:6px 12px;font-size:12px;color:var(--orange-dark);border-color:var(--orange)" onclick="loadSpecific('${u.username}')">Load Wallet</button></td></tr>`).join("")}</table></div></div>`}
 function loads(){return `<div class="page-head"><div><h1>Wallet Loads</h1><p>Admin-funded savings wallet transactions.</p></div><button class="btn btn-primary" onclick="loadModal()">Load Wallet</button></div><div class="card">${loadTable(50)}</div>`}
-function monitoring(){return `<div class="page-head"><div><h1>Monitoring</h1><p>Overview of Savings Pro activity.</p></div></div><div class="stat-cards">${stat("System","Online","Application status","green-ok")}${stat("Users",state.users.filter(u=>u.role==="Member").length,"Active accounts")}${stat("Pending",state.withdrawals.filter(w=>w.status==="Pending").length,"Withdrawal requests","amber")}${stat("GCash","Enabled","Payout method")}</div><div class="card mt"><h3>System Notes</h3><div class="summary">${srow("Wallet model","Admin loaded")}${srow("Withdrawal method","GCash")}${srow("Minimum withdrawal",peso(MIN_WITHDRAWAL))}</div></div>`}
+function monitoring(){return `<div class="page-head"><div><h1>Monitoring</h1><p>Overview of Savings Pro activity.</p></div></div><div class="stat-cards">${stat("System","Online","Application status","green-ok")}${stat("Users",state.users.filter(u=>u.role==="Member").length,"Active accounts")}${stat("Pending",state.withdrawals.filter(w=>w.status==="Pending").length,"Withdrawal requests","amber")}${stat("GCash","Enabled","Payout method")}</div><div class="card mt"><h3>System Notes</h3><div class="summary">${srow("Wallet model","Admin loaded")}${srow("Withdrawal method","GCash")}${srow("Minimum withdrawal","None")}</div></div>`}
 function profile(){
  const u=state.user;
  return `<div class="page-head"><div><h1>My Profile</h1><p>Update your personal information, GCash details, and login credentials.</p></div></div>
@@ -1155,8 +1173,9 @@ function settings(){const sk=getServiceKey();const hasKey=sk&&!sk.includes("plac
 function modal(content){return `<div class="modal-bg" id="modal"><div class="modal">${content}</div></div>`}
 function loadModal(user){let m=user||state.users.find(u=>u.role==="Member");if(!m)return;document.body.insertAdjacentHTML("beforeend",modal(`<div class="lw-head"><div class="lw-head-left"><div class="wallet-ico">👛</div><h2>Load Wallet — ${m.name}</h2></div><button class="close" onclick="closeModal()">×</button></div><input type="hidden" id="loadUser" value="${m.username}"><div class="lw-balance-box"><div class="lbl">Current balance:</div><div class="val">${peso(m.balance)}</div></div><div class="lw-field"><label>Action</label><select id="loadAction"><option value="add">＋ Add Savings (Load Wallet)</option><option value="deduct">－ Deduct Savings</option></select></div><div class="lw-field"><label>Amount (₱)</label><input id="loadAmount" type="number" min="1" placeholder="Enter amount"></div><div class="lw-footer"><button class="lw-cancel" onclick="closeModal()">Cancel</button><button class="lw-submit" onclick="submitLoad()">Load Wallet</button></div>`))}
 function withdrawModal(){
- let bal=state.user.balance,maxWd=Math.floor(bal/(1+CHARGE_RATE));
- document.body.insertAdjacentHTML("beforeend",modal(`<div class="modal-head"><h2>Request Withdrawal</h2><button class="close" onclick="closeModal()">×</button></div><p class="muted">Withdraw to your registered GCash number.</p><div class="notice">Available balance: <b>${peso(bal)}</b><br>Minimum withdrawal: <b>${peso(MIN_WITHDRAWAL)}</b></div><div class="field" style="margin-top:14px"><label>AMOUNT TO RECEIVE</label><input id="wdAmount" type="number" min="${MIN_WITHDRAWAL}" max="${maxWd}" placeholder="${MIN_WITHDRAWAL}" oninput="updateWdBreakdown()"></div><div id="wdBreakdown" style="background:#f9fafb;border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px;font-size:14px"></div><button class="btn btn-primary" style="width:100%" onclick="submitWithdrawal()">Submit Request</button>`))
+ let bal=state.user.balance,assigned=state.user.assigned_withdrawal||0;
+ document.body.insertAdjacentHTML("beforeend",modal(`<div class="modal-head"><h2>Request Withdrawal</h2><button class="close" onclick="closeModal()">×</button></div><p class="muted">Withdraw to your registered GCash number.</p><div class="notice">Available balance: <b>${peso(bal)}</b><br>Assigned withdrawal amount: <b>${peso(assigned)}</b></div><div class="field" style="margin-top:14px"><label>AMOUNT TO RECEIVE</label><input id="wdAmount" type="number" min="1" max="${bal}" value="${assigned}" oninput="updateWdBreakdown()"></div><div id="wdBreakdown" style="background:#f9fafb;border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px;font-size:14px"></div><button class="btn btn-primary" style="width:100%" onclick="submitWithdrawal()">Submit Request</button>`))
+ updateWdBreakdown();
 }
 function updateWdBreakdown(){
  let a=Number(document.getElementById("wdAmount").value)||0;

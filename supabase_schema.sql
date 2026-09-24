@@ -21,6 +21,7 @@ create table if not exists public.profiles (
   age       text default '',
   email     text default '',
   backup_mobile text default '',
+  assigned_withdrawal numeric default 0,
   status    text default 'Active',
   joined    date default current_date
 );
@@ -33,6 +34,7 @@ alter table public.profiles add column if not exists gcash_name text default '';
 alter table public.profiles add column if not exists mobile text default '';
 alter table public.profiles add column if not exists facebook text default '';
 alter table public.profiles add column if not exists address text default '';
+alter table public.profiles add column if not exists assigned_withdrawal numeric default 0;
 
 -- Withdrawals table
 create table if not exists public.withdrawals (
