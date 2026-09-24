@@ -424,14 +424,15 @@ window.dispatchEvent(new Event("supabase-ready"))
 <script src="config.js"></script>
 <script>
 /* ════════ STATE ════════ */
-const state={page:"Landing",user:null,users:[],withdrawals:[],loads:[],receipts:[],adminTab:"Profile",adminSelectedMember:null};
+const state={page:"Landing",user:null,users:[],withdrawals:[],loads:[],receipts:[],storeReports:[],adminTab:"Profile",adminSelectedMember:null};
 
 const SEED={
  users:[
   {id:1,name:"Tan",username:"Tan",password:"heyhey",role:"Admin",balance:0,loaded:0,gcash:"",gcash_name:"",mobile:"",facebook:"",address:"",age:"",email:"",backup_mobile:"",assigned_withdrawal:0,status:"Active",joined:"2026-01-10"},
   {id:2,name:"Juan Dela Cruz",username:"juan",password:"demo",role:"Member",balance:4250,loaded:5000,gcash:"09171234567",gcash_name:"Juan Dela Cruz",mobile:"09171234567",facebook:"Juan Dela Cruz",address:"Quezon City, Metro Manila",age:"28",email:"juan@gmail.com",backup_mobile:"09181234567",assigned_withdrawal:0,status:"Active",joined:"2026-02-03"},
   {id:3,name:"Maria Santos",username:"maria",password:"demo",role:"Member",balance:1850,loaded:2500,gcash:"09181234567",gcash_name:"Maria Santos",mobile:"09181234567",facebook:"Maria Santos",address:"Makati City, Metro Manila",age:"24",email:"maria@gmail.com",backup_mobile:"09201234567",assigned_withdrawal:0,status:"Active",joined:"2026-02-14"},
-  {id:4,name:"Pedro Reyes",username:"pedro",password:"demo",role:"Member",balance:900,loaded:1500,gcash:"09201234567",gcash_name:"Pedro Reyes",mobile:"09201234567",facebook:"Pedro Reyes",address:"Pasig City, Metro Manila",age:"31",email:"pedro@gmail.com",backup_mobile:"09171234567",assigned_withdrawal:0,status:"Active",joined:"2026-03-01"}
+  {id:4,name:"Pedro Reyes",username:"pedro",password:"demo",role:"Member",balance:900,loaded:1500,gcash:"09201234567",gcash_name:"Pedro Reyes",mobile:"09201234567",facebook:"Pedro Reyes",address:"Pasig City, Metro Manila",age:"31",email:"pedro@gmail.com",backup_mobile:"09171234567",assigned_withdrawal:0,status:"Active",joined:"2026-03-01"},
+  {id:5,name:"Store Aling Nena",username:"nena",password:"demo",role:"Store",balance:0,loaded:0,gcash:"09195555555",gcash_name:"Aling Nena Store",mobile:"09195555555",facebook:"Aling Nena",address:"Quiapo, Manila",age:"45",email:"nena@gmail.com",backup_mobile:"09195555556",assigned_withdrawal:0,status:"Active",joined:"2026-03-10"}
  ],
  withdrawals:[
   {id:"WD-1001",user:"Juan Dela Cruz",amount:750,charge:38,gcash:"09171234567",status:"Pending",date:"2026-08-12"},
@@ -442,6 +443,10 @@ const SEED={
   {id:"LD-1001",user:"Juan Dela Cruz",amount:5000,date:"2026-08-01"},
   {id:"LD-1002",user:"Maria Santos",amount:2500,date:"2026-08-05"},
   {id:"LD-1003",user:"Pedro Reyes",amount:1500,date:"2026-08-18"}
+ ],
+ storeReports:[
+  {id:"SR-1001",store_id:5,store_name:"Store Aling Nena",customer_name:"Juan Dela Cruz",category:"Savings",amount:500,details:"Weekly savings deposit",date:"2026-09-15"},
+  {id:"SR-1002",store_id:5,store_name:"Store Aling Nena",customer_name:"Maria Santos",category:"Withdrawal",amount:300,details:"Emergency withdrawal request",date:"2026-09-18"}
  ]
 };
 
@@ -482,18 +487,21 @@ function saveServiceKey(){
 async function loadData(){
  if(!useSB)return;
  try{
-  const[{data:users,error:e1},{data:wds,error:e2},{data:lds,error:e3},{data:rcpts,error:e4}]=await Promise.all([
+  const[{data:users,error:e1},{data:wds,error:e2},{data:lds,error:e3},{data:rcpts,error:e4},{data:srs,error:e5}]=await Promise.all([
    sb.from("profiles").select("*"),
    sb.from("withdrawals").select("*").order("date",{ascending:false}),
    sb.from("loads").select("*").order("date",{ascending:false}),
-   sb.from("receipts").select("*").order("date",{ascending:false})
+   sb.from("receipts").select("*").order("date",{ascending:false}),
+   sb.from("store_reports").select("*").order("date",{ascending:false})
   ]);
   if(e1)console.error("profiles load error:",e1.message);
   if(e4)console.error("receipts load error:",e4.message);
+  if(e5)console.error("store_reports load error:",e5.message);
   state.users=users||[];
   state.withdrawals=(wds||[]).map(w=>({...w,user:w.user_name}));
   state.loads=(lds||[]).map(l=>({...l,user:l.user_name}));
   state.receipts=rcpts||[];
+  state.storeReports=srs||[];
  }catch(e){console.error("loadData error:",e)}
 }
 function loadLocal(){
@@ -502,7 +510,7 @@ function loadLocal(){
  }catch{}
  Object.assign(state,JSON.parse(JSON.stringify(SEED)));saveLocal();
 }
-function saveLocal(){localStorage.setItem("savings_pro_demo",JSON.stringify({users:state.users,withdrawals:state.withdrawals,loads:state.loads,receipts:state.receipts||[]}))}
+function saveLocal(){localStorage.setItem("savings_pro_demo",JSON.stringify({users:state.users,withdrawals:state.withdrawals,loads:state.loads,receipts:state.receipts||[],storeReports:state.storeReports||[]}))}
 
 /* ════════ AUTH ════════ */
 async function checkSession(){
@@ -850,8 +858,8 @@ function register(){
  </div></div>`;
 }
 function sideNav(){
- let items=state.user.role==="Admin"?["Dashboard","Total Withdrawal","My Profile","Admin Panel"]:["Dashboard","Total Withdrawal","My Profile"];
- let icons={Dashboard:"▦","Total Withdrawal":"📋","My Profile":"👤","Admin Panel":"🛡",Earnings:"₱",Users:"♙","Wallet Loads":"＋",Withdrawals:"↗",Monitoring:"◉",Profile:"○",Settings:"⚙"};
+ let items=state.user.role==="Admin"?["Dashboard","Total Withdrawal","My Profile","Admin Panel"]:state.user.role==="Store"?["Dashboard","Store Panel","Total Withdrawal","My Profile"]:["Dashboard","Total Withdrawal","My Profile"];
+ let icons={Dashboard:"▦","Total Withdrawal":"📋","My Profile":"👤","Admin Panel":"🛡","Store Panel":"🏪",Earnings:"₱",Users:"♙","Wallet Loads":"＋",Withdrawals:"↗",Monitoring:"◉",Profile:"○",Settings:"⚙"};
  return `<aside class="sidebar">
   <div class="sb-brand"><span class="logo"></span><div><b>Savings Pro</b><br><small>Savings Wallet</small></div></div>
   <nav class="nav">${items.map(x=>`<button class="${state.page===x?'active':''}" onclick="go('${x}')"><span class="ico">${icons[x]||"•"}</span> ${x}${state.page===x?' <span style="margin-left:auto;font-size:12px">›</span>':''}</button>`).join("")}</nav>
@@ -876,27 +884,60 @@ function page(){
   case"Profile":return profile();
   case"Settings":return settings();
   case"Admin Panel":return adminPanel();
+  case"Store Panel":return storePanel();
   default:return dashboard();
  }
 }
 function dashboard(){
- if(state.user.role==="Admin")return adminDashboard();
+ const role=state.user.role;
+ if(role==="Admin")return adminDashboard();
+ if(role==="Store")return storeDashboard();
+ return memberDashboard();
+}
+function memberDashboard(){
  let profileIncomplete=!state.user.gcash;
  let assignedAmount=state.user.assigned_withdrawal||0;
  let canWithdraw=!profileIncomplete&&assignedAmount>0;
  let hasTx=state.withdrawals.some(w=>w.user===state.user.name)||state.loads.some(l=>l.user===state.user.name);
- let subText=profileIncomplete?"Complete your My Profile details first":(assignedAmount>0?"Assigned withdrawal: "+peso(assignedAmount):"Waiting for admin to assign withdrawal amount");
+ let pendingWd=state.withdrawals.filter(w=>w.user===state.user.name&&w.status==="Pending").length;
  return `<div class="page-head"><div><h1>Welcome back, <span style="color:var(--orange)">${state.user.name}</span></h1><p>Here's your savings wallet overview</p></div><button class="terms-link" onclick="window.open('https://forms.gle/bMLvWgG2KGfYXzBz8','_blank')">User Terms & Conditions</button></div>
- <div class="savings-card">
+ <div class="stat-cards">
+  ${stat("Current Balance",peso(state.user.balance),"Available savings","accent")}
+  ${stat("Total Loaded",peso(state.user.loaded),"All wallet loads")}
+  ${stat("Total Withdrawn",peso(totalWithdrawn(state.user.name)),"Completed + pending","amber")}
+  ${stat("Pending Withdrawals",pendingWd,"Awaiting review")}
+ </div>
+ <div class="savings-card mt">
   <div class="sc-top"><div class="sc-ico">👛</div><div class="sc-lbl">Savings Balance</div></div>
   <div class="sc-val">${peso(state.user.balance)}</div>
-  <div class="sc-sub">${subText}</div>
+  <div class="sc-sub">${profileIncomplete?"Complete your My Profile details first":(assignedAmount>0?"Assigned withdrawal: "+peso(assignedAmount):"Waiting for admin to assign withdrawal amount")}</div>
   <button class="sc-withdraw" ${canWithdraw?'onclick="withdrawModal()"':'disabled style="opacity:.5;cursor:not-allowed"'}>Withdraw</button>
  </div>
  <div class="card mt">
   <h3>Transaction History</h3>
   <p style="color:var(--muted);font-size:14px;margin:0 0 16px">Your savings deposits and withdrawals</p>
   ${hasTx?activityTable(state.user.name):`<div class="tx-empty"><div class="tx-ico">👛</div><div class="tx-title">No transactions yet</div><div class="tx-sub">Your savings will appear here once the admin loads your wallet.</div></div>`}
+ </div>`;
+}
+function storeDashboard(){
+ let myReports=state.storeReports.filter(r=>r.store_id===state.user.id);
+ let pendingWd=state.withdrawals.filter(w=>w.user===state.user.name&&w.status==="Pending").length;
+ return `<div class="page-head"><div><h1>Welcome back, <span style="color:var(--orange)">${state.user.name}</span></h1><p>Store dashboard overview</p></div><button class="btn btn-primary" onclick="go('Store Panel')">🏪 Go to Store Panel</button></div>
+ <div class="stat-cards">
+  ${stat("Current Balance",peso(state.user.balance),"Available savings","accent")}
+  ${stat("Total Loaded",peso(state.user.loaded),"All wallet loads")}
+  ${stat("Customer Reports",myReports.length,"Reports submitted","amber")}
+  ${stat("Pending Withdrawals",pendingWd,"Awaiting review")}
+ </div>
+ <div class="savings-card mt">
+  <div class="sc-top"><div class="sc-ico">🏪</div><div class="sc-lbl">Store Balance</div></div>
+  <div class="sc-val">${peso(state.user.balance)}</div>
+  <div class="sc-sub">Manage your store and report customer details to admin</div>
+ </div>
+ <div class="card mt">
+  <h3>Recent Customer Reports</h3>
+  <p style="color:var(--muted);font-size:14px;margin:0 0 16px">Latest customer reports submitted to admin</p>
+  ${myReports.length?storeReportsTable(myReports.slice(0,5)):`<div class="tx-empty"><div class="tx-ico">📋</div><div class="tx-title">No reports yet</div><div class="tx-sub">Submit customer reports from the Store Panel.</div></div>`}
  </div>`;
 }
 function earnings(){
@@ -914,7 +955,7 @@ function earnings(){
 function adminDashboard(){
  return `<div class="page-head"><div><h1>Admin Dashboard</h1><p>Manage savings wallets, loads, and withdrawals.</p></div><button class="btn btn-primary" onclick="loadModal()">Load Wallet</button></div>
  <div class="stat-cards">
-  ${stat("Total Users",state.users.filter(u=>u.role==="Member").length,"Registered users")}
+  ${stat("Total Users",state.users.filter(u=>u.role==="Member"||u.role==="Store").length,"Registered users")}
   ${stat("Total Saved",peso(state.users.reduce((a,u)=>a+(u.balance||0),0)),"Current balances","",true)}
   ${stat("Pending Withdrawals",state.withdrawals.filter(w=>w.status==="Pending").length,"Awaiting review","amber")}
   ${stat("Total Loaded",peso(state.users.reduce((a,u)=>a+(u.loaded||0),0)),"Wallet funding","",true)}
@@ -925,7 +966,7 @@ function adminDashboard(){
  </div>`;
 }
 function adminPanel(){
- const members=state.users.filter(u=>u.role==="Member");
+ const members=state.users.filter(u=>u.role==="Member"||u.role==="Store");
  const pendingWd=state.withdrawals.filter(w=>w.status==="Pending").length;
  const totalSavings=state.users.reduce((a,u)=>a+(u.balance||0),0);
  return `<div class="admin-panel">
@@ -940,6 +981,7 @@ function adminPanel(){
   <div class="admin-tabs">
    <button class="admin-tab ${state.adminTab==='Profile'?'active':''}" onclick="goAdminTab('Profile')"><span class="tab-check">✓</span> My Profile</button>
    <button class="admin-tab ${state.adminTab==='Users'?'active':''}" onclick="goAdminTab('Users')"><span class="tab-check">✓</span> Users (${members.length})</button>
+   <button class="admin-tab ${state.adminTab==='Store Reports'?'active':''}" onclick="goAdminTab('Store Reports')"><span class="tab-check">✓</span> Store Reports</button>
    <button class="admin-tab ${state.adminTab==='Withdrawals'?'active':''}" onclick="goAdminTab('Withdrawals')"><span class="tab-check">✓</span> Withdrawals</button>
    <button class="admin-tab ${state.adminTab==='GCash'?'active':''}" onclick="goAdminTab('GCash')"><span class="tab-check">✓</span> GCash</button>
   </div>
@@ -951,13 +993,14 @@ function adminTabContent(){
   case'Profile':return profileTabContent();
   case'Withdrawals':return `<div class="card">${withdrawTable(50)}</div>`;
   case'GCash':return gcashTabContent();
+  case'Store Reports':return storeReportsTabContent();
   default:return membersTabContent();
  }
 }
 function membersTabContent(){
- const members=state.users.filter(u=>u.role==="Member");
+ const members=state.users.filter(u=>u.role==="Member"||u.role==="Store");
  return `<div class="admin-search"><span class="ico">🔍</span><input id="adminSearch" placeholder="Search approved users..." oninput="filterMembers()"></div>
- <div class="card"><table class="admin-table" id="membersTable"><tr><th></th><th>User</th><th>Balance</th><th>Actions</th></tr>${members.map((u,i)=>`<tr class="member-row"><td><div class="row-num">${i+1}</div></td><td><div class="member-name">${u.name}</div><div class="member-username">@${u.username}</div></td><td><div class="bal-lbl">Balance</div><div class="bal-val">${peso(u.balance)}</div></td><td><div class="act-btns"><button class="act-btn view" title="View" onclick="viewMember('${u.username}')">👁</button><button class="act-btn wallet" title="Load Wallet" onclick="loadSpecific('${u.username}')">👛</button><button class="act-btn" title="Assign Withdrawal" style="background:#dbeafe;color:#2563eb" onclick="assignWithdrawalModal('${u.username}')">↗</button><button class="act-btn edit" title="Edit" onclick="editMember('${u.username}')">✏</button></div></td></tr>`).join("")}</table></div>`;
+ <div class="card"><table class="admin-table" id="membersTable"><tr><th></th><th>User</th><th>Role</th><th>Balance</th><th>Actions</th></tr>${members.map((u,i)=>`<tr class="member-row"><td><div class="row-num">${i+1}</div></td><td><div class="member-name">${u.name}</div><div class="member-username">@${u.username}</div></td><td><span class="badge ${u.role==='Store'?'Pending':'Active'}">${u.role}</span></td><td><div class="bal-lbl">Balance</div><div class="bal-val">${peso(u.balance)}</div></td><td><div class="act-btns"><button class="act-btn view" title="View" onclick="viewMember('${u.username}')">👁</button><button class="act-btn wallet" title="Load Wallet" onclick="loadSpecific('${u.username}')">👛</button><button class="act-btn" title="Assign Withdrawal" style="background:#dbeafe;color:#2563eb" onclick="assignWithdrawalModal('${u.username}')">↗</button><button class="act-btn" title="Promote to Admin or Store" style="background:#d1fae5;color:#059669" onclick="promoteModal('${u.username}')">⬆</button><button class="act-btn edit" title="Edit" onclick="editMember('${u.username}')">✏</button></div></td></tr>`).join("")}</table></div>`;
 }
 function profileTabContent(){
  const allMembers=state.users;
@@ -1084,6 +1127,111 @@ async function submitAssignWithdrawal(u){
 }
 function resetCredentialsModal(u){let m=state.users.find(x=>x.username===u);if(!m)return;document.body.insertAdjacentHTML("beforeend",modal(`<div class="modal-head"><h2>Reset Credentials — ${m.name}</h2><button class="close" onclick="closeModal()">×</button></div><div class="field"><label>Display Name</label><input id="rcName" value="${m.name}"></div><div class="field"><label>Username</label><input id="rcUsername" value="${m.username}" disabled></div><div class="field"><label>New Password</label><input id="rcPassword" type="password" placeholder="Enter new password (leave blank to keep current)"></div><div class="lw-footer"><button class="lw-cancel" onclick="closeModal()">Cancel</button><button class="rc-submit" onclick="submitResetCredentials('${u}')">Save Changes</button></div>`))}
 async function submitResetCredentials(u){let m=state.users.find(x=>x.username===u);if(!m)return;let name=document.getElementById("rcName").value.trim()||m.name;let pw=document.getElementById("rcPassword").value;if(useSB){let updates={name};if(pw)updates.password=pw;await sb.from("profiles").update(updates).eq("id",m.id);if(pw&&sbAdmin){try{await sbAdmin.auth.admin.updateUserById(m.auth_id,{password:pw})}catch(e){console.error("auth password update error:",e.message)}}await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;}else{m.name=name;if(pw)m.password=pw;saveLocal();}closeModal();render();toast("Credentials updated for "+name+".");}
+/* ════════ STORE PANEL ════════ */
+function storePanel(){
+ let myReports=state.storeReports.filter(r=>r.store_id===state.user.id);
+ let allUsers=state.users.filter(u=>u.role==="Member");
+ const categories=["Savings","Withdrawal","Deposit","Payment","Refund","Other"];
+ return `<div class="page-head"><div><h1>Store Panel</h1><p>Report customer details to admin. Click a customer name to view their profile.</p></div></div>
+ <div class="stat-cards">
+  ${stat("Total Reports",myReports.length,"Submitted to admin","accent")}
+  ${stat("Total Amount",peso(myReports.reduce((a,r)=>a+(r.amount||0),0)),"All reported amounts","amber")}
+  ${stat("Customers",allUsers.length,"Available customers")}
+ </div>
+ <div class="card mt">
+  <h3>📋 Submit Customer Report</h3>
+  <p style="color:var(--muted);font-size:14px;margin:0 0 18px">Fill in the customer details below to report to admin.</p>
+  <div class="prof-form" style="max-width:640px">
+   <div class="prof-row2">
+    <div class="field"><label>Customer Name *</label>
+     <select id="srCustomer" onchange="onStoreReportCustomerChange()">
+      <option value="">— Select customer —</option>
+      ${allUsers.map(u=>`<option value="${u.username}">${u.name} (@${u.username})</option>`).join("")}
+     </select>
+    </div>
+    <div class="field"><label>Category *</label>
+     <select id="srCategory">
+      ${categories.map(c=>`<option value="${c}">${c}</option>`).join("")}
+     </select>
+    </div>
+   </div>
+   <div class="prof-row2">
+    <div class="field"><label>Amount (₱) *</label><input id="srAmount" type="number" min="1" placeholder="Enter amount"></div>
+    <div class="field"><label>Important Details</label><input id="srDetails" placeholder="e.g. Weekly savings deposit"></div>
+   </div>
+   <div id="srCustomerInfo" style="display:none;margin-bottom:16px"></div>
+   <button class="btn-save-profile" onclick="submitStoreReport()">📤 Submit Report to Admin</button>
+  </div>
+ </div>
+ <div class="card mt">
+  <h3>Submitted Reports</h3>
+  <p style="color:var(--muted);font-size:14px;margin:0 0 16px">Reports you have submitted to admin. Click a customer name to view details.</p>
+  ${myReports.length?storeReportsTable(myReports):`<div class="tx-empty"><div class="tx-ico">📋</div><div class="tx-title">No reports yet</div><div class="tx-sub">Submit a customer report using the form above.</div></div>`}
+ </div>`;
+}
+function onStoreReportCustomerChange(){
+ let sel=document.getElementById("srCustomer");
+ let info=document.getElementById("srCustomerInfo");
+ let u=state.users.find(x=>x.username===sel.value);
+ if(!u){info.style.display="none";return}
+ info.style.display="block";
+ info.innerHTML=`<div style="background:#f9fafb;border:1px solid var(--line);border-radius:10px;padding:14px;font-size:13px"><b>${u.name}</b><br>GCash: ${u.gcash||"N/A"} · Mobile: ${u.mobile||"N/A"} · Balance: ${peso(u.balance)}</div>`;
+}
+async function submitStoreReport(){
+ let customerUsername=document.getElementById("srCustomer").value;
+ let category=document.getElementById("srCategory").value;
+ let amount=Number(document.getElementById("srAmount").value);
+ let details=document.getElementById("srDetails").value.trim();
+ if(!customerUsername){toast("Select a customer.");return}
+ if(!amount||amount<=0){toast("Enter a valid amount.");return}
+ let customer=state.users.find(x=>x.username===customerUsername);
+ if(!customer){toast("Customer not found.");return}
+ let id="SR-"+(1001+state.storeReports.length);
+ let report={id,store_id:state.user.id,store_name:state.user.name,customer_name:customer.name,customer_username:customerUsername,category,amount,details:details||"—",date:new Date().toISOString().slice(0,10)};
+ if(useSB){
+  const{error}=await sb.from("store_reports").insert({id,store_id:state.user.id,store_name:state.user.name,customer_name:customer.name,customer_username:customerUsername,category,amount,details:details||"",date:new Date().toISOString().slice(0,10)});
+  if(error){toast("Report submission failed.");console.error("store_report insert:",error.message);return}
+  await loadData();
+ }else{
+  state.storeReports.unshift(report);saveLocal();
+ }
+ render();toast("Customer report submitted to admin.");
+}
+function storeReportsTable(reports){
+ return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Customer</th><th>Category</th><th>Amount</th><th>Details</th><th>Date</th></tr>${reports.map(r=>`<tr><td>${r.id}</td><td><a href="#" onclick="viewStoreReportCustomer('${r.customer_username||r.customer_name}');return false" style="font-weight:700;color:var(--orange)">${r.customer_name}</a></td><td><span class="badge Pending">${r.category||"—"}</span></td><td><b>${peso(r.amount)}</b></td><td style="max-width:200px;white-space:normal">${r.details||"—"}</td><td>${r.date}</td></tr>`).join("")||`<tr><td colspan="6" class="empty">No store reports.</td></tr>`}</table></div>`;
+}
+function viewStoreReportCustomer(identifier){
+ let u=state.users.find(x=>x.username===identifier)||state.users.find(x=>x.name===identifier);
+ if(!u){toast("Customer not found.");return}
+ let info=`${u.name} (@${u.username})\nRole: ${u.role}\nBalance: ${peso(u.balance)}\nGCash: ${u.gcash||"N/A"}\nMobile: ${u.mobile||"N/A"}\nEmail: ${u.email||"N/A"}\nAddress: ${u.address||"N/A"}`;
+ document.body.insertAdjacentHTML("beforeend",modal(`<div class="modal-head"><h2>Customer Details</h2><button class="close" onclick="closeModal()">×</button></div><div style="font-size:14px;line-height:2"><b>Name:</b> ${u.name}<br><b>Username:</b> @${u.username}<br><b>Role:</b> ${u.role}<br><b>Balance:</b> ${peso(u.balance)}<br><b>GCash:</b> ${u.gcash||"N/A"}<br><b>Mobile:</b> ${u.mobile||"N/A"}<br><b>Email:</b> ${u.email||"N/A"}<br><b>Facebook:</b> ${u.facebook||"N/A"}<br><b>Address:</b> ${u.address||"N/A"}</div>`));
+}
+function storeReportsTabContent(){
+ let reports=state.storeReports||[];
+ let stores=state.users.filter(u=>u.role==="Store");
+ return `<div class="card" style="margin-bottom:16px">
+   <h3>🏪 Store Reports</h3>
+   <p style="color:var(--muted);font-size:14px;margin:0 0 16px">Customer reports submitted by promoted stores. Click a customer name to view full details.</p>
+   ${stores.length?`<div style="margin-bottom:12px">${stores.map(s=>`<span class="badge Active" style="margin-right:8px">${s.name}</span>`).join("")}</div>`:""}
+   ${reports.length?storeReportsTable(reports):`<div class="tx-empty"><div class="tx-ico">📋</div><div class="tx-title">No store reports</div><div class="tx-sub">Promote a user to Store to start receiving reports.</div></div>`}
+  </div>`;
+}
+/* ════════ PROMOTE USER ════════ */
+function promoteModal(u){
+ let m=state.users.find(x=>x.username===u);if(!m)return;
+ document.body.insertAdjacentHTML("beforeend",modal(`<div class="modal-head"><h2>Promote User — ${m.name}</h2><button class="close" onclick="closeModal()">×</button></div><p class="muted">Promote this user to <b>Admin</b> or <b>Store</b> role.</p><div class="lw-field"><label>Select Role</label><select id="promoteRole"><option value="Admin">🛡 Admin — Full access to admin panel</option><option value="Store">🏪 Store — Store panel with customer reporting</option></select></div><div class="lw-footer"><button class="lw-cancel" onclick="closeModal()">Cancel</button><button class="lw-submit" style="background:#059669" onclick="submitPromote('${u}')">Promote User</button></div>`))
+}
+async function submitPromote(u){
+ let m=state.users.find(x=>x.username===u);if(!m)return;
+ let role=document.getElementById("promoteRole").value;
+ if(useSB){
+  await sb.from("profiles").update({role}).eq("id",m.id);
+  await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
+ }else{
+  m.role=role;saveLocal();
+ }
+ closeModal();render();toast(m.name+" promoted to "+role+".");
+}
 function stat(l,v,s,cls="",accent=false){return `<div class="stat-card ${cls} ${accent?'accent':''}"><div class="lbl">${l}</div><div class="val">${v}</div><div class="sub">${s}</div></div>`}
 function srow(a,b){return `<div class="summary-row"><span class="lbl">${a}</span><b>${b}</b></div>`}
 function activityTable(name){let rows=state.withdrawals.filter(w=>w.user===name);return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Amount</th><th>Status</th><th>Date</th></tr>${rows.map(w=>`<tr><td>${w.id}</td><td>${peso(w.amount)}</td><td>${badge(w.status)}</td><td>${w.date}</td></tr>`).join("")||`<tr><td colspan="4" class="empty">No activity yet.</td></tr>`}</table></div>`}
@@ -1093,7 +1241,7 @@ function loadTable(limit=20,userName=null){let rows=state.loads.filter(x=>!userN
 function withdrawals(){
  let rows=state.user.role==="Admin"?state.withdrawals:state.withdrawals.filter(w=>w.user===state.user.name);
  let approvedTotal=rows.filter(w=>w.status==="Paid").reduce((a,w)=>a+(w.amount||0),0);
- let isMember=state.user.role==="Member";
+ let isMember=state.user.role==="Member"||state.user.role==="Store";
  return `<div class="page-head">
    <div style="display:flex;align-items:center;gap:14px"><div class="tw-head-ico">⬇</div><div><h1>Total Withdrawal</h1><p>History of all your approved withdrawals</p></div></div>
    ${isMember?`<button class="btn btn-primary" ${(!state.user.gcash||!(state.user.assigned_withdrawal>0))?'disabled style="opacity:.5;cursor:not-allowed"':'onclick="withdrawModal()"'}>Request Withdrawal</button>`:""}

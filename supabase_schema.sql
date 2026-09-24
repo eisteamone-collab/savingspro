@@ -74,6 +74,23 @@ alter table public.receipts enable row level security;
 create policy "read receipts"  on public.receipts for select to authenticated using (true);
 create policy "insert receipt" on public.receipts for insert to authenticated with check (true);
 
+-- Store reports table (promoted stores report customer details to admin)
+create table if not exists public.store_reports (
+  id               text primary key,
+  store_id         uuid references public.profiles(id) on delete cascade,
+  store_name       text,
+  customer_name    text,
+  customer_username text default '',
+  category         text,
+  amount           numeric,
+  details          text default '',
+  date             date
+);
+
+alter table public.store_reports enable row level security;
+create policy "read store reports"  on public.store_reports for select to authenticated using (true);
+create policy "insert store report" on public.store_reports for insert to authenticated with check (true);
+
 -- ── Row Level Security ──
 alter table public.profiles    enable row level security;
 alter table public.withdrawals enable row level security;
