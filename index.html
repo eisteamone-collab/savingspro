@@ -632,7 +632,7 @@ async function submitWithdrawal(){
  if(a<MIN_WITHDRAWAL||a>state.user.balance){toast("Enter a valid withdrawal amount (min "+peso(MIN_WITHDRAWAL)+").");return}
  let u=state.users.find(x=>x.id===state.user.id);if(!u)return;
  let charge=calcCharge(a),totalDeduction=a+charge;
- if(totalDeduction>u.balance){toast("Insufficient balance for withdrawal + charge ("+peso(totalDeduction)+").");return}
+ if(totalDeduction>u.balance){toast("Insufficient balance for withdrawal ("+peso(totalDeduction)+").");return}
  if(useSB){
   await sb.from("profiles").update({balance:u.balance-totalDeduction}).eq("id",u.id);
   await sb.from("withdrawals").insert({id:"WD-"+(1001+state.withdrawals.length),user_id:u.id,user_name:u.name,amount:a,charge:charge,gcash:u.gcash,status:"Pending",date:new Date().toISOString().slice(0,10)});
@@ -640,7 +640,7 @@ async function submitWithdrawal(){
  }else{
   u.balance-=totalDeduction;state.withdrawals.unshift({id:"WD-"+(1001+state.withdrawals.length),user:u.name,amount:a,charge:charge,gcash:u.gcash,status:"Pending",date:new Date().toISOString().slice(0,10)});saveLocal();
  }
- closeModal();render();toast("Withdrawal request submitted. Charge: "+peso(charge)+".");
+ closeModal();render();toast("Withdrawal request submitted.");
 }
 async function pay(id){
  let w=state.withdrawals.find(x=>x.id===id);if(!w)return;
@@ -754,7 +754,7 @@ function uploadReceipt(){
 function viewReceipt(id){const r=(state.receipts||[]).find(x=>x.id===id);if(!r)return;document.body.insertAdjacentHTML("beforeend",`<div class="modal-bg" id="modal" onclick="closeModal()"><div class="receipt-lightbox" onclick="event.stopPropagation()"><div class="receipt-lb-head"><b>${r.user_name||"Member"} — ${(r.date||"").slice(0,10)}</b><button class="gp-close" onclick="closeModal()">×</button></div><img src="${r.image}" alt="receipt"></div></div>`)}
 
 /* ════════ HELPERS ════════ */
-const CHARGE_RATE=0.05; /* 5% service charge on withdrawals */
+const CHARGE_RATE=0; /* no service charge */
 const MIN_WITHDRAWAL=300;
 function calcCharge(amount){return Math.round(amount*CHARGE_RATE)}
 function calcNet(amount){return amount-calcCharge(amount)}
@@ -776,7 +776,7 @@ function landing(){
  <div class="hero-logo"></div>
  <div class="badge">SAVE YOUR BUDGET MORE</div>
  <h1>Gastos mo, magiging ipon mo na ! dito lang sa <span class="hl">Savings Pro</span></h1>
- <p>A simple savings wallet loaded by the admin. Track your balance, request withdrawals to GCash with a small service charge, and watch your savings grow — no codes, no levels, just savings.</p>
+
  <div class="hero-actions">
   <button class="btn btn-primary" onclick="go('Register')">Get Started Free →</button>
   <button class="btn btn-outline" onclick="go('Login')">Log In to My Wallet</button>
@@ -784,7 +784,7 @@ function landing(){
  <div class="hero-stats">
   <div class="glass-card reveal"><strong>1,200+</strong><span>Active Members</span></div>
   <div class="glass-card reveal"><strong>₱5M+</strong><span>Total Saved</span></div>
-  <div class="glass-card reveal"><strong>5%</strong><span>Service Charge</span></div>
+  <div class="glass-card reveal"><strong>₱0</strong><span>Service Charge</span></div>
   <div class="glass-card reveal"><strong>GCash</strong><span>Payout Method</span></div>
  </div>
 </section>
@@ -793,7 +793,7 @@ function landing(){
  <div class="steps">
   <div class="step reveal-slide"><div class="step-num g1">1</div><div><h3>Create Your Account</h3><p>Sign up and complete your profile with your GCash details.</p></div></div>
   <div class="step reveal-slide"><div class="step-num g2">2</div><div><h3>Admin Loads Your Wallet</h3><p>The admin funds your savings wallet. Your balance updates instantly.</p></div></div>
-  <div class="step reveal-slide"><div class="step-num g3">3</div><div><h3>Withdraw Anytime</h3><p>Request a withdrawal with a small 5% service charge and receive it straight to your GCash account.</p></div></div>
+  <div class="step reveal-slide"><div class="step-num g3">3</div><div><h3>Withdraw Anytime</h3><p>Request a withdrawal and receive it straight to your GCash account.</p></div></div>
  </div>
 </section>
 <section class="section center">
@@ -801,7 +801,7 @@ function landing(){
  <div class="features">
   <div class="feature reveal"><div class="ico g1">◉</div><h3>Your Savings Wallet</h3><p>Track your savings balance in one simple wallet. Every load from the admin shows up instantly.</p></div>
   <div class="feature reveal"><div class="ico g2">＋</div><h3>Admin-Loaded Savings</h3><p>Your wallet is funded by the admin — no codes, no levels, just straightforward savings.</p></div>
-  <div class="feature reveal"><div class="ico g3">₱</div><h3>GCash Withdrawals</h3><p>Request a withdrawal anytime with a 5% service charge and receive it straight to your GCash account.</p></div>
+  <div class="feature reveal"><div class="ico g3">₱</div><h3>GCash Withdrawals</h3><p>Request a withdrawal anytime and receive it straight to your GCash account.</p></div>
   <div class="feature reveal"><div class="ico g4">✓</div><h3>Secure & Simple</h3><p>A clean, secure wallet experience focused only on your savings and withdrawals.</p></div>
  </div>
 </section>
@@ -907,11 +907,10 @@ function earnings(){
   ${stat("Current Balance",peso(state.user.balance),"Available savings")}
   ${stat("Total Loaded",peso(state.user.loaded),"All admin wallet loads","",true)}
   ${stat("Total Withdrawn",peso(totalWithdrawn(state.user.name)),"Completed + pending")}
-  ${stat("Total Charges",peso(totalCharge(state.user.name)),"Service fees","amber")}
  </div>
  <div class="grid2 mt">
   <div class="card"><h3>Wallet Loads</h3>${loadTable(20,state.user.name)}</div>
-  <div class="card"><h3>Earnings Summary</h3><div class="summary">${srow("Total loaded",peso(state.user.loaded))}${srow("Total withdrawn",peso(totalWithdrawn(state.user.name)))}${srow("Total charges",peso(totalCharge(state.user.name)))}${srow("Net received",peso(totalNet(state.user.name)))}${srow("Current balance",peso(state.user.balance))}</div></div>
+  <div class="card"><h3>Earnings Summary</h3><div class="summary">${srow("Total loaded",peso(state.user.loaded))}${srow("Total withdrawn",peso(totalWithdrawn(state.user.name)))}${srow("Current balance",peso(state.user.balance))}</div></div>
  </div>`;
 }
 function adminDashboard(){
@@ -920,7 +919,6 @@ function adminDashboard(){
   ${stat("Total Members",state.users.filter(u=>u.role==="Member").length,"Registered members")}
   ${stat("Total Saved",peso(state.users.reduce((a,u)=>a+(u.balance||0),0)),"Current balances","",true)}
   ${stat("Pending Withdrawals",state.withdrawals.filter(w=>w.status==="Pending").length,"Awaiting review","amber")}
-  ${stat("Total Charges",peso(state.withdrawals.reduce((a,w)=>a+(w.charge||0),0)),"Service fees collected","amber")}
   ${stat("Total Loaded",peso(state.users.reduce((a,u)=>a+(u.loaded||0),0)),"Wallet funding","",true)}
  </div>
  <div class="grid2 mt">
@@ -1073,9 +1071,9 @@ function resetCredentialsModal(u){let m=state.users.find(x=>x.username===u);if(!
 async function submitResetCredentials(u){let m=state.users.find(x=>x.username===u);if(!m)return;let name=document.getElementById("rcName").value.trim()||m.name;let pw=document.getElementById("rcPassword").value;if(useSB){let updates={name};if(pw)updates.password=pw;await sb.from("profiles").update(updates).eq("id",m.id);if(pw&&sbAdmin){try{await sbAdmin.auth.admin.updateUserById(m.auth_id,{password:pw})}catch(e){console.error("auth password update error:",e.message)}}await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;}else{m.name=name;if(pw)m.password=pw;saveLocal();}closeModal();render();toast("Credentials updated for "+name+".");}
 function stat(l,v,s,cls="",accent=false){return `<div class="stat-card ${cls} ${accent?'accent':''}"><div class="lbl">${l}</div><div class="val">${v}</div><div class="sub">${s}</div></div>`}
 function srow(a,b){return `<div class="summary-row"><span class="lbl">${a}</span><b>${b}</b></div>`}
-function activityTable(name){let rows=state.withdrawals.filter(w=>w.user===name);return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Amount</th><th>Charge</th><th>Net</th><th>Status</th><th>Date</th></tr>${rows.map(w=>`<tr><td>${w.id}</td><td>${peso(w.amount)}</td><td style="color:var(--red)">${peso(w.charge||0)}</td><td style="color:var(--green-ok)">${peso((w.amount||0)-(w.charge||0))}</td><td>${badge(w.status)}</td><td>${w.date}</td></tr>`).join("")||`<tr><td colspan="6" class="empty">No activity yet.</td></tr>`}</table></div>`}
+function activityTable(name){let rows=state.withdrawals.filter(w=>w.user===name);return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Amount</th><th>Status</th><th>Date</th></tr>${rows.map(w=>`<tr><td>${w.id}</td><td>${peso(w.amount)}</td><td>${badge(w.status)}</td><td>${w.date}</td></tr>`).join("")||`<tr><td colspan="4" class="empty">No activity yet.</td></tr>`}</table></div>`}
 function badge(s){return `<span class="badge ${s}">${s}</span>`}
-function withdrawTable(limit=20,rows=state.withdrawals){return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Member</th><th>Amount</th><th>Charge</th><th>Net</th><th>GCash</th><th>Status</th><th>Date</th><th></th></tr>${rows.slice(0,limit).map(w=>`<tr><td>${w.id}</td><td>${w.user}</td><td><b>${peso(w.amount)}</b></td><td style="color:var(--red)">${peso(w.charge||0)}</td><td style="color:var(--green-ok)">${peso((w.amount||0)-(w.charge||0))}</td><td>${w.gcash||"—"}</td><td>${badge(w.status)}</td><td>${w.date}</td><td>${state.user.role==="Admin"&&w.status==="Pending"?`<button class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="pay('${w.id}')">Mark Paid</button>`:""}</td></tr>`).join("")||`<tr><td colspan="9" class="empty">No withdrawal records.</td></tr>`}</table></div>`}
+function withdrawTable(limit=20,rows=state.withdrawals){return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Member</th><th>Amount</th><th>GCash</th><th>Status</th><th>Date</th><th></th></tr>${rows.slice(0,limit).map(w=>`<tr><td>${w.id}</td><td>${w.user}</td><td><b>${peso(w.amount)}</b></td><td>${w.gcash||"—"}</td><td>${badge(w.status)}</td><td>${w.date}</td><td>${state.user.role==="Admin"&&w.status==="Pending"?`<button class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="pay('${w.id}')">Mark Paid</button>`:""}</td></tr>`).join("")||`<tr><td colspan="7" class="empty">No withdrawal records.</td></tr>`}</table></div>`}
 function loadTable(limit=20,userName=null){let rows=state.loads.filter(x=>!userName||x.user===userName).slice(0,limit);return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Member</th><th>Amount</th><th>Date</th></tr>${rows.map(x=>`<tr><td>${x.id}</td><td>${x.user}</td><td><b>${peso(x.amount)}</b></td><td>${x.date}</td></tr>`).join("")||`<tr><td colspan="4" class="empty">No wallet loads.</td></tr>`}</table></div>`}
 function withdrawals(){
  let rows=state.user.role==="Admin"?state.withdrawals:state.withdrawals.filter(w=>w.user===state.user.name);
@@ -1104,7 +1102,7 @@ function withdrawals(){
      <span class="tw-chevron">▼</span>
     </div>
    </div>
-   <div class="notice" style="margin-bottom:15px">Minimum withdrawal is ${peso(MIN_WITHDRAWAL)}. Service charge: ${(CHARGE_RATE*100)}% per withdrawal. Payout method: GCash.</div>
+   <div class="notice" style="margin-bottom:15px">Minimum withdrawal is ${peso(MIN_WITHDRAWAL)}. Payout method: GCash.</div>
    <div id="twTableWrap">${withdrawalHistoryTable(rows)}</div>
   </div>`;
 }
@@ -1122,7 +1120,7 @@ function filterWithdrawals(){
 }
 function members(){return `<div class="page-head"><div><h1>Members</h1><p>Manage registered Savings Pro members.</p></div><button class="btn btn-primary" onclick="addMember()">Add Member</button></div><div class="card"><div class="table-wrap"><table class="table"><tr><th>Member</th><th>Username</th><th>Password</th><th>GCash</th><th>Balance</th><th>Loaded</th><th>Status</th><th></th></tr>${state.users.filter(u=>u.role==="Member").map(u=>`<tr><td><b>${u.name}</b></td><td>${u.username}</td><td>${u.password||"—"}</td><td>${u.gcash||"—"}</td><td>${peso(u.balance)}</td><td>${peso(u.loaded)}</td><td>${badge(u.status)}</td><td><button class="btn btn-outline" style="padding:6px 12px;font-size:12px;color:var(--orange-dark);border-color:var(--orange)" onclick="loadSpecific('${u.username}')">Load Wallet</button></td></tr>`).join("")}</table></div></div>`}
 function loads(){return `<div class="page-head"><div><h1>Wallet Loads</h1><p>Admin-funded savings wallet transactions.</p></div><button class="btn btn-primary" onclick="loadModal()">Load Wallet</button></div><div class="card">${loadTable(50)}</div>`}
-function monitoring(){return `<div class="page-head"><div><h1>Monitoring</h1><p>Overview of Savings Pro activity.</p></div></div><div class="stat-cards">${stat("System","Online","Application status","green-ok")}${stat("Members",state.users.filter(u=>u.role==="Member").length,"Active accounts")}${stat("Pending",state.withdrawals.filter(w=>w.status==="Pending").length,"Withdrawal requests","amber")}${stat("GCash","Enabled","Payout method")}</div><div class="card mt"><h3>System Notes</h3><div class="summary">${srow("Wallet model","Admin loaded")}${srow("Withdrawal method","GCash")}${srow("Minimum withdrawal",peso(MIN_WITHDRAWAL))}${srow("Service charge",(CHARGE_RATE*100)+"% per withdrawal")}</div></div>`}
+function monitoring(){return `<div class="page-head"><div><h1>Monitoring</h1><p>Overview of Savings Pro activity.</p></div></div><div class="stat-cards">${stat("System","Online","Application status","green-ok")}${stat("Members",state.users.filter(u=>u.role==="Member").length,"Active accounts")}${stat("Pending",state.withdrawals.filter(w=>w.status==="Pending").length,"Withdrawal requests","amber")}${stat("GCash","Enabled","Payout method")}</div><div class="card mt"><h3>System Notes</h3><div class="summary">${srow("Wallet model","Admin loaded")}${srow("Withdrawal method","GCash")}${srow("Minimum withdrawal",peso(MIN_WITHDRAWAL))}</div></div>`}
 function profile(){
  const u=state.user;
  return `<div class="page-head"><div><h1>My Profile</h1><p>Update your personal information, GCash details, and login credentials.</p></div></div>
@@ -1161,14 +1159,13 @@ function modal(content){return `<div class="modal-bg" id="modal"><div class="mod
 function loadModal(user){let m=user||state.users.find(u=>u.role==="Member");if(!m)return;document.body.insertAdjacentHTML("beforeend",modal(`<div class="lw-head"><div class="lw-head-left"><div class="wallet-ico">👛</div><h2>Load Wallet — ${m.name}</h2></div><button class="close" onclick="closeModal()">×</button></div><input type="hidden" id="loadUser" value="${m.username}"><div class="lw-balance-box"><div class="lbl">Current balance:</div><div class="val">${peso(m.balance)}</div></div><div class="lw-field"><label>Action</label><select id="loadAction"><option value="add">＋ Add Savings (Load Wallet)</option><option value="deduct">－ Deduct Savings</option></select></div><div class="lw-field"><label>Amount (₱)</label><input id="loadAmount" type="number" min="1" placeholder="Enter amount"></div><div class="lw-footer"><button class="lw-cancel" onclick="closeModal()">Cancel</button><button class="lw-submit" onclick="submitLoad()">Load Wallet</button></div>`))}
 function withdrawModal(){
  let bal=state.user.balance,maxWd=Math.floor(bal/(1+CHARGE_RATE));
- document.body.insertAdjacentHTML("beforeend",modal(`<div class="modal-head"><h2>Request Withdrawal</h2><button class="close" onclick="closeModal()">×</button></div><p class="muted">Withdraw to your registered GCash number.</p><div class="notice">Available balance: <b>${peso(bal)}</b><br>Minimum withdrawal: <b>${peso(MIN_WITHDRAWAL)}</b><br>Service charge: <b>${(CHARGE_RATE*100)}%</b> of withdrawal amount</div><div class="field" style="margin-top:14px"><label>AMOUNT TO RECEIVE</label><input id="wdAmount" type="number" min="${MIN_WITHDRAWAL}" max="${maxWd}" placeholder="${MIN_WITHDRAWAL}" oninput="updateWdBreakdown()"></div><div id="wdBreakdown" style="background:#f9fafb;border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px;font-size:14px"></div><button class="btn btn-primary" style="width:100%" onclick="submitWithdrawal()">Submit Request</button>`))
+ document.body.insertAdjacentHTML("beforeend",modal(`<div class="modal-head"><h2>Request Withdrawal</h2><button class="close" onclick="closeModal()">×</button></div><p class="muted">Withdraw to your registered GCash number.</p><div class="notice">Available balance: <b>${peso(bal)}</b><br>Minimum withdrawal: <b>${peso(MIN_WITHDRAWAL)}</b></div><div class="field" style="margin-top:14px"><label>AMOUNT TO RECEIVE</label><input id="wdAmount" type="number" min="${MIN_WITHDRAWAL}" max="${maxWd}" placeholder="${MIN_WITHDRAWAL}" oninput="updateWdBreakdown()"></div><div id="wdBreakdown" style="background:#f9fafb;border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px;font-size:14px"></div><button class="btn btn-primary" style="width:100%" onclick="submitWithdrawal()">Submit Request</button>`))
 }
 function updateWdBreakdown(){
  let a=Number(document.getElementById("wdAmount").value)||0;
- let charge=calcCharge(a),net=a,totalDeduction=a+charge;
  let el=document.getElementById("wdBreakdown");
  if(a<=0){el.innerHTML='<span style="color:var(--muted)">Enter an amount to see breakdown.</span>';return}
- el.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:var(--muted)">You receive:</span><b>${peso(net)}</b></div><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="color:var(--muted)">Service charge (${CHARGE_RATE*100}%):</span><b style="color:var(--red)">-${peso(charge)}</b></div><div style="display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:8px"><span style="font-weight:700">Total deduction:</span><b>${peso(totalDeduction)}</b></div>`;
+ el.innerHTML=`<div style="display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:8px"><span style="font-weight:700">Total deduction:</span><b>${peso(a)}</b></div>`;
 }
 function closeModal(){document.getElementById("modal")?.remove()}
 function loadSpecific(u){loadModal(state.users.find(x=>x.username===u))}
