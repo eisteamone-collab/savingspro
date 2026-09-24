@@ -376,6 +376,12 @@ window.dispatchEvent(new Event("supabase-ready"))
 .sb-gcash-bubble:hover{transform:translateY(-2px) scale(1.03);box-shadow:inset 0 1px 1px rgba(255,255,255,.5),inset 0 -2px 4px rgba(0,0,0,.25),0 9px 22px rgba(31,84,224,.55),0 2px 4px rgba(0,0,0,.25)}
 @keyframes gcashFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 @media(prefers-reduced-motion:reduce){.sb-gcash-bubble{animation:none}}
+/* ── Floating GCash button (mobile) ── */
+.gcash-fab{display:none;position:fixed;right:16px;bottom:20px;z-index:90;align-items:center;justify-content:center;gap:7px;padding:14px 22px;border-radius:999px;color:#fff;font-size:15px;font-weight:800;letter-spacing:.3px;cursor:pointer;overflow:hidden;background:linear-gradient(145deg,#3b7bff 0%,#1f54e0 55%,#163bbf 100%);box-shadow:inset 0 1px 1px rgba(255,255,255,.45),inset 0 -2px 4px rgba(0,0,0,.25),0 5px 14px rgba(31,84,224,.4),0 1px 3px rgba(0,0,0,.2);transition:transform .18s ease,box-shadow .18s ease;animation:gcashFloat 3.2s ease-in-out infinite}
+.gcash-fab::before{content:"";position:absolute;top:1px;left:8%;right:8%;height:42%;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(255,255,255,.05));filter:blur(.5px);pointer-events:none}
+.gcash-fab::after{content:"";position:absolute;top:14%;left:18%;width:22%;height:18%;border-radius:50%;background:rgba(255,255,255,.55);filter:blur(1px);pointer-events:none}
+.gcash-fab .gcash-ico{position:relative;z-index:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+.gcash-fab:hover{transform:translateY(-2px) scale(1.03);box-shadow:inset 0 1px 1px rgba(255,255,255,.5),inset 0 -2px 4px rgba(0,0,0,.25),0 9px 22px rgba(31,84,224,.55),0 2px 4px rgba(0,0,0,.25)}
 .gcash-pay-modal{background:#2e5bff;border-radius:18px;width:min(380px,100%);padding:24px;color:#fff;box-shadow:0 25px 70px rgba(0,0,0,.28);position:relative;animation:modalEnter .3s cubic-bezier(.4,0,.2,1)}
 .gp-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:18px}
 .gp-head .gp-ico{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:18px;flex-shrink:0}
@@ -410,7 +416,7 @@ window.dispatchEvent(new Event("supabase-ready"))
 .receipt-lightbox img{width:100%;border-radius:10px;display:block}
 
 @media(max-width:900px){.stat-cards,.admin-cards{grid-template-columns:repeat(2,1fr)}.grid2,.profile-grid{grid-template-columns:1fr}.hero-stats{grid-template-columns:repeat(2,1fr)}.features{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:650px){.app-body{flex-direction:column}.header{padding:0 14px}.sidebar{position:static;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px}.sidebar .sb-brand{display:none}.nav{flex-direction:row;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}.sb-footer{display:none}.content{margin:0;width:100%;padding:14px;overflow-x:hidden}.hero-stats{margin-top:36px}.section{padding:50px 18px}.features{grid-template-columns:1fr}.card{padding:16px}.page-head{flex-direction:column;gap:8px}.page-head h1{font-size:22px}.admin-table{display:block;overflow-x:auto;width:100%;-webkit-overflow-scrolling:touch}.stat-card{min-width:0}.stat-card .val{font-size:20px;overflow-wrap:anywhere}.wallet-card{padding:20px;min-height:150px}.savings-card{padding:20px}.savings-card .sc-val{font-size:32px;overflow-wrap:anywhere}.modal,.receipt-lightbox{width:100%;max-width:100%;padding:18px}.gcash-pay-modal{width:100%}.gp-num{font-size:22px}.admin-search{max-width:100%}.member-selector select{max-width:100%}.prof-form{max-width:100%}.gcash-receipts-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}}
+@media(max-width:650px){.app-body{flex-direction:column}.header{padding:0 14px}.sidebar{position:static;width:100%;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px}.sidebar .sb-brand{display:none}.nav{flex-direction:row;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}.sb-footer{display:none}.content{margin:0;width:100%;padding:14px;overflow-x:hidden}.hero-stats{margin-top:36px}.section{padding:50px 18px}.features{grid-template-columns:1fr}.card{padding:16px}.page-head{flex-direction:column;gap:8px}.page-head h1{font-size:22px}.admin-table{display:block;overflow-x:auto;width:100%;-webkit-overflow-scrolling:touch}.stat-card{min-width:0}.stat-card .val{font-size:20px;overflow-wrap:anywhere}.wallet-card{padding:20px;min-height:150px}.savings-card{padding:20px}.savings-card .sc-val{font-size:32px;overflow-wrap:anywhere}.modal,.receipt-lightbox{width:100%;max-width:100%;padding:18px}.gcash-pay-modal{width:100%}.gp-num{font-size:22px}.admin-search{max-width:100%}.member-selector select{max-width:100%}.prof-form{max-width:100%}.gcash-receipts-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}.gcash-fab{display:flex}}
 
 </style>
 </head>
@@ -860,7 +866,7 @@ function sideNav(){
   </div>
  </aside>`;
 }
-function appShell(){return `<div class="app">${header(true)}<div class="app-body">${sideNav()}<main class="content"><div class="content-inner">${page()}</div></main></div></div>`}
+function appShell(){return `<div class="app">${header(true)}<div class="app-body">${sideNav()}<main class="content"><div class="content-inner">${page()}</div></main></div><div class="gcash-fab" onclick="gcashPaymentModal()"><span class="gcash-ico">💳</span> GCash</div></div>`}
 function page(){
  switch(state.page){
   case"Dashboard":return dashboard();
