@@ -488,21 +488,24 @@ function saveServiceKey(){
 async function loadData(){
  if(!useSB)return;
  try{
-  const[{data:users,error:e1},{data:wds,error:e2},{data:lds,error:e3},{data:rcpts,error:e4},{data:srs,error:e5}]=await Promise.all([
+  const[{data:users,error:e1},{data:wds,error:e2},{data:lds,error:e3},{data:rcpts,error:e4}]=await Promise.all([
    sb.from("profiles").select("*"),
    sb.from("withdrawals").select("*").order("date",{ascending:false}),
    sb.from("loads").select("*").order("date",{ascending:false}),
-   sb.from("receipts").select("*").order("date",{ascending:false}),
-   sb.from("store_reports").select("*").order("date",{ascending:false})
+   sb.from("receipts").select("*").order("date",{ascending:false})
   ]);
   if(e1)console.error("profiles load error:",e1.message);
   if(e4)console.error("receipts load error:",e4.message);
-  if(e5)console.error("store_reports load error:",e5.message);
   state.users=users||[];
   state.withdrawals=(wds||[]).map(w=>({...w,user:w.user_name}));
   state.loads=(lds||[]).map(l=>({...l,user:l.user_name}));
   state.receipts=rcpts||[];
-  state.storeReports=srs||[];
+  // store_reports may not exist yet — fetch separately so it never breaks core data
+  try{
+   const{data:srs,error:e5}=await sb.from("store_reports").select("*").order("date",{ascending:false});
+   if(e5)console.error("store_reports load error:",e5.message);
+   state.storeReports=srs||[];
+  }catch(e5){console.error("store_reports load error:",e5.message);state.storeReports=[]}
  }catch(e){console.error("loadData error:",e)}
 }
 function loadLocal(){
