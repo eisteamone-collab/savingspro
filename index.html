@@ -633,11 +633,11 @@ async function submitLoad(){
  if(useSB){
   await sb.from("profiles").update({balance:u.balance+delta,loaded:action==="add"?u.loaded+a:u.loaded}).eq("id",u.id);
   await sb.from("loads").insert({id:"LD-"+(1001+state.loads.length),user_id:u.id,user_name:u.name,amount:delta,date:new Date().toISOString().slice(0,10)});
-  await sb.from("withdrawals").insert({id:"WD-"+(1001+state.withdrawals.length),user_id:u.id,user_name:u.name,amount:a,charge:0,gcash:u.gcash||"",status:"Paid",date:new Date().toISOString().slice(0,10)});
+  await sb.from("withdrawals").insert({id:"WD-"+(1001+state.withdrawals.length),user_id:u.id,user_name:u.name,amount:a,gcash:u.gcash||"",status:"Paid",date:new Date().toISOString().slice(0,10)});
   await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
  }else{
   u.balance+=delta;if(action==="add")u.loaded+=a;state.loads.unshift({id:"LD-"+(1001+state.loads.length),user:u.name,amount:delta,date:new Date().toISOString().slice(0,10)});
-  state.withdrawals.unshift({id:"WD-"+(1001+state.withdrawals.length),user:u.name,amount:a,charge:0,gcash:u.gcash||"",status:"Paid",date:new Date().toISOString().slice(0,10)});
+  state.withdrawals.unshift({id:"WD-"+(1001+state.withdrawals.length),user:u.name,amount:a,gcash:u.gcash||"",status:"Paid",date:new Date().toISOString().slice(0,10)});
   saveLocal();
  }
  closeModal();render();toast(peso(a)+(action==="deduct"?" deducted from ":" loaded to ")+u.name+".");
@@ -651,10 +651,10 @@ async function submitWithdrawal(){
  if(totalDeduction>u.balance){toast("Insufficient balance for withdrawal ("+peso(totalDeduction)+").");return}
  if(useSB){
   await sb.from("profiles").update({balance:u.balance-totalDeduction,assigned_withdrawal:0}).eq("id",u.id);
-  await sb.from("withdrawals").insert({id:"WD-"+(1001+state.withdrawals.length),user_id:u.id,user_name:u.name,amount:a,charge:charge,gcash:u.gcash,status:"Pending",date:new Date().toISOString().slice(0,10)});
+  await sb.from("withdrawals").insert({id:"WD-"+(1001+state.withdrawals.length),user_id:u.id,user_name:u.name,amount:a,gcash:u.gcash,status:"Pending",date:new Date().toISOString().slice(0,10)});
   await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
  }else{
-  u.balance-=totalDeduction;u.assigned_withdrawal=0;state.withdrawals.unshift({id:"WD-"+(1001+state.withdrawals.length),user:u.name,amount:a,charge:charge,gcash:u.gcash,status:"Pending",date:new Date().toISOString().slice(0,10)});saveLocal();
+  u.balance-=totalDeduction;u.assigned_withdrawal=0;state.withdrawals.unshift({id:"WD-"+(1001+state.withdrawals.length),user:u.name,amount:a,gcash:u.gcash,status:"Pending",date:new Date().toISOString().slice(0,10)});saveLocal();
  }
  closeModal();render();toast("Withdrawal request submitted.");
 }
