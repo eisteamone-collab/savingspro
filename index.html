@@ -28,13 +28,13 @@ window.dispatchEvent(new Event("supabase-ready"))
 .landing{background:linear-gradient(135deg,rgba(15,23,42,.55),rgba(67,20,7,.50),rgba(15,23,42,.55)),url("https://media.base44.com/images/public/6a60265126ce76965dce5ea0/fb6c4f153_shutterstock_648288439.jpg");background-size:cover;background-position:center;background-attachment:fixed;min-height:100vh;position:relative}
 .landing::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(249,115,22,.12),transparent 60%);pointer-events:none}
 .hero{text-align:center;padding:80px 20px 60px;display:flex;flex-direction:column;align-items:center;position:relative;z-index:1}
-.hero-logo{width:140px;height:140px;border-radius:50%;background-image:url("https://media.base44.com/images/public/6a60265126ce76965dce5ea0/2798d58a3_A8.png");background-size:cover;background-position:center;margin-bottom:24px;box-shadow:0 8px 40px rgba(249,115,22,.35),0 0 0 4px rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.15)}
+.hero-logo{width:180px;height:180px;border-radius:50%;background-image:url("https://media.base44.com/images/public/6a60265126ce76965dce5ea0/2798d58a3_A8.png");background-size:cover;background-position:center;margin-bottom:24px;box-shadow:0 8px 40px rgba(249,115,22,.35)}
 .badge{display:inline-block;border:1px solid rgba(251,191,36,.4);color:var(--amber);font-size:11px;letter-spacing:2.5px;font-weight:700;padding:6px 16px;border-radius:6px;margin-bottom:22px;background:rgba(251,191,36,.08)}
 .hero h1{font-size:clamp(36px,5.5vw,60px);font-weight:800;color:#fff;margin:0 0 18px;line-height:1.1;max-width:780px;text-shadow:0 2px 20px rgba(0,0,0,.3)}
-.hero h1 .hl{color:var(--orange);text-shadow:0 0 30px rgba(249,115,22,.4)}
+.hl{color:#fde68a;text-shadow:0 0 30px rgba(253,230,138,.4)}
 .hero p{font-size:17px;line-height:1.7;color:rgba(255,255,255,.75);max-width:640px;margin:0 auto 30px}
 .hero-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
-.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:56px;max-width:820px;width:100%}
+.hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:56px;max-width:820px;width:100%}
 .glass-card{background:linear-gradient(135deg,rgba(255,255,255,.1),rgba(255,255,255,.04));backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius);padding:24px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.2)}
 .glass-card strong{display:block;font-size:28px;font-weight:800;background:linear-gradient(135deg,#fbbf24,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px}
 .glass-card span{font-size:13px;color:rgba(255,255,255,.65)}
@@ -51,7 +51,7 @@ window.dispatchEvent(new Event("supabase-ready"))
 .step-num.g3{background:linear-gradient(135deg,#60a5fa,#4f46e5)}
 .step h3{margin:0 0 4px;font-size:17px;color:#fff}
 .step p{margin:0;color:rgba(255,255,255,.65);font-size:14px;line-height:1.6}
-.features{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
 .feature{background:linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.12);border-radius:var(--radius);padding:24px;backdrop-filter:blur(12px);transition:background .2s,transform .2s,box-shadow .2s;box-shadow:0 8px 24px rgba(0,0,0,.12)}
 .feature:hover{background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.05));transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.2)}
 .feature .ico{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;font-size:20px;color:#fff;margin-bottom:14px;box-shadow:0 4px 16px rgba(0,0,0,.3);transition:transform .2s}
@@ -662,7 +662,7 @@ async function addMember(){
   if(state.users.some(x=>x.username===u)){toast("Username already exists.");return}
   state.users.push({id:Math.max(...state.users.map(x=>x.id))+1,name:n,username:u,password:"demo",role:"Member",balance:0,loaded:0,gcash:g,gcash_name:"",mobile:"",facebook:"",address:"",age:"",email:"",backup_mobile:"",status:"Active",joined:new Date().toISOString().slice(0,10)});saveLocal();
  }
- render();toast("Member created.");
+ render();toast("User created.");
 }
 async function saveProfile(){
  let u=state.users.find(x=>x.id===state.user.id);if(!u)return;
@@ -751,7 +751,7 @@ function uploadReceipt(){
  };
  f.click();
 }
-function viewReceipt(id){const r=(state.receipts||[]).find(x=>x.id===id);if(!r)return;document.body.insertAdjacentHTML("beforeend",`<div class="modal-bg" id="modal" onclick="closeModal()"><div class="receipt-lightbox" onclick="event.stopPropagation()"><div class="receipt-lb-head"><b>${r.user_name||"Member"} — ${(r.date||"").slice(0,10)}</b><button class="gp-close" onclick="closeModal()">×</button></div><img src="${r.image}" alt="receipt"></div></div>`)}
+function viewReceipt(id){const r=(state.receipts||[]).find(x=>x.id===id);if(!r)return;document.body.insertAdjacentHTML("beforeend",`<div class="modal-bg" id="modal" onclick="closeModal()"><div class="receipt-lightbox" onclick="event.stopPropagation()"><div class="receipt-lb-head"><b>${r.user_name||"User"} — ${(r.date||"").slice(0,10)}</b><button class="gp-close" onclick="closeModal()">×</button></div><img src="${r.image}" alt="receipt"></div></div>`)}
 
 /* ════════ HELPERS ════════ */
 const CHARGE_RATE=0; /* no service charge */
@@ -782,18 +782,16 @@ function landing(){
   <button class="btn btn-outline" onclick="go('Login')">Log In to My Wallet</button>
  </div>
  <div class="hero-stats">
-  <div class="glass-card reveal"><strong>1,200+</strong><span>Active Members</span></div>
-  <div class="glass-card reveal"><strong>₱5M+</strong><span>Total Saved</span></div>
-  <div class="glass-card reveal"><strong>₱0</strong><span>Service Charge</span></div>
+  <div class="glass-card reveal"><strong>More</strong><span>Active Users</span></div>
+  <div class="glass-card reveal"><strong>Bigger</strong><span>Total Saved</span></div>
   <div class="glass-card reveal"><strong>GCash</strong><span>Payout Method</span></div>
  </div>
 </section>
 <section class="section center">
- <div class="reveal"><h2>How <span class="hl">Savings Pro</span> Works</h2><p class="sub">Three simple steps to start saving.</p></div>
+ <div class="reveal"><h2>How <span class="hl">Savings Pro</span> Works</h2><p class="sub">Two simple steps to start saving.</p></div>
  <div class="steps">
   <div class="step reveal-slide"><div class="step-num g1">1</div><div><h3>Create Your Account</h3><p>Sign up and complete your profile with your GCash details.</p></div></div>
   <div class="step reveal-slide"><div class="step-num g2">2</div><div><h3>Admin Loads Your Wallet</h3><p>The admin funds your savings wallet. Your balance updates instantly.</p></div></div>
-  <div class="step reveal-slide"><div class="step-num g3">3</div><div><h3>Withdraw Anytime</h3><p>Request a withdrawal and receive it straight to your GCash account.</p></div></div>
  </div>
 </section>
 <section class="section center">
@@ -801,16 +799,15 @@ function landing(){
  <div class="features">
   <div class="feature reveal"><div class="ico g1">◉</div><h3>Your Savings Wallet</h3><p>Track your savings balance in one simple wallet. Every load from the admin shows up instantly.</p></div>
   <div class="feature reveal"><div class="ico g2">＋</div><h3>Admin-Loaded Savings</h3><p>Your wallet is funded by the admin — no codes, no levels, just straightforward savings.</p></div>
-  <div class="feature reveal"><div class="ico g3">₱</div><h3>GCash Withdrawals</h3><p>Request a withdrawal anytime and receive it straight to your GCash account.</p></div>
-  <div class="feature reveal"><div class="ico g4">✓</div><h3>Secure & Simple</h3><p>A clean, secure wallet experience focused only on your savings and withdrawals.</p></div>
+  <div class="feature reveal"><div class="ico g4">✓</div><h3>Secure & Simple</h3><p>A clean, secure wallet experience focused only on your savings.</p></div>
  </div>
 </section>
 <section class="cta">
  <h2>Ready to Start Saving?</h2>
- <p>Join hundreds of members already growing their savings with Savings Pro.</p>
+ <p>Join hundreds of users already growing their savings with Savings Pro.</p>
  <div class="cta-actions">
   <button class="btn btn-outline" onclick="go('Register')">Create Free Account</button>
-  <button class="btn btn-light" onclick="go('Login')">Already a Member?</button>
+  <button class="btn btn-light" onclick="go('Login')">Already a User?</button>
  </div>
 </section>
 <footer class="footer">© 2026 Savings Pro. All rights reserved.</footer>
@@ -819,9 +816,9 @@ function landing(){
 function login(){
  return `${header()}<div class="auth-bg"><div>
   <div class="auth-card">
-   <div class="auth-header"><div class="ico">🔑</div><h2>Savings Pro Member Log In</h2></div>
+   <div class="auth-header"><div class="ico">🔑</div><h2>Savings Pro User Log In</h2></div>
    <div class="auth-body">
-    <h3>Member Login</h3>
+    <h3>User Login</h3>
     <p class="muted">Access your savings wallet and account.</p>
     <form onsubmit="event.preventDefault();loginAction()">
      <div class="field"><label>Username</label><div class="input-wrap"><span class="input-ico">👤</span><input id="loginUser" required placeholder="Enter your username"></div></div>
@@ -848,14 +845,14 @@ function register(){
      <button class="auth-btn" type="submit">👤＋ Submit Registration</button>
     </form>
     <p class="auth-link">Already have an account? <a href="#" onclick="go('Login');return false">Login here</a></p>
-    <button class="terms-btn" onclick="window.open('https://forms.gle/bMLvWgG2KGfYXzBz8','_blank')">Membership Terms & Conditions</button>
+    <button class="terms-btn" onclick="window.open('https://forms.gle/bMLvWgG2KGfYXzBz8','_blank')">User Terms & Conditions</button>
    </div>
   </div>
  </div></div>`;
 }
 function sideNav(){
  let items=state.user.role==="Admin"?["Dashboard","Total Withdrawal","My Profile","Admin Panel"]:["Dashboard","Total Withdrawal","My Profile"];
- let icons={Dashboard:"▦","Total Withdrawal":"📋","My Profile":"👤","Admin Panel":"🛡",Earnings:"₱",Members:"♙","Wallet Loads":"＋",Withdrawals:"↗",Monitoring:"◉",Profile:"○",Settings:"⚙"};
+ let icons={Dashboard:"▦","Total Withdrawal":"📋","My Profile":"👤","Admin Panel":"🛡",Earnings:"₱",Users:"♙","Wallet Loads":"＋",Withdrawals:"↗",Monitoring:"◉",Profile:"○",Settings:"⚙"};
  return `<aside class="sidebar">
   <div class="sb-brand"><span class="logo"></span><div><b>Savings Pro</b><br><small>Savings Wallet</small></div></div>
   <nav class="nav">${items.map(x=>`<button class="${state.page===x?'active':''}" onclick="go('${x}')"><span class="ico">${icons[x]||"•"}</span> ${x}${state.page===x?' <span style="margin-left:auto;font-size:12px">›</span>':''}</button>`).join("")}</nav>
@@ -874,7 +871,7 @@ function page(){
   case"Total Withdrawal":return withdrawals();
   case"My Profile":return profile();
   case"Withdrawals":return withdrawals();
-  case"Members":return members();
+  case"Users":return members();
   case"Wallet Loads":return loads();
   case"Monitoring":return monitoring();
   case"Profile":return profile();
@@ -887,7 +884,7 @@ function dashboard(){
  if(state.user.role==="Admin")return adminDashboard();
  let profileIncomplete=!state.user.gcash;
  let hasTx=state.withdrawals.some(w=>w.user===state.user.name)||state.loads.some(l=>l.user===state.user.name);
- return `<div class="page-head"><div><h1>Welcome back, <span style="color:var(--orange)">${state.user.name}</span></h1><p>Here's your savings wallet overview</p></div><button class="terms-link" onclick="window.open('https://forms.gle/bMLvWgG2KGfYXzBz8','_blank')">Membership Terms & Conditions</button></div>
+ return `<div class="page-head"><div><h1>Welcome back, <span style="color:var(--orange)">${state.user.name}</span></h1><p>Here's your savings wallet overview</p></div><button class="terms-link" onclick="window.open('https://forms.gle/bMLvWgG2KGfYXzBz8','_blank')">User Terms & Conditions</button></div>
  <div class="savings-card">
   <div class="sc-top"><div class="sc-ico">👛</div><div class="sc-lbl">Savings Balance</div></div>
   <div class="sc-val">${peso(state.user.balance)}</div>
@@ -916,7 +913,7 @@ function earnings(){
 function adminDashboard(){
  return `<div class="page-head"><div><h1>Admin Dashboard</h1><p>Manage savings wallets, loads, and withdrawals.</p></div><button class="btn btn-primary" onclick="loadModal()">Load Wallet</button></div>
  <div class="stat-cards">
-  ${stat("Total Members",state.users.filter(u=>u.role==="Member").length,"Registered members")}
+  ${stat("Total Users",state.users.filter(u=>u.role==="Member").length,"Registered users")}
   ${stat("Total Saved",peso(state.users.reduce((a,u)=>a+(u.balance||0),0)),"Current balances","",true)}
   ${stat("Pending Withdrawals",state.withdrawals.filter(w=>w.status==="Pending").length,"Awaiting review","amber")}
   ${stat("Total Loaded",peso(state.users.reduce((a,u)=>a+(u.loaded||0),0)),"Wallet funding","",true)}
@@ -932,16 +929,16 @@ function adminPanel(){
  const totalSavings=state.users.reduce((a,u)=>a+(u.balance||0),0);
  return `<div class="admin-panel">
   <div class="admin-head"><div class="shield">🛡</div><h1>Admin Panel</h1></div>
-  <p class="admin-sub">Manage members, load wallets, and withdrawals</p>
+  <p class="admin-sub">Manage users, load wallets, and withdrawals</p>
   <div class="admin-cards">
-   <div class="admin-card"><div><div class="lbl">Total Members</div><div class="val">${members.length}</div></div><div class="ico blue">👥</div></div>
+   <div class="admin-card"><div><div class="lbl">Total Users</div><div class="val">${members.length}</div></div><div class="ico blue">👥</div></div>
    <div class="admin-card"><div><div class="lbl">Pending Approval</div><div class="val">0</div></div><div class="ico orange">⏰</div></div>
    <div class="admin-card"><div><div class="lbl">Pending Withdrawals</div><div class="val">${pendingWd}</div></div><div class="ico teal">⬇</div></div>
    <div class="admin-card"><div><div class="lbl">Total Savings</div><div class="val">${peso(totalSavings)}</div></div><div class="ico pink">👛</div></div>
   </div>
   <div class="admin-tabs">
    <button class="admin-tab ${state.adminTab==='Profile'?'active':''}" onclick="goAdminTab('Profile')"><span class="tab-check">✓</span> My Profile</button>
-   <button class="admin-tab ${state.adminTab==='Members'?'active':''}" onclick="goAdminTab('Members')"><span class="tab-check">✓</span> Members (${members.length})</button>
+   <button class="admin-tab ${state.adminTab==='Users'?'active':''}" onclick="goAdminTab('Users')"><span class="tab-check">✓</span> Users (${members.length})</button>
    <button class="admin-tab ${state.adminTab==='Withdrawals'?'active':''}" onclick="goAdminTab('Withdrawals')"><span class="tab-check">✓</span> Withdrawals</button>
    <button class="admin-tab ${state.adminTab==='GCash'?'active':''}" onclick="goAdminTab('GCash')"><span class="tab-check">✓</span> GCash</button>
   </div>
@@ -958,16 +955,16 @@ function adminTabContent(){
 }
 function membersTabContent(){
  const members=state.users.filter(u=>u.role==="Member");
- return `<div class="admin-search"><span class="ico">🔍</span><input id="adminSearch" placeholder="Search approved members..." oninput="filterMembers()"></div>
- <div class="card"><table class="admin-table" id="membersTable"><tr><th></th><th>Member</th><th>Balance</th><th>Actions</th></tr>${members.map((u,i)=>`<tr class="member-row"><td><div class="row-num">${i+1}</div></td><td><div class="member-name">${u.name}</div><div class="member-username">@${u.username}</div></td><td><div class="bal-lbl">Balance</div><div class="bal-val">${peso(u.balance)}</div></td><td><div class="act-btns"><button class="act-btn view" title="View" onclick="viewMember('${u.username}')">👁</button><button class="act-btn wallet" title="Load Wallet" onclick="loadSpecific('${u.username}')">👛</button><button class="act-btn edit" title="Edit" onclick="editMember('${u.username}')">✏</button></div></td></tr>`).join("")}</table></div>`;
+ return `<div class="admin-search"><span class="ico">🔍</span><input id="adminSearch" placeholder="Search approved users..." oninput="filterMembers()"></div>
+ <div class="card"><table class="admin-table" id="membersTable"><tr><th></th><th>User</th><th>Balance</th><th>Actions</th></tr>${members.map((u,i)=>`<tr class="member-row"><td><div class="row-num">${i+1}</div></td><td><div class="member-name">${u.name}</div><div class="member-username">@${u.username}</div></td><td><div class="bal-lbl">Balance</div><div class="bal-val">${peso(u.balance)}</div></td><td><div class="act-btns"><button class="act-btn view" title="View" onclick="viewMember('${u.username}')">👁</button><button class="act-btn wallet" title="Load Wallet" onclick="loadSpecific('${u.username}')">👛</button><button class="act-btn edit" title="Edit" onclick="editMember('${u.username}')">✏</button></div></td></tr>`).join("")}</table></div>`;
 }
 function profileTabContent(){
  const allMembers=state.users;
  const sel=state.adminSelectedMember||state.user;
  const m=state.users.find(x=>x.id===sel.id)||state.user;
- return `<div class="member-selector"><label>SELECT MEMBER</label><select onchange="selectAdminMember(this.value)">${allMembers.map(u=>`<option value="${u.id}" ${u.id===m.id?'selected':''}>${u.name} (@${u.username})</option>`).join("")}</select></div>
+ return `<div class="member-selector"><label>SELECT USER</label><select onchange="selectAdminMember(this.value)">${allMembers.map(u=>`<option value="${u.id}" ${u.id===m.id?'selected':''}>${u.name} (@${u.username})</option>`).join("")}</select></div>
  <div class="card" style="max-width:640px">
-  <h3 style="margin:0 0 4px;font-size:20px">Member Profile</h3>
+  <h3 style="margin:0 0 4px;font-size:20px">User Profile</h3>
   <p style="color:var(--muted);font-size:14px;margin:0 0 20px">Update ${m.name}'s personal information and credentials</p>
   <div class="prof-section-title">Personal Information</div>
   <div class="prof-form">
@@ -1042,9 +1039,9 @@ function gcashTabContent(){
    <button class="btn-save-gcash" onclick="saveGcashInfo()">💾 Save GCash Info</button>
   </div>
   <div class="card mt">
-   <div class="gcash-receipts-head"><h3>Member GCash Receipts</h3><span class="gcash-receipts-badge">${receipts.length} total</span></div>
+   <div class="gcash-receipts-head"><h3>User GCash Receipts</h3><span class="gcash-receipts-badge">${receipts.length} total</span></div>
    <p class="gcash-receipts-desc">Receipts uploaded by members as proof of payment. Click an image to view.</p>
-   ${receipts.length?`<div class="gcash-receipts-grid">${receipts.map(r=>`<div class="gcash-receipt-item" onclick="viewReceipt('${r.id}')"><img src="${r.image}" alt="receipt"><div class="gcash-receipt-meta"><b>${r.user_name||"Member"}</b><small>${(r.date||"").slice(0,10)}</small></div></div>`).join("")}</div>`:`<div class="gcash-receipts-empty">No receipts uploaded yet.</div>`}
+   ${receipts.length?`<div class="gcash-receipts-grid">${receipts.map(r=>`<div class="gcash-receipt-item" onclick="viewReceipt('${r.id}')"><img src="${r.image}" alt="receipt"><div class="gcash-receipt-meta"><b>${r.user_name||"User"}</b><small>${(r.date||"").slice(0,10)}</small></div></div>`).join("")}</div>`:`<div class="gcash-receipts-empty">No receipts uploaded yet.</div>`}
   </div>`;
 }
 async function saveGcashInfo(){
@@ -1073,8 +1070,8 @@ function stat(l,v,s,cls="",accent=false){return `<div class="stat-card ${cls} ${
 function srow(a,b){return `<div class="summary-row"><span class="lbl">${a}</span><b>${b}</b></div>`}
 function activityTable(name){let rows=state.withdrawals.filter(w=>w.user===name);return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Amount</th><th>Status</th><th>Date</th></tr>${rows.map(w=>`<tr><td>${w.id}</td><td>${peso(w.amount)}</td><td>${badge(w.status)}</td><td>${w.date}</td></tr>`).join("")||`<tr><td colspan="4" class="empty">No activity yet.</td></tr>`}</table></div>`}
 function badge(s){return `<span class="badge ${s}">${s}</span>`}
-function withdrawTable(limit=20,rows=state.withdrawals){return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Member</th><th>Amount</th><th>GCash</th><th>Status</th><th>Date</th><th></th></tr>${rows.slice(0,limit).map(w=>`<tr><td>${w.id}</td><td>${w.user}</td><td><b>${peso(w.amount)}</b></td><td>${w.gcash||"—"}</td><td>${badge(w.status)}</td><td>${w.date}</td><td>${state.user.role==="Admin"&&w.status==="Pending"?`<button class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="pay('${w.id}')">Mark Paid</button>`:""}</td></tr>`).join("")||`<tr><td colspan="7" class="empty">No withdrawal records.</td></tr>`}</table></div>`}
-function loadTable(limit=20,userName=null){let rows=state.loads.filter(x=>!userName||x.user===userName).slice(0,limit);return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>Member</th><th>Amount</th><th>Date</th></tr>${rows.map(x=>`<tr><td>${x.id}</td><td>${x.user}</td><td><b>${peso(x.amount)}</b></td><td>${x.date}</td></tr>`).join("")||`<tr><td colspan="4" class="empty">No wallet loads.</td></tr>`}</table></div>`}
+function withdrawTable(limit=20,rows=state.withdrawals){return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>User</th><th>Amount</th><th>GCash</th><th>Status</th><th>Date</th><th></th></tr>${rows.slice(0,limit).map(w=>`<tr><td>${w.id}</td><td>${w.user}</td><td><b>${peso(w.amount)}</b></td><td>${w.gcash||"—"}</td><td>${badge(w.status)}</td><td>${w.date}</td><td>${state.user.role==="Admin"&&w.status==="Pending"?`<button class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="pay('${w.id}')">Mark Paid</button>`:""}</td></tr>`).join("")||`<tr><td colspan="7" class="empty">No withdrawal records.</td></tr>`}</table></div>`}
+function loadTable(limit=20,userName=null){let rows=state.loads.filter(x=>!userName||x.user===userName).slice(0,limit);return `<div class="table-wrap"><table class="table"><tr><th>Reference</th><th>User</th><th>Amount</th><th>Date</th></tr>${rows.map(x=>`<tr><td>${x.id}</td><td>${x.user}</td><td><b>${peso(x.amount)}</b></td><td>${x.date}</td></tr>`).join("")||`<tr><td colspan="4" class="empty">No wallet loads.</td></tr>`}</table></div>`}
 function withdrawals(){
  let rows=state.user.role==="Admin"?state.withdrawals:state.withdrawals.filter(w=>w.user===state.user.name);
  let approvedTotal=rows.filter(w=>w.status==="Paid").reduce((a,w)=>a+(w.amount||0),0);
@@ -1118,9 +1115,9 @@ function filterWithdrawals(){
  if(filter!=='all')rows=rows.filter(w=>w.status===filter);
  document.getElementById('twTableWrap').innerHTML=withdrawalHistoryTable(rows);
 }
-function members(){return `<div class="page-head"><div><h1>Members</h1><p>Manage registered Savings Pro members.</p></div><button class="btn btn-primary" onclick="addMember()">Add Member</button></div><div class="card"><div class="table-wrap"><table class="table"><tr><th>Member</th><th>Username</th><th>Password</th><th>GCash</th><th>Balance</th><th>Loaded</th><th>Status</th><th></th></tr>${state.users.filter(u=>u.role==="Member").map(u=>`<tr><td><b>${u.name}</b></td><td>${u.username}</td><td>${u.password||"—"}</td><td>${u.gcash||"—"}</td><td>${peso(u.balance)}</td><td>${peso(u.loaded)}</td><td>${badge(u.status)}</td><td><button class="btn btn-outline" style="padding:6px 12px;font-size:12px;color:var(--orange-dark);border-color:var(--orange)" onclick="loadSpecific('${u.username}')">Load Wallet</button></td></tr>`).join("")}</table></div></div>`}
+function members(){return `<div class="page-head"><div><h1>Users</h1><p>Manage registered Savings Pro users.</p></div><button class="btn btn-primary" onclick="addMember()">Add User</button></div><div class="card"><div class="table-wrap"><table class="table"><tr><th>User</th><th>Username</th><th>Password</th><th>GCash</th><th>Balance</th><th>Loaded</th><th>Status</th><th></th></tr>${state.users.filter(u=>u.role==="Member").map(u=>`<tr><td><b>${u.name}</b></td><td>${u.username}</td><td>${u.password||"—"}</td><td>${u.gcash||"—"}</td><td>${peso(u.balance)}</td><td>${peso(u.loaded)}</td><td>${badge(u.status)}</td><td><button class="btn btn-outline" style="padding:6px 12px;font-size:12px;color:var(--orange-dark);border-color:var(--orange)" onclick="loadSpecific('${u.username}')">Load Wallet</button></td></tr>`).join("")}</table></div></div>`}
 function loads(){return `<div class="page-head"><div><h1>Wallet Loads</h1><p>Admin-funded savings wallet transactions.</p></div><button class="btn btn-primary" onclick="loadModal()">Load Wallet</button></div><div class="card">${loadTable(50)}</div>`}
-function monitoring(){return `<div class="page-head"><div><h1>Monitoring</h1><p>Overview of Savings Pro activity.</p></div></div><div class="stat-cards">${stat("System","Online","Application status","green-ok")}${stat("Members",state.users.filter(u=>u.role==="Member").length,"Active accounts")}${stat("Pending",state.withdrawals.filter(w=>w.status==="Pending").length,"Withdrawal requests","amber")}${stat("GCash","Enabled","Payout method")}</div><div class="card mt"><h3>System Notes</h3><div class="summary">${srow("Wallet model","Admin loaded")}${srow("Withdrawal method","GCash")}${srow("Minimum withdrawal",peso(MIN_WITHDRAWAL))}</div></div>`}
+function monitoring(){return `<div class="page-head"><div><h1>Monitoring</h1><p>Overview of Savings Pro activity.</p></div></div><div class="stat-cards">${stat("System","Online","Application status","green-ok")}${stat("Users",state.users.filter(u=>u.role==="Member").length,"Active accounts")}${stat("Pending",state.withdrawals.filter(w=>w.status==="Pending").length,"Withdrawal requests","amber")}${stat("GCash","Enabled","Payout method")}</div><div class="card mt"><h3>System Notes</h3><div class="summary">${srow("Wallet model","Admin loaded")}${srow("Withdrawal method","GCash")}${srow("Minimum withdrawal",peso(MIN_WITHDRAWAL))}</div></div>`}
 function profile(){
  const u=state.user;
  return `<div class="page-head"><div><h1>My Profile</h1><p>Update your personal information, GCash details, and login credentials.</p></div></div>
