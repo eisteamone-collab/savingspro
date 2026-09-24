@@ -35,6 +35,10 @@ Single-file vanilla JS SPA (`index.html`) — a savings wallet system. Uses Supa
 - `addMember()` — uses sbAdmin (service key) to create auth user + profile
 - `go(page)` — navigation (signs out on auth pages)
 
+## Android APK
+- `android/` contains the native WebView wrapper; `android/build-apk.sh` bundles the current `index.html` and writes only the public Supabase URL/anon key into Android assets. Do not package `SUPABASE_SERVICE_KEY` (the mobile app cannot safely use it for admin features).
+- Built debug APK is `downloads/SavingsPro.apk`, served at `/downloads/SavingsPro.apk` by the Base44 compose mount. Rebuild after web source edits; see `android/README.md` for SDK requirements and signing caveats.
+
 ## Verification
 1. `docker compose -f docker-compose.base44.yml up -d`
 2. Curl `http://localhost:3000/` → 200

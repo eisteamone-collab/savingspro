@@ -5,13 +5,14 @@ services:
       - "3000:80"
     volumes:
       - ./index.html:/usr/share/nginx/html/index.html:ro
+      - ./downloads:/usr/share/nginx/html/downloads:ro
       - ./entrypoint.sh:/entrypoint.sh:ro
     env_file:
       - ./.env.base44-defaults
       - /run/base44/app.env
     entrypoint: ["/bin/sh", "/entrypoint.sh"]
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
       interval: 5s
       timeout: 3s
       retries: 3
