@@ -685,25 +685,31 @@ async function refreshCurrentUser(){
   if(data){state.user=data;const idx=state.users.findIndex(x=>x.id===data.id);if(idx>=0)state.users[idx]=data}
  }catch(e){console.error("refreshCurrentUser error:",e.message)}
 }
+function buildProfileUpdate(vals,refUser){
+ const all={name:vals.name,age:vals.age,email:vals.email,mobile:vals.mobile,backup_mobile:vals.backup_mobile,facebook:vals.facebook,address:vals.address,gcash:vals.gcash,gcash_name:vals.gcash_name};
+ const upd={};for(const k in all){if(k in refUser)upd[k]=all[k]}
+ return upd;
+}
 async function saveProfile(){
  let u=state.users.find(x=>x.id===state.user.id);if(!u)return;
- let name=document.getElementById("pName").value.trim()||u.name;
- let age=document.getElementById("pAge").value.trim();
- let email=document.getElementById("pEmail").value.trim();
- let mobile=document.getElementById("pMobile").value.trim();
- let backup_mobile=document.getElementById("pBackupMobile").value.trim();
- let facebook=document.getElementById("pFacebook").value.trim();
- let address=document.getElementById("pAddress").value.trim();
- let gcash=document.getElementById("pGcash").value.trim();
- let gcash_name=document.getElementById("pGcashName").value.trim();
+ let vals={name:document.getElementById("pName").value.trim()||u.name,
+  age:document.getElementById("pAge").value.trim(),
+  email:document.getElementById("pEmail").value.trim(),
+  mobile:document.getElementById("pMobile").value.trim(),
+  backup_mobile:document.getElementById("pBackupMobile").value.trim(),
+  facebook:document.getElementById("pFacebook").value.trim(),
+  address:document.getElementById("pAddress").value.trim(),
+  gcash:document.getElementById("pGcash").value.trim(),
+  gcash_name:document.getElementById("pGcashName").value.trim()};
  if(useSB){
-  let{data:updData,error:updErr}=await sb.from("profiles").update({name,age,email,mobile,backup_mobile,facebook,address,gcash,gcash_name}).eq("id",u.id).select().single();
-  if(updErr&&sbAdmin){const r=await sbAdmin.from("profiles").update({name,age,email,mobile,backup_mobile,facebook,address,gcash,gcash_name}).eq("id",u.id).select().single();updData=r.data;updErr=r.error}
+  const upd=buildProfileUpdate(vals,state.user);
+  let{data:updData,error:updErr}=await sb.from("profiles").update(upd).eq("id",u.id).select().single();
+  if(updErr&&sbAdmin){const r=await sbAdmin.from("profiles").update(upd).eq("id",u.id).select().single();updData=r.data;updErr=r.error}
   if(updErr){toast("Failed to update profile: "+updErr.message);return}
   if(updData){state.user=updData;const idx=state.users.findIndex(x=>x.id===updData.id);if(idx>=0)state.users[idx]=updData}
   await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
  }else{
-  Object.assign(u,{name,age,email,mobile,backup_mobile,facebook,address,gcash,gcash_name});state.user=u;saveLocal();
+  Object.assign(u,vals);state.user=u;saveLocal();
  }
  render();toast("Profile updated.");
 }
@@ -1034,22 +1040,23 @@ function profileTabContent(){
 function selectAdminMember(id){state.adminSelectedMember=state.users.find(x=>String(x.id)===String(id))||state.user;render()}
 async function saveAdminProfile(id){
  let u=state.users.find(x=>String(x.id)===String(id));if(!u)return;
- let name=document.getElementById("apName").value.trim()||u.name;
- let age=document.getElementById("apAge").value.trim();
- let email=document.getElementById("apEmail").value.trim();
- let mobile=document.getElementById("apMobile").value.trim();
- let backup_mobile=document.getElementById("apBackupMobile").value.trim();
- let facebook=document.getElementById("apFacebook").value.trim();
- let address=document.getElementById("apAddress").value.trim();
- let gcash=document.getElementById("apGcash").value.trim();
- let gcash_name=document.getElementById("apGcashName").value.trim();
+ let vals={name:document.getElementById("apName").value.trim()||u.name,
+  age:document.getElementById("apAge").value.trim(),
+  email:document.getElementById("apEmail").value.trim(),
+  mobile:document.getElementById("apMobile").value.trim(),
+  backup_mobile:document.getElementById("apBackupMobile").value.trim(),
+  facebook:document.getElementById("apFacebook").value.trim(),
+  address:document.getElementById("apAddress").value.trim(),
+  gcash:document.getElementById("apGcash").value.trim(),
+  gcash_name:document.getElementById("apGcashName").value.trim()};
  if(useSB){
-  await sb.from("profiles").update({name,age,email,mobile,backup_mobile,facebook,address,gcash,gcash_name}).eq("id",u.id);
+  const upd=buildProfileUpdate(vals,u);
+  await sb.from("profiles").update(upd).eq("id",u.id);
   await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
  }else{
-  Object.assign(u,{name,age,email,mobile,backup_mobile,facebook,address,gcash,gcash_name});saveLocal();
+  Object.assign(u,vals);saveLocal();
  }
- render();toast("Profile updated for "+name+".");
+ render();toast("Profile updated for "+vals.name+".");
 }
 async function updateAdminCredentials(id){
  let u=state.users.find(x=>String(x.id)===String(id));if(!u)return;
