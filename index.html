@@ -633,9 +633,12 @@ async function submitLoad(){
  if(useSB){
   await sb.from("profiles").update({balance:u.balance+delta,loaded:action==="add"?u.loaded+a:u.loaded}).eq("id",u.id);
   await sb.from("loads").insert({id:"LD-"+(1001+state.loads.length),user_id:u.id,user_name:u.name,amount:delta,date:new Date().toISOString().slice(0,10)});
+  if(action==="deduct"){await sb.from("withdrawals").insert({id:"WD-"+(1001+state.withdrawals.length),user_id:u.id,user_name:u.name,amount:a,charge:0,gcash:u.gcash||"",status:"Paid",date:new Date().toISOString().slice(0,10)})}
   await loadData();state.user=state.users.find(x=>x.id===state.user.id)||state.user;
  }else{
-  u.balance+=delta;if(action==="add")u.loaded+=a;state.loads.unshift({id:"LD-"+(1001+state.loads.length),user:u.name,amount:delta,date:new Date().toISOString().slice(0,10)});saveLocal();
+  u.balance+=delta;if(action==="add")u.loaded+=a;state.loads.unshift({id:"LD-"+(1001+state.loads.length),user:u.name,amount:delta,date:new Date().toISOString().slice(0,10)});
+  if(action==="deduct"){state.withdrawals.unshift({id:"WD-"+(1001+state.withdrawals.length),user:u.name,amount:a,charge:0,gcash:u.gcash||"",status:"Paid",date:new Date().toISOString().slice(0,10)})}
+  saveLocal();
  }
  closeModal();render();toast(peso(a)+(action==="deduct"?" deducted from ":" loaded to ")+u.name+".");
 }
@@ -924,9 +927,7 @@ function memberDashboard(){
  <div class="savings-card">
   <div class="sc-top"><div class="sc-ico">👛</div><div class="sc-lbl">Savings Balance</div></div>
   <div class="sc-val">${peso(state.user.balance)}</div>
-  <div class="sc-sub">Minimum withdrawal: ${peso(MIN_WITHDRAWAL)}</div>
-  ${profileIncomplete?`<div class="sc-notif">⚠️ Complete your profile (GCash, phone, address) to withdraw — <a href="#" onclick="go('My Profile');return false">My Profile</a></div>`:""}
-  ${!state.user.withdraw_enabled?`<div class="sc-notif">🔒 Withdrawal is currently disabled by admin. Assigned amount: ${peso(state.user.assigned_withdrawal||0)}</div><button class="sc-withdraw" disabled style="opacity:.5;cursor:not-allowed">Withdraw</button>`:`<button class="sc-withdraw" onclick="withdrawModal()">Withdraw</button>`}
+  <div class="sc-sub">Withdrawals are processed by admin</div>
  </div>
  <div class="card mt">
   <h3>Transaction History</h3>
@@ -1335,7 +1336,7 @@ function withdrawals(){
  let isMember=state.user.role==="Member"||state.user.role==="Store";
  return `<div class="page-head">
    <div style="display:flex;align-items:center;gap:14px"><div class="tw-head-ico">⬇</div><div><h1>Total Withdrawal</h1><p>History of all your approved withdrawals</p></div></div>
-   ${isMember?`<button class="btn btn-primary" ${(!state.user.gcash||!(state.user.assigned_withdrawal>0)||!state.user.withdraw_enabled)?'disabled style="opacity:.5;cursor:not-allowed"':'onclick="withdrawModal()"'}>Request Withdrawal</button>`:""}
+
   </div>
   <div class="tw-summary-card">
    <div class="tw-summary-ico">↗</div>
