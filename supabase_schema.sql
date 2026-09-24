@@ -22,6 +22,7 @@ create table if not exists public.profiles (
   email     text default '',
   backup_mobile text default '',
   assigned_withdrawal numeric default 0,
+  withdraw_enabled boolean default false,
   status    text default 'Active',
   joined    date default current_date
 );
@@ -35,6 +36,7 @@ alter table public.profiles add column if not exists mobile text default '';
 alter table public.profiles add column if not exists facebook text default '';
 alter table public.profiles add column if not exists address text default '';
 alter table public.profiles add column if not exists assigned_withdrawal numeric default 0;
+alter table public.profiles add column if not exists withdraw_enabled boolean default false;
 alter table public.profiles add column if not exists status text default 'Active';
 
 -- Withdrawals table
